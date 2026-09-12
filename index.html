@@ -64,6 +64,7 @@
         background-size: 24px 24px;
       }
       ::selection { background: #005426; color: #fff; }
+      [x-cloak] { display: none !important; }
     </style>
   </head>
 
@@ -141,10 +142,10 @@
           <div class="grid items-center gap-16 lg:grid-cols-2">
             <!-- Hero Content -->
             <div>
-              <span class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-700 shadow-card">
+              <!-- <span class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-700 shadow-card">
                 <span class="h-2 w-2 rounded-full bg-accent-500"></span>
                 Your Smart Digital Solutions Partner
-              </span>
+              </span> -->
 
               <h1 class="mt-6 font-display text-4xl font-bold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-[3.25rem]">
                 Smart Digital Solutions For Businesses Ready To Grow
@@ -182,7 +183,7 @@
                   <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
                 </span>
                 <div class="leading-tight">
-                  <p class="text-sm font-bold text-slate-900">Website Delivered</p>
+                  <p class="text-sm font-bold text-slate-900">Solution Delivered</p>
                   <p class="text-xs text-slate-500">On time, on budget</p>
                 </div>
               </div>
@@ -192,7 +193,7 @@
                   <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 20.25a48.25 48.25 0 01-8.135-.687c-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" /></svg>
                 </span>
                 <div class="leading-tight">
-                  <p class="text-sm font-bold text-slate-900">24/7 Support</p>
+                  <p class="text-sm font-bold text-slate-900">Ongoing Support</p>
                   <p class="text-xs text-slate-500">We've got you covered</p>
                 </div>
               </div>
@@ -395,38 +396,153 @@
             <p class="mt-5 leading-relaxed text-slate-600">Geeslane projects, carefully built with love and expertise.</p>
           </div>
 
-          <div class="relative mt-14 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-800 via-brand-700 to-brand-600 p-10 shadow-soft sm:p-14">
-            <div class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5"></div>
-            <div class="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-accent-500/10"></div>
+          <div
+            class="relative mt-14"
+            x-data="{
+              active: 0,
+              count: 2,
+              touchStart: 0,
+              next() { this.active = (this.active + 1) % this.count },
+              prev() { this.active = (this.active - 1 + this.count) % this.count },
+              onTouchStart(e) { this.touchStart = e.changedTouches[0].screenX },
+              onTouchEnd(e) {
+                const dx = e.changedTouches[0].screenX - this.touchStart;
+                if (Math.abs(dx) > 50) dx < 0 ? this.next() : this.prev();
+              }
+            }"
+          >
+            <div class="flex items-center gap-3 sm:gap-5">
+              <button
+                type="button"
+                @click="prev()"
+                class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-brand-700 shadow-card transition hover:border-brand-300 hover:bg-brand-50 sm:inline-flex"
+                aria-label="Previous testimonial"
+              >
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+              </button>
 
-            <div class="relative grid gap-10 lg:grid-cols-[1fr_2fr] lg:items-center">
-              <div class="flex flex-col items-start gap-5">
-                <div class="rounded-2xl bg-white p-5">
-                  <img src="images/ult-solutions.png" alt="Ultimate Solutions Limited" class="h-10 w-auto sm:h-12" />
+              <div
+                class="min-w-0 flex-1 overflow-hidden"
+                @touchstart="onTouchStart($event)"
+                @touchend="onTouchEnd($event)"
+              >
+                <div
+                  class="flex items-stretch transition-transform duration-500 ease-out"
+                  :style="'transform: translateX(-' + (active * 100) + '%)'"
+                >
+                  <article class="flex min-w-full">
+                    <div class="relative flex w-full overflow-hidden rounded-3xl bg-gradient-to-br from-brand-800 via-brand-700 to-brand-600 p-10 shadow-soft sm:p-14">
+                      <div class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5"></div>
+                      <div class="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-accent-500/10"></div>
+
+                      <div class="relative grid w-full gap-10 lg:grid-cols-[1fr_2fr] lg:items-center">
+                        <div class="flex flex-col items-start gap-5">
+                          <div class="rounded-2xl bg-white p-5">
+                            <img src="images/ult-solutions.png" alt="Ultimate Solutions Limited" class="h-10 w-auto sm:h-12" />
+                          </div>
+                          <div>
+                            <p class="font-display text-lg font-semibold text-white">Ultimate Solutions Limited</p>
+                            <p class="text-sm text-brand-100">Business Website</p>
+                          </div>
+                          <a href="https://ultimatesolutionsinfotech.com/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20">
+                            Visit Website
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                          </a>
+                        </div>
+
+                        <div>
+                          <svg class="h-10 w-10 text-accent-400" fill="currentColor" viewBox="0 0 32 32"><path d="M9.352 6C4.456 8.352 1 13.087 1 18.552 1 23.02 3.9 26 7.8 26c3.53 0 6.2-2.83 6.2-6.24 0-3.35-2.34-5.75-5.44-5.75-.6 0-1.35.12-1.53.24.44-3.35 3.53-7.24 6.61-9.2L9.352 6zm16 0C20.456 8.352 17 13.087 17 18.552 17 23.02 19.9 26 23.8 26c3.53 0 6.2-2.83 6.2-6.24 0-3.35-2.34-5.75-5.44-5.75-.6 0-1.35.12-1.53.24.44-3.35 3.53-7.24 6.61-9.2L25.352 6z"/></svg>
+                          <p class="mt-4 font-display text-xl font-medium leading-relaxed text-white sm:text-2xl">
+                            Geeslane Technologies took our business online with a professional and visually appealing website.
+                            Their delivery was professional and tailored to our specific requirements. I particularly love how
+                            their manager advised on best practices for SEO and content strategy. I highly recommend Geeslane
+                            to anyone looking to create a beautiful website.
+                          </p>
+                          <div class="mt-6">
+                            <p class="font-display font-semibold text-white">Alexander Soremekun</p>
+                            <p class="text-sm text-brand-100">Founder, Ultimate Solutions Limited</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="flex min-w-full">
+                    <div class="relative flex w-full overflow-hidden rounded-3xl border border-slate-100 bg-white p-10 shadow-card sm:p-14">
+                      <div class="relative grid w-full gap-10 lg:grid-cols-[1fr_2fr] lg:items-center">
+                        <div class="flex flex-col items-start gap-5">
+                          <div class="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+                            <img src="images/osmosis-logo.png" alt="Osmosis Coaching Center" class="h-10 w-auto sm:h-12" />
+                          </div>
+                          <div>
+                            <p class="font-display text-lg font-semibold text-slate-900">Osmosis Coaching Center</p>
+                            <p class="text-sm text-slate-500">Teenagers Coaching Application</p>
+                          </div>
+                          <a href="https://osmosiscoaching.org" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800">
+                            Visit Website
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                          </a>
+                        </div>
+
+                        <div>
+                          <svg class="h-10 w-10 text-brand-600" fill="currentColor" viewBox="0 0 32 32"><path d="M9.352 6C4.456 8.352 1 13.087 1 18.552 1 23.02 3.9 26 7.8 26c3.53 0 6.2-2.83 6.2-6.24 0-3.35-2.34-5.75-5.44-5.75-.6 0-1.35.12-1.53.24.44-3.35 3.53-7.24 6.61-9.2L9.352 6zm16 0C20.456 8.352 17 13.087 17 18.552 17 23.02 19.9 26 23.8 26c3.53 0 6.2-2.83 6.2-6.24 0-3.35-2.34-5.75-5.44-5.75-.6 0-1.35.12-1.53.24.44-3.35 3.53-7.24 6.61-9.2L25.352 6z"/></svg>
+                          <p class="mt-4 font-display text-xl font-medium leading-relaxed text-slate-800 sm:text-2xl">
+                            I had the pleasure of working with Geeslane to build my Osmosis coaching website, and I’m truly impressed.
+                            They were professional, timely, and paid great attention to detail, refining the site until it perfectly matched my vision.
+                            I highly recommend Geeslane to anyone looking to build something great.
+                          </p>
+                          <div class="mt-6">
+                            <p class="font-display font-semibold text-slate-900">Desmond Augustus</p>
+                            <p class="text-sm text-slate-500">Founder, Osmosis Coaching Center</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
                 </div>
-                <div>
-                  <p class="font-display text-lg font-semibold text-white">Ultimate Solutions Limited</p>
-                  <p class="text-sm text-brand-100">Business Website</p>
-                </div>
-                <a href="https://ultimatesolutionsinfotech.com/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20">
-                  Visit Website
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-                </a>
               </div>
 
-              <div>
-                <svg class="h-10 w-10 text-accent-400" fill="currentColor" viewBox="0 0 32 32"><path d="M9.352 6C4.456 8.352 1 13.087 1 18.552 1 23.02 3.9 26 7.8 26c3.53 0 6.2-2.83 6.2-6.24 0-3.35-2.34-5.75-5.44-5.75-.6 0-1.35.12-1.53.24.44-3.35 3.53-7.24 6.61-9.2L9.352 6zm16 0C20.456 8.352 17 13.087 17 18.552 17 23.02 19.9 26 23.8 26c3.53 0 6.2-2.83 6.2-6.24 0-3.35-2.34-5.75-5.44-5.75-.6 0-1.35.12-1.53.24.44-3.35 3.53-7.24 6.61-9.2L25.352 6z"/></svg>
-                <p class="mt-4 font-display text-xl font-medium leading-relaxed text-white sm:text-2xl">
-                  Geeslane Technologies took our business online with a professional and visually appealing website.
-                  Their delivery was professional and tailored to our specific requirements. I particularly love how
-                  their manager advised on best practices for SEO and content strategy. I highly recommend Geeslane
-                  to anyone looking to create a beautiful website.
-                </p>
-                <div class="mt-6">
-                  <p class="font-display font-semibold text-white">Alexander Soremekun</p>
-                  <p class="text-sm text-brand-100">Founder, Ultimate Solutions Limited</p>
-                </div>
+              <button
+                type="button"
+                @click="next()"
+                class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-brand-700 shadow-card transition hover:border-brand-300 hover:bg-brand-50 sm:inline-flex"
+                aria-label="Next testimonial"
+              >
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+              </button>
+            </div>
+
+            <div class="mt-6 flex items-center justify-center gap-4">
+              <button
+                type="button"
+                @click="prev()"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-brand-700 shadow-card transition hover:border-brand-300 hover:bg-brand-50 sm:hidden"
+                aria-label="Previous testimonial"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+              </button>
+
+              <div class="flex items-center gap-2" role="tablist" aria-label="Testimonial slides">
+                <template x-for="i in count" :key="i">
+                  <button
+                    type="button"
+                    @click="active = i - 1"
+                    class="h-2.5 rounded-full transition-all"
+                    :class="active === i - 1 ? 'w-8 bg-brand-700' : 'w-2.5 bg-slate-300 hover:bg-slate-400'"
+                    :aria-label="'Show testimonial ' + i"
+                    :aria-current="active === i - 1 ? 'true' : 'false'"
+                  ></button>
+                </template>
               </div>
+
+              <button
+                type="button"
+                @click="next()"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-brand-700 shadow-card transition hover:border-brand-300 hover:bg-brand-50 sm:hidden"
+                aria-label="Next testimonial"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+              </button>
             </div>
           </div>
         </div>
@@ -480,16 +596,56 @@
             </div>
 
             <!-- Contact Form -->
-            <div class="rounded-3xl bg-white p-7 shadow-card lg:col-span-3 sm:p-10">
-              <form action="https://formbold.com/s/unique_form_id" method="POST">
+            <div
+              class="rounded-3xl bg-white p-7 shadow-card lg:col-span-3 sm:p-10"
+              x-data="{
+                sending: false,
+                sent: false,
+                error: '',
+                async send(e) {
+                  this.sending = true;
+                  this.error = '';
+                  try {
+                    const res = await fetch('https://api.web3forms.com/submit', {
+                      method: 'POST',
+                      body: new FormData(e.target)
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      this.sent = true;
+                      e.target.reset();
+                    } else {
+                      this.error = data.message || 'Unable to send your message. Please email contact@geeslane.com.';
+                    }
+                  } catch (err) {
+                    this.error = 'Unable to send your message. Please email contact@geeslane.com.';
+                  } finally {
+                    this.sending = false;
+                  }
+                }
+              }"
+            >
+              <div x-show="sent" x-cloak>
+                <p class="font-display text-xl font-semibold text-slate-900">Message sent</p>
+                <p class="mt-2 leading-relaxed text-slate-600">Thanks for reaching out. We’ll get back to you soon.</p>
+                <button type="button" @click="sent = false" class="mt-6 inline-flex items-center gap-2 rounded-full bg-brand-700 px-7 py-3.5 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-800">
+                  Send another message
+                </button>
+              </div>
+
+              <form x-show="!sent" @submit.prevent="send($event)">
+                <input type="hidden" name="access_key" value="2a0e630b-0865-4b85-b0da-4824d6f264f2" />
+                <input type="hidden" name="from_name" value="Geeslane Website" />
+                <input type="checkbox" name="botcheck" class="hidden" tabindex="-1" autocomplete="off" />
+
                 <div class="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-700" for="fullname">Full name</label>
-                    <input type="text" name="fullname" id="fullname" placeholder="Devid Wonder" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100" />
+                    <label class="mb-2 block text-sm font-semibold text-slate-700" for="name">Full name</label>
+                    <input type="text" name="name" id="name" required placeholder="Devid Wonder" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100" />
                   </div>
                   <div>
                     <label class="mb-2 block text-sm font-semibold text-slate-700" for="email">Email address</label>
-                    <input type="email" name="email" id="email" placeholder="example@gmail.com" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100" />
+                    <input type="email" name="email" id="email" required placeholder="example@gmail.com" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100" />
                   </div>
                 </div>
 
@@ -500,17 +656,19 @@
                   </div>
                   <div>
                     <label class="mb-2 block text-sm font-semibold text-slate-700" for="subject">Subject</label>
-                    <input type="text" name="subject" id="subject" placeholder="Type your subject" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100" />
+                    <input type="text" name="subject" id="subject" required placeholder="Type your subject" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100" />
                   </div>
                 </div>
 
                 <div class="mt-5">
                   <label class="mb-2 block text-sm font-semibold text-slate-700" for="message">Message</label>
-                  <textarea placeholder="Tell us about your project" rows="4" name="message" id="message" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"></textarea>
+                  <textarea placeholder="Tell us about your project" rows="4" name="message" id="message" required class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"></textarea>
                 </div>
 
-                <button type="submit" class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-700 px-7 py-3.5 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-800 sm:w-auto">
-                  Send Message
+                <p x-show="error" x-cloak x-text="error" class="mt-4 text-sm font-medium text-accent-600"></p>
+
+                <button type="submit" :disabled="sending" class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-700 px-7 py-3.5 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto">
+                  <span x-text="sending ? 'Sending...' : 'Send Message'"></span>
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
                 </button>
               </form>
