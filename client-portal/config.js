@@ -1,17 +1,20 @@
 /*
  * Geeslane portal configuration.
- * Supabase URL and publishable key are loaded from .env in this folder.
- * Never paste a service-role key, Resend API key, SMTP password, or other secret
- * into this file, HTML, or Git. Custom SMTP is configured only in the Supabase dashboard.
+ * supabaseUrl and supabasePublishableKey are public client values. They must live
+ * in this file so production can sign people in. A hosting dashboard .env is not
+ * read by this static site.
+ * Never paste a service-role key, Resend API key, SMTP password, SMS token, or
+ * other secret here. Custom SMTP is configured only in the Supabase dashboard.
+ * Local .env may override these values and supply the admin password shortcut.
  */
 window.GEESLANE_CONFIG = {
-  supabaseUrl: "",
-  supabasePublishableKey: "",
+  supabaseUrl: "https://xostzntvowmdjlwpsevq.supabase.co",
+  supabasePublishableKey: "sb_publishable_JCpLT044d3ukzi958C9NZw_--qpPvXL",
   portalUrl: "https://geeslane.com/client-portal/",
   supportEmail: "contact@geeslane.com",
-  adminUsername: "",
+  adminUsername: "admin",
   adminPassword: "",
-  adminEmail: "",
+  adminEmail: "contact@geeslane.com",
   web3formsAccessKey: "2a0e630b-0865-4b85-b0da-4824d6f264f2",
   storageMode: "supabase"
 };
@@ -52,9 +55,9 @@ window.GEESLANE_ENV_READY = (async function loadLocalEnv() {
       const response = await fetch(envUrl, { cache: "no-store" });
       if (!response.ok) continue;
       applyEnv(parseDotEnv(await response.text()));
-      if (window.GEESLANE_CONFIG.supabaseUrl && window.GEESLANE_CONFIG.supabasePublishableKey) return;
+      return;
     } catch (_) {
-      // Try the next location. Opening the portal as a file:// page cannot read .env.
+      // Production does not serve .env. Public keys above are enough for sign-in.
     }
   }
 })();

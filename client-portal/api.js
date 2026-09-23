@@ -19,7 +19,7 @@
   }
 
   function client() {
-    if (!backendConfigured()) throw new Error("Add SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY to client-portal/.env");
+    if (!backendConfigured()) throw new Error("Supabase is not configured in client-portal/config.js");
     if (!window.supabase?.createClient) throw new Error("The Supabase client library did not load");
     if (!database) {
       database = window.supabase.createClient(normalizeSupabaseUrl(config.supabaseUrl), String(config.supabasePublishableKey).trim(), {
@@ -461,12 +461,12 @@
     if (!email) {
       throw Object.assign(new Error("Administrator email missing"), {
         userMessage: envMatch
-          ? "Username and password match .env. Add ADMIN_EMAIL=your-admin@email.com in client-portal/.env (the email used in Supabase Auth), save, refresh, and sign in again."
-          : "Enter the administrator email, or the username saved in .env."
+          ? "That username matches the local shortcut, but ADMIN_EMAIL is missing. Add it in client-portal/.env and try again."
+          : "Enter the administrator email used in Supabase Auth."
       });
     }
     if (!backendConfigured()) {
-      throw Object.assign(new Error("Supabase is not configured"), { userMessage: "Add SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY to .env before administrator sign-in can work." });
+      throw Object.assign(new Error("Supabase is not configured"), { userMessage: "Administrator sign-in is not connected on this host yet. Publish the latest client-portal/config.js, then refresh." });
     }
     return withLoader(async () => {
       cachedSession = null;

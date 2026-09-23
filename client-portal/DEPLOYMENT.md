@@ -15,7 +15,11 @@ Custom SMTP is configured **only** in the Supabase dashboard. The browser only u
 
 ## Public environment values
 
-Copy `.env.example` to `.env` on the machine or host that serves `client-portal/`:
+This is a static site. Hosting dashboard variables and `client-portal/.env` are **not** available on production (`.env` is gitignored and `https://geeslane.com/client-portal/.env` returns 404).
+
+Put the public Supabase project URL and publishable key in `client-portal/config.js`, then deploy that file. Those two values are meant for the browser. Never add a service-role key, Resend API key, SMTP password, or SMS token there.
+
+Locally, copy `.env.example` to `.env` in `client-portal/` for overrides and the admin password shortcut:
 
 ```
 SUPABASE_URL=
@@ -24,7 +28,6 @@ SUPPORT_EMAIL=contact@geeslane.com
 ```
 
 Use the project URL (`https://YOUR-PROJECT.supabase.co`), not the `/rest/v1/` endpoint.
-Never add a service-role key, Resend API key, SMTP password, or access token here.
 
 ## Configure Resend Custom SMTP
 

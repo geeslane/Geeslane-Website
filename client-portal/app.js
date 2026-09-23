@@ -1489,7 +1489,7 @@
     showAuthPanel(isAccessRoute() ? "access" : "signin", { updateUrl: false });
     if (window.GEESLANE_ENV_READY) await window.GEESLANE_ENV_READY;
     if (!window.GeeslaneAPI.backendConfigured()) {
-      authFeedback("Portal sign-in will activate after SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are added to .env.", "notice");
+      authFeedback("Portal sign-in is not connected on this host yet. Publish the latest client-portal/config.js, then refresh.", "notice");
       return;
     }
     const signingIn = window.GeeslaneAPI.hasIncomingMagicLink();

@@ -871,7 +871,7 @@
     const usernameInput = document.getElementById("admin-username");
     if (savedUser && usernameInput && !usernameInput.value) usernameInput.value = savedUser;
     if (!window.GeeslaneAPI.backendConfigured()) {
-      showAuthFeedback("Add SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY to .env before administrator sign-in can work.", "notice");
+      showAuthFeedback("Administrator sign-in is not connected on this host yet. Publish the latest client-portal/config.js, then refresh.", "notice");
       return;
     }
     const signingIn = window.GeeslaneAPI.hasIncomingMagicLink();
