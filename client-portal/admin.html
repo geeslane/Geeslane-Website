@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#063b29" />
+    <meta name="description" content="Protected Geeslane portal administration." />
+    <title>Geeslane Portal Admin</title>
+    <link rel="icon" href="../favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body class="admin-body">
+    <main class="admin-auth" id="admin-auth">
+      <section class="admin-auth-card card">
+        <a class="auth-brand" href="../index.html" aria-label="Geeslane home">
+          <img class="brand-logo" src="../images/logo.png" alt="Geeslane Technologies" />
+        </a>
+
+        <div class="admin-auth-panel is-visible" id="admin-password-panel">
+          <h1>Administrator Sign In</h1>
+          <p>Use the username and password from <code>.env</code>. If a Supabase password is not set yet, we email a 6-digit code to ADMIN_EMAIL.</p>
+          <form id="admin-password-form" novalidate>
+            <div class="field">
+              <label for="admin-username">Username or email <span>*</span></label>
+              <input id="admin-username" name="username" autocomplete="username" required />
+            </div>
+            <div class="field">
+              <label for="admin-password">Password <span>*</span></label>
+              <input id="admin-password" name="password" type="password" autocomplete="current-password" required />
+            </div>
+            <button class="button button-primary full-button" type="submit">Sign in</button>
+          </form>
+        </div>
+
+        <div class="admin-auth-panel" id="admin-email-panel">
+          <h1>Administrator Sign In</h1>
+          <p>We’ll email a 6-digit code. Enter it in the boxes on the next screen.</p>
+          <form id="admin-signin-form" novalidate>
+            <div class="field">
+              <label for="admin-signin-email">Administrator email <span>*</span></label>
+              <input id="admin-signin-email" name="email" type="email" autocomplete="email" required />
+            </div>
+            <button class="button button-primary full-button" type="submit">Send code</button>
+          </form>
+        </div>
+
+        <div class="admin-auth-panel" id="admin-code-panel">
+          <p class="eyebrow">6-digit code</p>
+          <h1>Enter it here</h1>
+          <p>We emailed a 6-digit code to <strong id="admin-code-email-label">your email</strong>. Type it in the boxes below.</p>
+          <form id="admin-code-form" novalidate>
+            <div class="code-entry">
+              <span class="code-entry-label">6-digit code</span>
+              <div class="code-boxes" id="admin-code-boxes" role="group" aria-label="6-digit sign-in code">
+                <input class="code-box" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1 of 6" />
+                <input class="code-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Digit 2 of 6" />
+                <input class="code-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Digit 3 of 6" />
+                <input class="code-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Digit 4 of 6" />
+                <input class="code-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Digit 5 of 6" />
+                <input class="code-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Digit 6 of 6" />
+              </div>
+            </div>
+            <button class="button button-primary full-button" type="submit">Open admin portal</button>
+          </form>
+          <div class="auth-code-actions">
+            <button class="text-button" id="admin-resend-code" type="button">Send a new code</button>
+            <button class="text-button" id="admin-change-email" type="button">Use a different email</button>
+          </div>
+        </div>
+
+        <div class="admin-auth-actions">
+          <button class="text-button" id="admin-auth-switch" type="button">Use a 6-digit code instead</button>
+          <a class="admin-website-link" href="../index.html">Website</a>
+        </div>
+
+        <div class="auth-feedback" id="admin-auth-feedback" role="status" aria-live="polite" hidden></div>
+      </section>
+    </main>
+
+    <div class="admin-shell" id="admin-shell" hidden>
+      <aside class="admin-sidebar">
+        <a class="brand admin-brand" href="#overview" aria-label="Geeslane admin home">
+          <img class="brand-logo brand-logo-on-dark" src="../images/logo.png" alt="Geeslane Technologies" />
+        </a>
+        <nav class="admin-nav" aria-label="Administrator navigation">
+          <button class="admin-nav-item is-active" data-admin-page="overview" type="button">Overview</button>
+          <button class="admin-nav-item" data-admin-page="registrations" type="button">Access Requests <span id="pending-nav-count">0</span></button>
+          <button class="admin-nav-item" data-admin-page="clients" type="button">Clients</button>
+          <button class="admin-nav-item" data-admin-page="projects" type="button">Projects</button>
+          <button class="admin-nav-item" data-admin-page="files" type="button">Brand & Files</button>
+          <button class="admin-nav-item" data-admin-page="requests" type="button">Requests & Approvals</button>
+          <button class="admin-nav-item" data-admin-page="milestones" type="button">Milestones</button>
+        </nav>
+        <div class="admin-sidebar-footer"><span>Signed in as</span><strong id="admin-sidebar-name">Administrator</strong><small id="admin-sidebar-email"></small></div>
+      </aside>
+      <main class="admin-main">
+        <header class="admin-topbar">
+          <h1 id="admin-page-title">Overview</h1>
+          <div class="admin-top-actions">
+            <button class="button button-ghost" id="admin-signout" type="button">Sign out</button>
+          </div>
+        </header>
+        <div class="admin-content">
+          <section class="admin-page is-visible" data-admin-view="overview">
+            <div class="metric-grid"><article class="card metric-card"><span>Pending access</span><strong id="metric-pending">0</strong></article><article class="card metric-card"><span>Active clients</span><strong id="metric-clients">0</strong></article><article class="card metric-card"><span>Projects</span><strong id="metric-projects">0</strong></article><article class="card metric-card"><span>Open requests</span><strong id="metric-requests">0</strong></article></div>
+            <div class="admin-overview-grid">
+              <section class="card admin-card"><div class="admin-section-heading"><div><p class="eyebrow">Needs review</p><h2>Pending Access Requests</h2></div><button class="text-button" type="button" data-go-admin-page="registrations">View all →</button></div><div id="overview-registrations"></div></section>
+              <section class="card admin-card"><div class="admin-section-heading"><div><p class="eyebrow">Recent activity</p><h2>Latest Client Requests</h2></div><button class="text-button" type="button" data-go-admin-page="requests">View all →</button></div><div id="overview-requests"></div></section>
+            </div>
+          </section>
+
+          <section class="admin-page" data-admin-view="registrations"><div class="admin-page-heading"><div><p class="eyebrow">Account control</p><h2>Access Requests</h2><p>Approve a request to create the client, project, milestones, private file space, and first sign-in email.</p></div></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="registration-search" type="search" placeholder="Search name, business, or email" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Client</th><th>Service</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody id="registrations-table"></tbody></table></div></section></section>
+
+          <section class="admin-page" data-admin-view="clients"><div class="admin-page-heading with-action"><div><p class="eyebrow">Accounts</p><h2>Clients</h2><p>See contact details, account status, and last sign-in.</p></div><button class="button button-primary" id="open-create-client" type="button">Add Client & Project</button></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="client-search" type="search" placeholder="Search clients" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Client</th><th>Contact</th><th>Role</th><th>Status</th><th>Last sign-in</th><th></th></tr></thead><tbody id="clients-table"></tbody></table></div></section></section>
+
+          <section class="admin-page" data-admin-view="projects"><div class="admin-page-heading"><div><p class="eyebrow">Delivery</p><h2>Projects</h2><p>Every client project and its calculated milestone progress.</p></div></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="project-search" type="search" placeholder="Search projects" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Project</th><th>Service</th><th>Stage</th><th>Progress</th><th>Status</th><th>Target</th><th></th></tr></thead><tbody id="projects-table"></tbody></table></div></section></section>
+
+          <section class="admin-page" data-admin-view="files">
+            <div class="admin-page-heading with-action"><div><p class="eyebrow">Project materials</p><h2>Brand & Files</h2><p>Export brand details and website content, and download logos and documents for this project.</p></div><div class="admin-heading-actions"><button class="button button-secondary" id="download-all-files" type="button">Download files</button><button class="button button-primary" id="export-brand-content" type="button">Export Brand & Content</button></div></div>
+            <section class="card admin-card"><div class="admin-toolbar"><label class="field compact-field"><span>Project</span><select id="files-project-filter"></select></label></div>
+              <div class="admin-materials-grid">
+                <section class="admin-material-panel">
+                  <div class="admin-section-heading"><div><p class="eyebrow">Visual direction</p><h2>Brand Identity</h2></div></div>
+                  <div id="admin-brand-panel"></div>
+                </section>
+                <section class="admin-material-panel">
+                  <div class="admin-section-heading"><div><p class="eyebrow">Page copy</p><h2>Website Content</h2></div></div>
+                  <div id="admin-content-panel"></div>
+                </section>
+              </div>
+              <div class="admin-section-heading files-heading"><div><p class="eyebrow">Project assets</p><h2>Logos & Files</h2></div></div>
+              <div id="admin-files-panel"></div>
+            </section>
+          </section>
+
+          <section class="admin-page" data-admin-view="requests"><div class="admin-page-heading"><div><p class="eyebrow">Client history</p><h2>Requests & Approvals</h2><p>Formal approvals and change requests land here. Day-to-day comments stay on the matching stage under Milestones.</p></div></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="admin-request-search" type="search" placeholder="Search requests" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Request</th><th>Project</th><th>Type</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody id="admin-requests-table"></tbody></table></div></section></section>
+
+          <section class="admin-page" data-admin-view="milestones"><div class="admin-page-heading"><div><p class="eyebrow">Progress control</p><h2>Milestones</h2><p>Expand a stage to read comments and reply. Status changes are saved from the row without opening it.</p></div></div><section class="card admin-card"><div class="admin-toolbar"><label class="field compact-field"><span>Project</span><select id="milestone-project-filter"></select></label></div><div id="admin-milestone-list"></div></section></section>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="approval-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="approval-title"><header class="modal-header"><div><p class="eyebrow">Access review</p><h2 id="approval-title">Approve client</h2></div><button class="icon-button modal-close" id="close-approval" type="button" aria-label="Close">×</button></header><form id="approval-form" class="modal-body" novalidate><input id="approval-registration-id" name="registrationId" type="hidden" /><div class="approval-summary" id="approval-summary"></div><div class="form-grid one-column"><div class="field"><label for="approval-project-name">Project name <span>*</span></label><input id="approval-project-name" name="projectName" required /></div><div class="field"><label for="approval-service">Service <span>*</span></label><input id="approval-service" name="service" required /></div><div class="field"><label for="approval-target">Target date</label><input id="approval-target" name="targetDate" type="date" /></div><div class="field"><label for="approval-notes">Private admin notes</label><textarea id="approval-notes" name="notes"></textarea></div></div></form><footer class="modal-footer split-footer"><button class="button button-danger" id="reject-registration" type="button">Reject request</button><div><button class="button button-secondary" id="cancel-approval" type="button">Cancel</button><button class="button button-primary" id="approve-registration" type="button">Approve & invite</button></div></footer></section></div>
+
+    <div class="modal-backdrop" id="create-client-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="create-client-title"><header class="modal-header"><div><p class="eyebrow">New workspace</p><h2 id="create-client-title">Add client & project</h2></div><button class="icon-button modal-close" id="close-create-client" type="button" aria-label="Close">×</button></header><form id="create-client-form" class="modal-body" novalidate><div class="form-grid"><div class="name-with-title"><div class="field field-title"><label for="new-client-title">Title <span>*</span></label><select id="new-client-title" name="title" required><option value="">Choose</option><option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option><option value="Engr">Engr</option><option value="Chief">Chief</option><option value="Pastor">Pastor</option><option value="Barr">Barr</option></select></div><div class="field"><label for="new-client-name">Full name <span>*</span></label><input id="new-client-name" name="name" placeholder="First and last name" required /></div></div><div class="field"><label for="new-client-business">Business <span>*</span></label><input id="new-client-business" name="business" required /></div><div class="field field-full"><label for="new-client-email">Email <span>*</span></label><input id="new-client-email" name="email" type="email" required /></div><div class="field"><label for="new-client-phone">Phone</label><input id="new-client-phone" name="phone" type="tel" /></div><div class="field"><label for="new-client-contact">Preferred contact</label><select id="new-client-contact" name="contact"><option>Email</option><option>WhatsApp</option><option>Phone call</option></select></div><div class="field field-full"><label for="new-project-name">Project name <span>*</span></label><input id="new-project-name" name="projectName" required /></div><div class="field"><label for="new-project-service">Service</label><input id="new-project-service" name="service" value="Business website" /></div><div class="field"><label for="new-project-target">Target date</label><input id="new-project-target" name="targetDate" type="date" /></div></div></form><footer class="modal-footer"><button class="button button-secondary" id="cancel-create-client" type="button">Cancel</button><button class="button button-primary" id="save-create-client" type="button">Create & send invite</button></footer></section></div>
+
+    <div class="page-loader" id="page-loader" hidden>
+      <div class="page-loader-card" role="status" aria-live="polite" aria-busy="true">
+        <span class="page-spinner" aria-hidden="true"></span>
+        <p class="page-loader-copy">Loading…</p>
+      </div>
+    </div>
+    <div class="toast" id="admin-toast" role="status" aria-live="polite"><span class="toast-icon">✓</span><span id="admin-toast-message">Saved</span></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./config.js"></script>
+    <script src="./mail.js"></script>
+    <script src="./api.js"></script>
+    <script src="./admin.js"></script>
+  </body>
+</html>
