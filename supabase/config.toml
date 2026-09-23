@@ -1,0 +1,6 @@
+[functions.send-portal-mail]
+verify_jwt = true
+
+[auth.email]
+otp_length = 6
+otp_expiry = 3600

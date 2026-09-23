@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Confirm Your Geeslane Email</title>
+  </head>
+  <body style="margin:0;padding:0;background:#eef6f1;font-family:'DM Sans',Arial,sans-serif;color:#17211c;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#eef6f1;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid #d7ebe0;border-radius:20px;overflow:hidden;">
+            <tr>
+              <td align="center" style="padding:30px 36px 8px;">
+                <img src="https://geeslane.com/images/logo.png" alt="Geeslane" width="132" style="display:block;margin:0 auto;border:0;height:auto;max-width:132px;" />
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding:18px 36px 36px;">
+                <p style="margin:0 0 6px;font-size:14px;color:#0b6b45;font-weight:600;text-align:center;">Hi {{ if .Data }}{{ if .Data.name }}{{ .Data.name }}{{ else }}there{{ end }}{{ else }}there{{ end }},</p>
+                <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;letter-spacing:-.02em;color:#063b29;text-align:center;">Confirm your email</h1>
+                <p style="margin:0 0 20px;font-size:16px;line-height:1.65;color:#2a3931;text-align:center;">Please confirm this email address to finish setting up your Geeslane portal.</p>
+                <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:0 auto;">
+                  <tr>
+                    <td align="center" style="border-radius:999px;background:#0b6b45;">
+                      <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 22px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">Confirm email</a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:22px 0 0;font-size:14px;line-height:1.6;color:#2a3931;text-align:center;">Kind regards,<br><strong style="color:#063b29;">Geeslane</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
