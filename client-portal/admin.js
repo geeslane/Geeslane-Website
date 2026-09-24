@@ -388,8 +388,8 @@
         contact.email,
         "Welcome to your Geeslane portal",
         email
-          ? `Your client portal is ready. Bookmark the link below.\n\nOpen it, enter ${email}, and we will send a 6 digit code. There is no password, and this email does not include a sign in code.\n\nAdd Geeslane to your phone so updates and invoices stay close at hand.`
-          : "Your client portal is ready. Bookmark the link below.\n\nOpen it, enter your email, and we will send a 6 digit code. There is no password, and this email does not include a sign in code.\n\nAdd Geeslane to your phone so updates and invoices stay close at hand.",
+          ? `Your client portal is ready. Click on the 'Open your portal' button below..\n\nOn the sign in page, enter your email address, ${email}, and we will send a 6 digit code. There is no need for a password.\n\nAdd Geeslane to your phone so updates and invoices stay close at hand.`
+          : "Your client portal is ready. Click on the 'Open your portal' button below..\n\nOn the sign in page, enter your email address, and we will send a 6 digit code. There is no need for a  password.\n\nAdd Geeslane to your phone so updates and invoices stay close at hand.",
         [
           ["Project", contact.project?.name],
           email ? ["Sign in email", email] : null
