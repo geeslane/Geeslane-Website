@@ -17,6 +17,7 @@ window.GEESLANE_CONFIG = {
   adminEmail: "contact@geeslane.com",
   web3formsAccessKey: "2a0e630b-0865-4b85-b0da-4824d6f264f2",
   paystackPublicKey: "pk_test_24d01f7758ba3893d1a620bbb38dfdca98554c5f",
+  paystackReady: false,
   vapidPublicKey: "BBPlHQtchoFRHJivYSio357Yo2mb2z35MBIhrtgc8cGmbt734-DOyc93fqcM6FpFouef5dSkmulc2qxAiCZHCA8",
   storageMode: "supabase"
 };
@@ -47,6 +48,9 @@ window.GEESLANE_ENV_READY = (async function loadLocalEnv() {
     if (env.ADMIN_PASSWORD) window.GEESLANE_CONFIG.adminPassword = String(env.ADMIN_PASSWORD);
     if (env.ADMIN_EMAIL) window.GEESLANE_CONFIG.adminEmail = String(env.ADMIN_EMAIL).trim();
     if (env.PAYSTACK_PUBLIC_KEY) window.GEESLANE_CONFIG.paystackPublicKey = String(env.PAYSTACK_PUBLIC_KEY).trim();
+    if (Object.prototype.hasOwnProperty.call(env, "PAYSTACK_READY")) {
+      window.GEESLANE_CONFIG.paystackReady = /^(1|true|yes)$/i.test(String(env.PAYSTACK_READY).trim());
+    }
   }
 
   const candidates = [];

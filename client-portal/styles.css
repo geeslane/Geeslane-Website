@@ -23,6 +23,7 @@
   --blue-50: #eff5ff;
   --shadow: 0 16px 40px rgba(8, 54, 37, .07);
   --sidebar-width: 248px;
+  --topbar-height: 72px;
 }
 
 * { box-sizing: border-box; }
@@ -264,7 +265,7 @@ body.is-choosing-project { padding-bottom: 0; }
 .sidebar-scrim { display: none; }
 
 .main-area { min-height: 100vh; margin-left: var(--sidebar-width); }
-.topbar { position: sticky; top: 0; z-index: 20; height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(24px, 4vw, 50px); background: rgba(255,255,255,.95); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+.topbar { position: sticky; top: 0; z-index: 20; height: var(--topbar-height); display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(24px, 4vw, 50px); background: rgba(255,255,255,.95); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
 .topbar-left, .topbar-actions { display: flex; align-items: center; gap: 13px; }
 .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .9rem; }
 .breadcrumb span { color: var(--muted-2); }
@@ -496,8 +497,19 @@ body.is-page-loading { overflow: hidden; }
 
 .autosave-label { color: var(--green-700); font-size: .67rem; font-weight: 750; }
 .brand-layout { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(255px,.65fr); gap: 20px; }
-.brand-main-card { min-width: 0; }
+.brand-main-card { min-width: 0; overflow: visible; }
 .section-tabs { display: flex; gap: 5px; margin: -4px 0 25px; padding: 4px; overflow-x: auto; background: var(--page); border-radius: 10px; }
+#page-brand .section-tabs {
+  position: sticky;
+  top: var(--topbar-height);
+  z-index: 12;
+  margin: -12px -12px 22px;
+  padding: 10px;
+  background: var(--page);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  box-shadow: 0 10px 22px -14px rgba(8,54,37,.22);
+}
 .section-tab { min-height: 36px; flex: 1; padding: 0 12px; color: var(--muted); white-space: nowrap; background: transparent; border: 0; border-radius: 8px; font-size: .66rem; font-weight: 750; cursor: pointer; }
 .section-tab.is-active { color: var(--green-800); background: #fff; box-shadow: 0 1px 5px rgba(8,54,37,.09); }
 .brand-section { display: none; }
@@ -593,6 +605,8 @@ body.is-page-loading { overflow: hidden; }
 .field input[aria-invalid="true"], .field select[aria-invalid="true"], .field textarea[aria-invalid="true"] { border-color: var(--red); }
 .field output { display: block; margin-top: 5px; color: var(--green-700); font-size: .65rem; font-weight: 750; }
 .form-footer { display: flex; justify-content: flex-end; margin-top: 23px; }
+.brand-step-footer { align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.brand-step-footer .form-footer-end { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; flex-wrap: wrap; }
 .data-card { grid-column: 2; display: flex; align-items: center; justify-content: space-between; gap: 25px; }
 .data-card p:last-child { max-width: 480px; margin: 7px 0 0; color: var(--muted); font-size: .68rem; line-height: 1.55; }
 
@@ -685,6 +699,7 @@ body.is-page-loading { overflow: hidden; }
 }
 
 @media (max-width: 760px) {
+  :root { --topbar-height: 62px; }
   .workspace-project-chip { display: none; }
   .auth-header { width: calc(100% - 32px); min-height: 70px; }
   .auth-brand small { display: none; }
@@ -708,7 +723,7 @@ body.is-page-loading { overflow: hidden; }
   .sidebar-scrim { position: fixed; inset: 0; z-index: 25; display: block; background: rgba(4,27,18,.45); opacity: 0; pointer-events: none; transition: opacity .2s ease; }
   .sidebar-scrim.is-visible { opacity: 1; pointer-events: auto; }
   .main-area { margin-left: 0; }
-  .topbar { height: 62px; padding: 0 16px; }
+  .topbar { height: var(--topbar-height); padding: 0 16px; }
   .menu-button { display: grid; }
   .breadcrumb span, .breadcrumb b { display: none; }
   .top-new-request { display: none; }
@@ -870,7 +885,8 @@ body.is-page-loading { overflow: hidden; }
 .nav-item.is-tour-target { color: #fff; }
 .mobile-nav > button.is-tour-target { color: var(--green-700); }
 body.is-touring .sidebar { z-index: 81; }
-@media (max-width: 1020px) {
+@media (max-width: 760px) {
+  body.is-touring .sidebar { z-index: 30; }
   .portal-tour-card { left: 16px !important; right: 16px; width: auto; bottom: calc(82px + env(safe-area-inset-bottom)); top: auto !important; }
 }
 

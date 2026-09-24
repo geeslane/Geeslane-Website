@@ -36,10 +36,12 @@
 
   function bankBlock(bank) {
     if (!bank?.accountNumber && !bank?.accountName && !bank?.bankName) return "";
+    const details = [bank.bankName, bank.accountName, bank.accountNumber].filter(Boolean).join(" · ");
     return `
       <section class="agreement-facts" aria-label="Bank transfer">
-        <div class="agreement-fact agreement-fact-wide"><span>Pay by transfer if online payment is not available</span><strong>
-          ${escapeHtml([bank.bankName, bank.accountName, bank.accountNumber].filter(Boolean).join(" · "))}
+        <div class="agreement-fact agreement-fact-wide"><span>Account</span><strong>
+          Pay directly from your client portal or transfer to the account<br />
+          ${escapeHtml(details)}
           ${bank.bankNotes ? `<br />${escapeHtml(bank.bankNotes)}` : ""}
         </strong></div>
       </section>`;
@@ -59,7 +61,6 @@
             <h1>${escapeHtml(invoice.reference || "Invoice")}</h1>
           </div>
         </header>
-        <p class="agreement-lead">Please pay this invoice in your Geeslane portal. Use bank transfer only if online payment is not available.</p>
         <section class="agreement-facts" aria-label="Invoice details">
           ${fact("Bill to", client)}
           ${fact("Business", invoice.business)}

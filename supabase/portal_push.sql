@@ -64,3 +64,26 @@ $$;
 
 revoke execute on function public.save_my_push_subscription(text, text, text, text) from public;
 grant execute on function public.save_my_push_subscription(text, text, text, text) to authenticated;
+
+create or replace function public.admin_list_push_devices()
+returns table(user_id uuid, audience text, updated_at timestamptz)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin' and status = 'active'
+  ) then
+    raise exception 'Administrator access is required';
+  end if;
+  return query
+    select s.user_id, s.audience, max(s.updated_at) as updated_at
+    from public.portal_push_subscriptions s
+    group by s.user_id, s.audience;
+end;
+$$;
+
+revoke execute on function public.admin_list_push_devices() from public;
+grant execute on function public.admin_list_push_devices() to authenticated;

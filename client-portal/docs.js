@@ -95,10 +95,9 @@
     }));
   }
 
-  function pdfOptions(filename, host) {
-    const height = Math.max(host?.scrollHeight || 1123, 400);
+  function pdfOptions(filename) {
     return {
-      margin: [10, 10, 12, 10],
+      margin: 0,
       filename: filename || "document.pdf",
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: {
@@ -107,20 +106,9 @@
         logging: false,
         backgroundColor: "#ffffff",
         scrollX: 0,
-        scrollY: -window.scrollY,
-        windowWidth: 794,
-        windowHeight: height,
-        width: 794,
-        height,
-        onclone(clonedDoc) {
-          const clone = clonedDoc.querySelector("[data-pdf-host]");
-          if (!clone) return;
-          clone.style.opacity = "1";
-          clone.style.left = "0";
-          clone.style.top = "0";
-          clone.style.position = "static";
-          clone.style.transform = "none";
-        }
+        scrollY: 0,
+        x: 0,
+        y: 0
       },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
     };
@@ -132,13 +120,20 @@
     const style = document.createElement("style");
     style.setAttribute("data-pdf-style", "1");
     style.textContent = `${css}
+      [data-pdf-host] { color: #17211c; font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif; }
       [data-pdf-host] .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; margin: 0; padding: 0; background: #fff; }
-      [data-pdf-host] img { max-width: 100%; height: auto; }`;
+      [data-pdf-host] .agreement-masthead { padding-bottom: 16px; gap: 16px; }
+      [data-pdf-host] .agreement-facts { margin: 16px 0 14px; }
+      [data-pdf-host] .agreement-fact { padding: 10px 12px; }
+      [data-pdf-host] .agreement-lead { margin: 0 0 14px; }
+      [data-pdf-host] .agreement-sign-card { min-height: 0; padding: 14px 16px; gap: 10px; }
+      [data-pdf-host] img { max-width: 100%; height: auto; display: block; }
+      .html2pdf__overlay, .html2pdf__container { left: -12000px !important; top: 0 !important; right: auto !important; bottom: auto !important; }`;
     document.head.appendChild(style);
     const host = document.createElement("div");
     host.setAttribute("aria-hidden", "true");
     host.setAttribute("data-pdf-host", "1");
-    host.style.cssText = "position:fixed;left:0;top:0;width:794px;background:#fff;padding:28px 32px;pointer-events:none;z-index:2147483646;";
+    host.style.cssText = "position:absolute;left:-12000px;top:0;width:720px;background:#fff;padding:20px 22px 24px;pointer-events:none;z-index:-1;";
     host.innerHTML = html;
     document.body.appendChild(host);
     try {
@@ -152,11 +147,52 @@
     }
   }
 
+  async function pdfFromHost(host, filename) {
+    const canvas = await window.html2pdf().set(pdfOptions(filename)).from(host).toCanvas();
+    const seed = document.createElement("div");
+    seed.style.cssText = "position:absolute;left:-12000px;top:0;width:8px;height:8px;background:#fff;";
+    seed.textContent = ".";
+    document.body.appendChild(seed);
+    let pdf;
+    try {
+      pdf = await window.html2pdf().set({
+        margin: 0,
+        filename,
+        html2canvas: { scale: 1, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+      }).from(seed).toPdf().get("pdf");
+    } finally {
+      seed.remove();
+    }
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 12;
+    const maxW = pageW - margin * 2;
+    const maxH = pageH - margin * 2;
+    const ratio = canvas.width / Math.max(canvas.height, 1);
+    let width = maxW;
+    let height = width / ratio;
+    if (height > maxH) {
+      height = maxH;
+      width = height * ratio;
+    }
+    const pages = pdf.internal.getNumberOfPages();
+    for (let page = pages; page > 1; page -= 1) pdf.deletePage(page);
+    pdf.setPage(1);
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(0, 0, pageW, pageH, "F");
+    pdf.addImage(canvas.toDataURL("image/jpeg", 0.98), "JPEG", margin, margin, width, height, "", "FAST");
+    if (pdf.internal.getNumberOfPages() > 1) {
+      for (let page = pdf.internal.getNumberOfPages(); page > 1; page -= 1) pdf.deletePage(page);
+    }
+    return pdf;
+  }
+
   async function pdfAttachment(title, bodyHtml, filename) {
     if (typeof window.html2pdf !== "function") return null;
     const name = filename || `${String(title || "document").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`;
     try {
-      const dataUrl = await withPdfHost(bodyHtml, (host) => window.html2pdf().set(pdfOptions(name, host)).from(host).outputPdf("datauristring"));
+      const dataUrl = await withPdfHost(bodyHtml, async (host) => (await pdfFromHost(host, name)).output("datauristring"));
       const content = dataUrlToBase64(dataUrl);
       if (!content) return null;
       return { filename: name, content };
@@ -172,7 +208,7 @@
     }
     const name = filename || `${String(title || "document").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`;
     try {
-      await withPdfHost(bodyHtml, (host) => window.html2pdf().set(pdfOptions(name, host)).from(host).save());
+      await withPdfHost(bodyHtml, async (host) => { (await pdfFromHost(host, name)).save(name); });
       return true;
     } catch (_) {
       printHtml(title, bodyHtml);

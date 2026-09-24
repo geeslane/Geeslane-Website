@@ -370,22 +370,22 @@
           window.GeeslaneMail?.notify({
             audience: "team",
             kind: "service-request",
-            subject: `Service Request · ${details.business}`,
-            heading: "Service Request Received",
+            subject: `Service request: ${details.business}`,
+            heading: "Service request received",
             intro: `${who} from ${details.business} submitted a service request. Every answer they provided is below.`,
             rows,
             clientEmail: details.email,
             fromName: details.name,
             replyTo: details.email,
             ctaPage: "admin",
-            ctaLabel: "Open Admin Portal"
+            ctaLabel: "Open admin portal"
           }),
           window.GeeslaneMail?.notify({
             audience: "client",
             kind: "service-request",
-            subject: `We Received Your Request · ${details.business}`,
-            heading: "We Received Your Request",
-            intro: "Thank you. Geeslane will review this and email you. A copy of what you sent is below.",
+            subject: `We received your request: ${details.business}`,
+            heading: "We received your request",
+            intro: "Thank you. Geeslane will review this and email you shortly. A copy of what you sent is below.",
             rows,
             greetingName: details.name,
             clientEmail: details.email,

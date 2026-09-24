@@ -20,6 +20,67 @@
     return Boolean(url && /^(sb_publishable_|eyJ)/.test(key));
   }
 
+  const AUTH_STORAGE_KEY = "geeslane-portal-auth";
+  const AUTH_IDB_NAME = "geeslane-portal";
+  const AUTH_IDB_STORE = "auth";
+  const authMemory = {};
+  let authHydratePromise = null;
+
+  function idbRequest(mode, run) {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) { resolve(undefined); return; }
+      const open = indexedDB.open(AUTH_IDB_NAME, 1);
+      open.onupgradeneeded = () => {
+        if (!open.result.objectStoreNames.contains(AUTH_IDB_STORE)) open.result.createObjectStore(AUTH_IDB_STORE);
+      };
+      open.onerror = () => resolve(undefined);
+      open.onsuccess = () => {
+        try {
+          const tx = open.result.transaction(AUTH_IDB_STORE, mode);
+          const request = run(tx.objectStore(AUTH_IDB_STORE));
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => resolve(undefined);
+        } catch (_) {
+          resolve(undefined);
+        }
+      };
+    });
+  }
+
+  function hydrateAuthStorage() {
+    if (!authHydratePromise) {
+      authHydratePromise = (async () => {
+        const saved = await idbRequest("readonly", (store) => store.get(AUTH_STORAGE_KEY));
+        if (!saved) return;
+        authMemory[AUTH_STORAGE_KEY] = saved;
+        try {
+          if (!localStorage.getItem(AUTH_STORAGE_KEY)) localStorage.setItem(AUTH_STORAGE_KEY, saved);
+        } catch (_) { /* iOS storage can be blocked; memory plus IndexedDB still keep the session */ }
+      })();
+    }
+    return authHydratePromise;
+  }
+
+  const authStorage = {
+    getItem(key) {
+      try {
+        const value = localStorage.getItem(key);
+        if (value != null) return value;
+      } catch (_) { /* fall through */ }
+      return Object.prototype.hasOwnProperty.call(authMemory, key) ? authMemory[key] : null;
+    },
+    setItem(key, value) {
+      authMemory[key] = value;
+      try { localStorage.setItem(key, value); } catch (_) { /* keep memory and IndexedDB */ }
+      idbRequest("readwrite", (store) => store.put(value, key));
+    },
+    removeItem(key) {
+      delete authMemory[key];
+      try { localStorage.removeItem(key); } catch (_) { /* ignore */ }
+      idbRequest("readwrite", (store) => store.delete(key));
+    }
+  };
+
   function client() {
     if (!backendConfigured()) throw new Error("Supabase is not configured in client-portal/config.js");
     if (!window.supabase?.createClient) throw new Error("The Supabase client library did not load");
@@ -29,8 +90,8 @@
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
-          storage: window.localStorage,
-          storageKey: "geeslane-portal-auth"
+          storage: authStorage,
+          storageKey: AUTH_STORAGE_KEY
         }
       });
     }
@@ -366,7 +427,7 @@
   function mapProfile(row) {
     if (!row) return null;
     return {
-      id: row.user_id, email: row.email, name: row.name || "", business: row.business || "", phone: row.phone || "",
+      id: row.user_id || row.id, email: row.email, name: row.name || "", business: row.business || "", phone: row.phone || "",
       contact: row.contact_preference || "Email", role: row.role || "client", status: row.status || "pending",
       clientId: row.client_id || "", createdAt: row.created_at || "", lastLoginAt: row.last_login_at || ""
     };
@@ -616,7 +677,9 @@
   }
 
   function paystackEnabled() {
-    return Boolean(String((window.GEESLANE_CONFIG || {}).paystackPublicKey || "").trim());
+    const config = window.GEESLANE_CONFIG || {};
+    if (config.paystackReady === false) return false;
+    return Boolean(String(config.paystackPublicKey || "").trim());
   }
 
   function paymentReturnReference() {
@@ -711,6 +774,7 @@
   async function consumeMagicLink() {
     const run = async () => {
       if (window.GEESLANE_ENV_READY) await window.GEESLANE_ENV_READY;
+      await hydrateAuthStorage();
       cachedSession = null;
       cachedProfile = null;
 
@@ -915,6 +979,7 @@
   async function getSession() {
     return withLoader(async () => {
       if (!cachedSession) {
+        await hydrateAuthStorage();
         const auth = await client().auth.getSession();
         if (auth.error) {
           logPortalError("getSession", auth.error);
@@ -1172,6 +1237,7 @@
     }
     cachedSession = null;
     cachedProfile = null;
+    authStorage.removeItem(AUTH_STORAGE_KEY);
   }
 
   async function adminDashboard() {
@@ -1183,7 +1249,8 @@
         client().from("clients").select("id"),
         client().from("projects").select("*").order("created_at", { ascending: false }),
         client().from("portal_requests").select("*").order("created_at", { ascending: false }),
-        client().from("milestones").select("*").order("sort_order")
+        client().from("milestones").select("*").order("sort_order"),
+        client().rpc("admin_list_push_devices")
       ]);
       const registrations = (resultOrThrow(results[0]) || []).map((row) => ({ id: row.id, email: row.email, name: row.name, business: row.business, phone: row.phone, contact: row.contact_preference, service: row.requested_service, description: row.project_description, targetDate: row.target_date || "", status: row.status, notes: row.admin_notes, createdAt: row.created_at, discovery: row.discovery || {} }));
       const users = (resultOrThrow(results[1]) || []).map(mapProfile);
@@ -1191,11 +1258,22 @@
       const projects = (resultOrThrow(results[3]) || []).map(mapProject);
       const requests = (resultOrThrow(results[4]) || []).map((row) => mapRequest(row, false));
       const milestones = (resultOrThrow(results[5]) || []).map(mapMilestone);
+      const pushRows = results[6]?.error ? [] : (results[6]?.data || []);
+      const pushDevices = {};
+      (pushRows || []).forEach((row) => {
+        const id = String(row.user_id || "");
+        if (!id) return;
+        const current = pushDevices[id] || { client: false, team: false, updatedAt: "" };
+        if (row.audience === "team") current.team = true;
+        else current.client = true;
+        if (row.updated_at && (!current.updatedAt || row.updated_at > current.updatedAt)) current.updatedAt = row.updated_at;
+        pushDevices[id] = current;
+      });
       const pending = registrations.filter((item) => String(item.status || "").toLowerCase() === "pending").length;
       return {
         admin: cachedProfile,
         metrics: { pending, clients: clients.length, projects: projects.length, openRequests: requests.filter((item) => !["Completed", "Declined"].includes(item.status)).length },
-        registrations, users, projects, requests, milestones
+        registrations, users, projects, requests, milestones, pushDevices
       };
     }, "Loading…");
   }

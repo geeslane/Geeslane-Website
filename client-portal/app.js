@@ -453,6 +453,7 @@
       const visible = [...tablist.querySelectorAll("[data-brand-tab]")].filter((tab) => !tab.hidden);
       tablist.hidden = visible.length < 2;
     }
+    updateBrandStepNav();
   }
 
   function moneyLabel(invoice) {
@@ -662,9 +663,11 @@
     menu.hidden = !open;
     button.setAttribute("aria-expanded", open ? "true" : "false");
   }
+  function usesOverlayNav() {
+    return window.matchMedia("(max-width: 760px)").matches;
+  }
   function openSidebar() { document.getElementById("sidebar").classList.add("is-open"); document.getElementById("sidebar-scrim").classList.add("is-visible"); }
   function closeSidebar() {
-    if (tourActive) return;
     document.getElementById("sidebar").classList.remove("is-open");
     document.getElementById("sidebar-scrim").classList.remove("is-visible");
   }
@@ -830,10 +833,10 @@
       }
       const savedNote = saved?.id ? saved : state.messages[state.messages.length - 1];
       const heading = kind === "approval"
-        ? `${milestone?.title || "A Stage"} Approved`
+        ? `${milestone?.title || "A stage"} was approved`
         : kind === "changes"
-        ? `${milestone?.title || "A Stage"} — Changes Requested`
-        : `New Comment on ${milestone?.title || "Your Project"}`;
+        ? `${milestone?.title || "A stage"} needs changes`
+        : `A new comment on ${milestone?.title || "the project"}`;
       notifyTeam(
         heading,
         `${clientFormal()} added a comment on ${milestone?.title || "the project"}. Open the link to read it.`,
@@ -846,7 +849,7 @@
             milestoneId,
             noteId: savedNote?.id || ""
           }),
-          ctaLabel: "View This Comment"
+          ctaLabel: "View this comment"
         }
       );
       addActivity(`${milestone?.title || "Milestone"} update`, text, "milestone");
@@ -1009,8 +1012,8 @@
         const stats = totals.showSummary
           ? `<div class="billing-strip-stats${cleared ? " is-cleared" : ""}"><div><span>Total</span><strong>${escapeHtml(totals.totalLabel)}</strong></div><div><span>Paid</span><strong>${escapeHtml(totals.paidLabel)}</strong></div><div><span>Balance</span><strong>${escapeHtml(totals.remainingLabel)}</strong></div></div>`
           : `<div class="billing-strip-copy"><h2>${escapeHtml(remainingLabel)}</h2></div>`;
-        const action = dueInvoice
-          ? `<div class="billing-strip-aside"><button class="button button-primary" type="button" data-pay-invoice="${escapeHtml(dueInvoice.id)}">${canPayOnline() ? "Pay now" : "How to pay"}</button></div>`
+        const action = dueInvoice && canPayOnline()
+          ? `<div class="billing-strip-aside"><button class="button button-primary" type="button" data-pay-invoice="${escapeHtml(dueInvoice.id)}">Pay now</button></div>`
           : "";
         summary.innerHTML = `${stats}${action}`;
       } else {
@@ -1027,7 +1030,7 @@
           const due = unpaidInvoices().some((item) => item.id === invoice.id);
           const balance = window.GeeslaneAPI.invoiceBalance(invoice);
           const rowClass = due ? "is-due" : invoice.status === "Paid" ? "is-paid" : "";
-          return `<tr class="${rowClass}"><td><strong>${escapeHtml(invoice.reference || "Invoice")}</strong><small>${escapeHtml(invoice.title || "Project invoice")}</small></td><td>${invoice.dueDate ? escapeHtml(formatDate(invoice.dueDate)) : "—"}</td><td class="num">${escapeHtml(balance?.totalLabel || moneyLabel(invoice))}</td><td class="num">${escapeHtml(balance?.remainingLabel || "—")}</td><td><span class="status-pill ${billingStatusClass(invoice.status)}${due ? " is-due" : ""}">${escapeHtml(invoice.status || "Draft")}</span></td><td>${rowActions([canPayInvoice(invoice) ? { label: canPayOnline() ? "Pay" : "How to pay", attrs: `data-pay-invoice="${escapeHtml(invoice.id)}"`, primary: true } : null, { label: "View", attrs: `data-view-invoice="${escapeHtml(invoice.id)}"` }, { label: "Download PDF", attrs: `data-print-invoice="${escapeHtml(invoice.id)}"` }])}</td></tr>`;
+          return `<tr class="${rowClass}"><td><strong>${escapeHtml(invoice.reference || "Invoice")}</strong><small>${escapeHtml(invoice.title || "Project invoice")}</small></td><td>${invoice.dueDate ? escapeHtml(formatDate(invoice.dueDate)) : "—"}</td><td class="num">${escapeHtml(balance?.totalLabel || moneyLabel(invoice))}</td><td class="num">${escapeHtml(balance?.remainingLabel || "—")}</td><td><span class="status-pill ${billingStatusClass(invoice.status)}${due ? " is-due" : ""}">${escapeHtml(invoice.status || "Draft")}</span></td><td>${rowActions([canPayInvoice(invoice) && canPayOnline() ? { label: "Pay", attrs: `data-pay-invoice="${escapeHtml(invoice.id)}"`, primary: true } : null, { label: "View", attrs: `data-view-invoice="${escapeHtml(invoice.id)}"` }, { label: "Download PDF", attrs: `data-print-invoice="${escapeHtml(invoice.id)}"` }])}</td></tr>`;
         }).join("")
         : `<tr><td class="table-empty" colspan="6">${invoices.length ? "No invoices match this search." : "No invoices yet."}</td></tr>`;
       drawPager("client-invoices-pager", "invoices", slice, renderPayments);
@@ -1044,7 +1047,7 @@
     }
     const bankCard = document.getElementById("bank-transfer-card");
     const bankBody = document.getElementById("bank-transfer-body");
-    const showBank = hasBankDetails() && !canPayOnline() && unpaidInvoices().length > 0;
+    const showBank = hasBankDetails() && unpaidInvoices().length > 0 && !canPayOnline();
     if (bankCard) bankCard.hidden = !showBank;
     if (bankBody && showBank) {
       bankBody.innerHTML = `<dl class="invoice-meta bank-facts"><div><span>Bank</span><strong>${escapeHtml(portalSettings.bankName || "—")}</strong></div><div><span>Account name</span><strong>${escapeHtml(portalSettings.accountName || "—")}</strong></div><div><span>Account number</span><strong>${escapeHtml(portalSettings.accountNumber || "—")}</strong></div></dl>${portalSettings.bankNotes ? `<p>${escapeHtml(portalSettings.bankNotes)}</p>` : ""}`;
@@ -1653,7 +1656,7 @@
       replyTo: extras.email || state.profile.email || window.GEESLANE_CONFIG?.supportEmail,
       ctaPage: extras.ctaPage || "admin",
       ctaUrl: extras.ctaUrl,
-      ctaLabel: extras.ctaLabel || "Open Admin Portal"
+      ctaLabel: extras.ctaLabel || "Open admin portal"
     });
   }
 
@@ -1759,7 +1762,34 @@
     toast("Website Content saved. Geeslane has been notified.");
   }
 
-  function showBrandTab(tab) {
+  function visibleBrandTabs() {
+    return [...document.querySelectorAll("#page-brand [data-brand-tab]")].filter((tab) => !tab.hidden);
+  }
+
+  function updateBrandStepNav() {
+    const tabs = visibleBrandTabs();
+    const index = tabs.findIndex((tab) => tab.dataset.brandTab === activeMaterialsTab());
+    const prevTab = index > 0 ? tabs[index - 1] : null;
+    const nextTab = index >= 0 && index < tabs.length - 1 ? tabs[index + 1] : null;
+    document.querySelectorAll("[data-brand-prev]").forEach((button) => {
+      button.hidden = !prevTab;
+      if (prevTab) button.textContent = `Previous: ${prevTab.textContent.trim()}`;
+    });
+    document.querySelectorAll("[data-brand-next]").forEach((button) => {
+      button.hidden = !nextTab;
+      if (nextTab) button.textContent = `Next: ${nextTab.textContent.trim()}`;
+    });
+  }
+
+  function moveBrandTab(direction) {
+    const tabs = visibleBrandTabs();
+    const index = tabs.findIndex((tab) => tab.dataset.brandTab === activeMaterialsTab());
+    const next = tabs[index + direction];
+    if (!next) return;
+    showBrandTab(next.dataset.brandTab, { scroll: true });
+  }
+
+  function showBrandTab(tab, options = {}) {
     const features = trackFeatures();
     let next = tab || defaultMaterialsTab();
     if (next === "identity" && !features.identity) next = "brief";
@@ -1772,6 +1802,14 @@
     else params.set("tab", next);
     writeHash("brand", params);
     renderMaterialsConversation();
+    updateBrandStepNav();
+    if (options.scroll) {
+      const tabs = document.querySelector("#page-brand .section-tabs");
+      if (tabs) {
+        const top = window.scrollY + tabs.getBoundingClientRect().top - 8;
+        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+      }
+    }
   }
 
   function connectColourPair(pickerId, textId, fallback) {
@@ -1904,7 +1942,7 @@
       { page: "project", title: "My Project", copy: "Milestones and comments live here. Reply when a stage is ready for you." },
       { page: "brand", title: brandPageLabel(), copy: "Add the brief, brand details, and files Geeslane needs to start." },
       { page: "agreement", title: "Agreement", copy: "The project agreement is here. Download a PDF when you need a copy." },
-      { page: "payments", title: "Payments", copy: "Open invoices to pay, and receipts for payments already made." },
+      { page: "payments", title: "Payments", copy: "Invoices, receipts, and account details for this project sit here." },
       { page: "requests", title: "Requests", copy: "Approvals, change requests, and anything you have sent." },
       { page: "profile", title: "Profile", copy: "Your name, business, and how Geeslane should reach you." }
     ].filter((step) => allowedPages().includes(step.page));
@@ -1917,8 +1955,7 @@
     const steps = tourSteps();
     const step = steps[tourIndex];
     if (!card || !step) return;
-    const mobile = window.matchMedia("(max-width: 1020px)").matches;
-    if (mobile) return;
+    if (usesOverlayNav()) return;
     const target = document.querySelector(`.sidebar .nav-item[data-page="${step.page}"]`);
     const rect = target?.getBoundingClientRect();
     const top = rect ? Math.min(Math.max(24, rect.top), window.innerHeight - card.offsetHeight - 24) : 120;
@@ -1937,10 +1974,9 @@
     const next = document.getElementById("tour-next");
     if (next) next.textContent = last ? "Done" : "Next";
     clearTourTarget();
-    document.querySelectorAll(`[data-page="${step.page}"]`).forEach((node) => {
-      if (node.closest(".sidebar") || node.closest(".mobile-nav")) node.classList.add("is-tour-target");
-    });
-    if (window.matchMedia("(max-width: 1020px)").matches) openSidebar();
+    closeSidebar();
+    const scope = usesOverlayNav() ? ".mobile-nav" : ".sidebar";
+    document.querySelectorAll(`${scope} [data-page="${step.page}"]`).forEach((node) => node.classList.add("is-tour-target"));
     navigate(step.page, { silent: true });
     requestAnimationFrame(placeTourCard);
   }
@@ -2126,7 +2162,7 @@
       notifyTeam("Access request received", `${who} from ${details.business} requested portal access.`, [
         ["Service", details.service],
         ["Summary", details.description.slice(0, 180)]
-      ], { client: details.name, business: details.business, email: details.email, project: details.business, subject: `Access Request · ${details.business}` });
+      ], { client: details.name, business: details.business, email: details.email, project: details.business, subject: `Access request: ${details.business}` });
       form.reset();
       authFeedback("Your request has been sent. We will email you after we approve it.");
     } catch (error) {
@@ -2187,7 +2223,16 @@
     ui.wireRowMenus();
     document.getElementById("tour-skip")?.addEventListener("click", stopTour);
     document.getElementById("tour-next")?.addEventListener("click", advanceTour);
-    addEventListener("resize", () => { if (tourActive) placeTourCard(); });
+    addEventListener("resize", () => {
+      if (!tourActive) return;
+      if (usesOverlayNav()) closeSidebar();
+      const step = tourSteps()[tourIndex];
+      if (!step) return;
+      clearTourTarget();
+      const scope = usesOverlayNav() ? ".mobile-nav" : ".sidebar";
+      document.querySelectorAll(`${scope} [data-page="${step.page}"]`).forEach((node) => node.classList.add("is-tour-target"));
+      placeTourCard();
+    });
     document.querySelectorAll("[data-page]").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.page)));
     document.querySelectorAll("[data-go-page]").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.goPage)));
     document.querySelectorAll("[data-open-request]").forEach((button) => button.addEventListener("click", () => openRequestModal()));
@@ -2234,7 +2279,9 @@
     document.getElementById("brand-form").addEventListener("submit", saveBrand);
     document.getElementById("content-form").addEventListener("submit", saveContent);
     document.getElementById("brand-form").addEventListener("input", previewBrandForm);
-    document.querySelectorAll("[data-brand-tab]").forEach((button) => button.addEventListener("click", () => showBrandTab(button.dataset.brandTab)));
+    document.querySelectorAll("[data-brand-tab]").forEach((button) => button.addEventListener("click", () => showBrandTab(button.dataset.brandTab, { scroll: true })));
+    document.querySelectorAll("[data-brand-prev]").forEach((button) => button.addEventListener("click", () => moveBrandTab(-1)));
+    document.querySelectorAll("[data-brand-next]").forEach((button) => button.addEventListener("click", () => moveBrandTab(1)));
     connectColourPair("brand-primary-picker", "brand-primary", "#0B6B45");
     connectColourPair("brand-secondary-picker", "brand-secondary", "#FFFFFF");
     connectColourPair("brand-accent-picker", "brand-accent", "#C83B3B");
@@ -2346,6 +2393,16 @@
       const authSession = await window.GeeslaneAPI.consumeMagicLink();
       if (authSession) await completeClientSignIn();
     } catch (error) {
+      const arriving = window.GeeslaneAPI.hasIncomingMagicLink();
+      if (!arriving) {
+        try {
+          const existing = await window.GeeslaneAPI.getSession();
+          if (existing?.user) {
+            await completeClientSignIn();
+            return;
+          }
+        } catch (_) { /* stay signed out below */ }
+      }
       try { await window.GeeslaneAPI.logout(); } catch (_) { /* signed-out UI still continues */ }
       sessionStorage.removeItem(STORAGE_KEY);
       showSignedOut();
