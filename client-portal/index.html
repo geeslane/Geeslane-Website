@@ -20,28 +20,27 @@
         </a>
         <nav class="auth-actions" aria-label="Account actions">
           <a class="button button-ghost" href="../index.html">Website</a>
-          <a class="button button-primary" id="show-access-button" href="./request.html">Request access</a>
+          <a class="button button-primary" id="show-access-button" href="./request.html">Request a Service</a>
         </nav>
       </header>
       <main class="auth-main">
         <section class="auth-intro">
-          <h1 id="auth-title">Your projects, files, and feedback in one place.</h1>
-          <p>Sign in to see your Geeslane projects, upload brand materials, review milestones, and keep every request in one place.</p>
+          <h1 id="auth-title">Your Projects, Files, and Feedback in One Place.</h1>
         </section>
         <section class="auth-card card" id="auth-card">
           <div class="auth-panel is-visible" id="signin-panel">
-            <p class="eyebrow">Client Sign In</p><h2>Access Your Portal</h2><p class="auth-copy">We’ll email a 6-digit code. Enter it in the boxes on the next screen. After that, this device stays signed in until you sign out.</p>
+            <p class="eyebrow">Client Sign In</p><h2>Access Your Portal</h2><p class="auth-copy">Enter your email address. You will receive a 6-digit code to access your portal.</p>
             <form id="signin-form" novalidate>
-              <div class="field"><label for="signin-email">Email address <span>*</span></label><input id="signin-email" name="email" type="email" autocomplete="email" placeholder="you@business.com" required /></div>
-              <button class="button button-primary full-button" type="submit">Send code</button>
+              <div class="field"><label for="signin-email">Email Address <span>*</span></label><input id="signin-email" name="email" type="email" autocomplete="email" placeholder="you@business.com" required /></div>
+              <button class="button button-primary full-button" type="submit">Send Code</button>
             </form>
           </div>
           <div class="auth-panel" id="code-panel">
-            <p class="eyebrow">6-digit code</p><h2>Enter it here</h2>
-            <p class="auth-copy">We emailed a 6-digit code to <strong id="code-email-label">your email</strong>. Type it in the boxes below. Keep this page open.</p>
+            <p class="eyebrow">6-Digit Code</p><h2>Enter It Here</h2>
+            <p class="auth-copy">We have sent a 6-digit code to <strong id="code-email-label">your email</strong>. Type it in the boxes below.</p>
             <form id="code-form" novalidate>
               <div class="code-entry">
-                <span class="code-entry-label">6-digit code</span>
+                <span class="code-entry-label">6-Digit Code</span>
                 <div class="code-boxes" id="signin-code-boxes" role="group" aria-label="6-digit sign-in code">
                   <input class="code-box" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1 of 6" />
                   <input class="code-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Digit 2 of 6" />
@@ -51,31 +50,31 @@
                   <input class="code-box" type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Digit 6 of 6" />
                 </div>
               </div>
-              <button class="button button-primary full-button" type="submit">Open my portal</button>
+              <button class="button button-primary full-button" type="submit">Open My Portal</button>
             </form>
             <div class="auth-code-actions">
-              <button class="text-button" id="resend-code" type="button">Send a new code</button>
-              <button class="text-button" id="change-signin-email" type="button">Use a different email</button>
+              <button class="text-button" id="resend-code" type="button">Send a New Code</button>
+              <button class="text-button" id="change-signin-email" type="button">Use a Different Email</button>
             </div>
           </div>
           <div class="auth-panel" id="access-panel">
-            <p class="eyebrow">New Client</p><h2>Request Portal Access</h2><p class="auth-copy">Tell us who you are and what you need. Geeslane will review the request before creating a private workspace.</p>
+            <p class="eyebrow">New Client</p><h2>Request Portal Access</h2>
             <form id="access-form" novalidate>
               <div class="form-grid">
                 <div class="name-with-title">
-                  <div class="field field-title"><label for="access-title">Title <span>*</span></label><select id="access-title" name="title" required><option value="">Choose</option><option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option><option value="Engr">Engr</option><option value="Chief">Chief</option><option value="Pastor">Pastor</option><option value="Barr">Barr</option></select></div>
-                  <div class="field"><label for="access-name">Full name <span>*</span></label><input id="access-name" name="name" autocomplete="name" placeholder="First and last name" required /></div>
+                  <div class="field field-title"><label for="access-title">Courtesy title</label><select id="access-title" name="title"><option value="">Optional</option><option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option><option value="Engr">Engr</option><option value="Chief">Chief</option><option value="Pastor">Pastor</option><option value="Barr">Barr</option></select></div>
+                  <div class="field"><label for="access-name">Your full name <span>*</span></label><input id="access-name" name="name" autocomplete="name" placeholder="First and last name" required /></div>
                 </div>
-                <div class="field field-full"><label for="access-business">Business or brand <span>*</span></label><input id="access-business" name="business" required /></div>
-                <div class="field field-full"><label for="access-email">Email address <span>*</span></label><input id="access-email" name="email" type="email" autocomplete="email" required /></div>
-                <div class="field"><label for="access-phone">Phone number</label><input id="access-phone" name="phone" type="tel" autocomplete="tel" placeholder="+234 801 234 5678" /></div>
-                <div class="field"><label for="access-contact">Preferred contact</label><select id="access-contact" name="contact"><option>Email</option><option>WhatsApp</option><option>Phone call</option></select></div>
-                <div class="field field-full"><label for="access-service">What do you need? <span>*</span></label><select id="access-service" name="service" required><option value="">Choose one</option><option>Business website</option><option>Landing page</option><option>Portfolio website</option><option>Website revamp</option><option>AI automation</option><option>Consultation</option><option>Something else</option></select></div>
-                <div class="field field-full"><label for="access-description">Project summary <span>*</span></label><textarea id="access-description" name="description" minlength="5" placeholder="Briefly describe the project and the outcome you want." required></textarea></div>
+                <div class="field field-full"><label for="access-business">Business name <span>*</span></label><input id="access-business" name="business" placeholder="Company, brand, or organisation" required /></div>
+                <div class="field field-full"><label for="access-email">Your email address <span>*</span></label><input id="access-email" name="email" type="email" autocomplete="email" required /></div>
+                <div class="field field-full"><label for="access-phone-local">Phone number</label><div class="phone-combo" data-phone-combo="access-phone"><select id="access-phone-code" aria-label="Country code"></select><input id="access-phone-local" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="801 234 5678" /><input id="access-phone" name="phone" type="hidden" /></div></div>
+                <div class="field"><label for="access-contact">Preferred contact method</label><select id="access-contact" name="contact"><option>Email</option><option>WhatsApp</option><option>Phone Call</option></select></div>
+                <div class="field field-full"><label for="access-service">Type of work needed <span>*</span></label><select id="access-service" name="service" required><option value="">Choose One</option><option>Business Website</option><option>Landing Page</option><option>Portfolio Website</option><option>Website Revamp</option><option>AI Automation</option><option>Consultation</option><option>Something Else</option></select></div>
+                <div class="field field-full"><label for="access-description">Project Summary <span>*</span></label><textarea id="access-description" name="description" minlength="5" placeholder="Briefly describe the project and the outcome you want." required></textarea></div>
               </div>
-              <button class="button button-primary full-button" type="submit">Send access request</button>
+              <button class="button button-primary full-button" type="submit">Send Access Request</button>
             </form>
-            <a class="back-link auth-back" id="back-to-signin" href="./">Already have an account? Sign in</a>
+            <a class="back-link auth-back" id="back-to-signin" href="./">Already have an account? Sign In</a>
           </div>
           <div class="auth-feedback" id="auth-feedback" role="status" aria-live="polite" hidden></div>
         </section>
@@ -83,6 +82,8 @@
       <footer class="auth-footer">
         <nav class="auth-footer-links" aria-label="Helpful links">
           <a href="../index.html">Website</a>
+          <a href="../faq.html">FAQ</a>
+          <a href="../terms.html">Terms &amp; Agreement</a>
           <a id="support-link" href="mailto:contact@geeslane.com">Contact</a>
         </nav>
         <a class="auth-admin-link" href="./admin.html">Admin</a>
@@ -98,22 +99,33 @@
           </a>
           <button class="icon-button sidebar-close" id="sidebar-close" type="button" aria-label="Close navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button>
         </div>
-        <div class="project-switcher">
-          <span class="project-avatar" id="sidebar-project-initial">P</span>
-          <span class="project-switcher-copy"><small>ACTIVE PROJECT</small><strong id="sidebar-project-name">Project</strong><select id="project-select" aria-label="Switch project" hidden></select></span>
-          <span class="status-dot" title="Active"></span>
+        <div class="sidebar-switcher" id="sidebar-switcher" hidden>
+          <button class="project-switcher" id="project-switcher-button" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="project-switcher-menu">
+            <span class="project-avatar" id="switcher-avatar">P</span>
+            <span class="project-switcher-copy">
+              <small>Project</small>
+              <strong id="switcher-project-name">Select a project</strong>
+            </span>
+            <span class="switcher-caret" aria-hidden="true"></span>
+          </button>
+          <div class="project-switcher-menu" id="project-switcher-menu" hidden>
+            <p class="sidebar-projects-label">Switch project</p>
+            <div class="sidebar-project-list" id="sidebar-project-list" role="listbox"></div>
+          </div>
+          <select id="project-select" hidden aria-hidden="true" tabindex="-1"></select>
         </div>
-        <nav class="main-nav" aria-label="Client portal navigation">
+        <nav class="main-nav" aria-label="Client Portal navigation">
           <button class="nav-item is-active" data-page="overview" type="button"><svg viewBox="0 0 24 24"><path d="M4 3h6v8H3V4a1 1 0 0 1 1-1Zm1 2v4h3V5H5Zm9-2h6a1 1 0 0 1 1 1v5h-7V3Zm2 2v2h3V5h-3ZM3 15h7v6H4a1 1 0 0 1-1-1v-5Zm2 2v2h3v-2H5Zm9-4h7v7a1 1 0 0 1-1 1h-6v-8Zm2 2v4h3v-4h-3Z"/></svg><span>Overview</span></button>
           <button class="nav-item" data-page="project" type="button"><svg viewBox="0 0 24 24"><path d="M4 3h6l2 2h8a1 1 0 0 1 1 1v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a1 1 0 0 1 1-1Zm1 4v12h14V7H5Zm2 3h10v2H7v-2Zm0 4h7v2H7v-2Z"/></svg><span>My Project</span></button>
-          <button class="nav-item" data-page="brand" type="button"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 10 10c0 3-1.8 5-4.3 5H16a2 2 0 0 0-2 2c0 1.7-1.3 3-3 3A10 10 0 0 1 12 2Zm0 2a8 8 0 0 0-1 15.9c.6 0 1-.4 1-.9a4 4 0 0 1 4-4h1.7c1.3 0 2.3-1 2.3-3a8 8 0 0 0-8-8ZM7.5 9A1.5 1.5 0 1 1 7.5 6a1.5 1.5 0 0 1 0 3Zm4-2A1.5 1.5 0 1 1 11.5 4a1.5 1.5 0 0 1 0 3Zm4 2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM6 14a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z"/></svg><span>Brand & Content</span></button>
+          <button class="nav-item" data-page="brand" type="button"><svg viewBox="0 0 24 24"><path d="M8 4h13v2H8V4Zm0 7h13v2H8v-2Zm0 7h13v2H8v-2ZM3.5 5.8A1.5 1.5 0 1 1 3.5 2.8 1.5 1.5 0 0 1 3.5 5.8Zm0 7A1.5 1.5 0 1 1 3.5 9.8 1.5 1.5 0 0 1 3.5 12.8Zm0 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z"/></svg><span id="nav-brand-label">Brief &amp; Brand</span></button>
+          <button class="nav-item" data-page="agreement" type="button"><svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm1 2v14h10V8h-3V5H8Zm2 7h6v2h-6v-2Zm0 4h5v2h-5v-2Z"/></svg><span>Agreement</span></button>
+          <button class="nav-item" data-page="payments" type="button"><svg viewBox="0 0 24 24"><path d="M3 6h18v12H3V6Zm2 2v2h14V8H5Zm0 8h6v2H5v-2Z"/></svg><span>Payments</span></button>
           <button class="nav-item" data-page="requests" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H5V4a1 1 0 0 1 1-1Zm1 2v14h10V8h-3V5H7Zm2 6h6v2H9v-2Zm0 4h6v2H9v-2Z"/></svg><span>Requests</span><span class="nav-count" id="request-nav-count">0</span></button>
-          <button class="nav-item" data-page="files" type="button"><svg viewBox="0 0 24 24"><path d="M8 3h8v5h5v12a1 1 0 0 1-1 1H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V8h2v8a5 5 0 0 1-1 3h7V10h-5V5H8Z"/></svg><span>Files & Links</span></button>
           <button class="nav-item" data-page="profile" type="button"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm0 10c5 0 9 2.2 9 5v3H3v-3c0-2.8 4-5 9-5Zm0 2c-4.2 0-7 1.8-7 3v1h14v-1c0-1.2-2.8-3-7-3Z"/></svg><span>Profile</span></button>
         </nav>
         <div class="sidebar-footer">
-          <div class="sidebar-account"><span class="account-avatar" id="sidebar-account-avatar">CL</span><span><strong id="sidebar-account-name">Client account</strong><small id="sidebar-account-business">Geeslane client</small></span></div>
-          <div class="privacy-line"><span></span> Private client workspace</div>
+          <div class="sidebar-account"><span class="account-avatar" id="sidebar-account-avatar">CL</span><span><strong id="sidebar-account-name">Client Account</strong><small id="sidebar-account-business">Geeslane client</small></span></div>
+          <!-- <div class="privacy-line"><span></span> Private client workspace</div> -->
         </div>
       </aside>
       <div class="sidebar-scrim" id="sidebar-scrim"></div>
@@ -122,137 +134,257 @@
         <header class="topbar">
           <div class="topbar-left">
             <button class="icon-button menu-button" id="menu-button" type="button" aria-label="Open navigation"><svg viewBox="0 0 24 24"><path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z"/></svg></button>
-            <div class="breadcrumb"><span>Client portal</span><b>/</b><strong id="page-title">Overview</strong></div>
+            <div class="breadcrumb"><span>Client Portal</span><b>/</b><strong id="page-title">Overview</strong></div>
           </div>
           <div class="topbar-actions">
             <a class="button button-secondary top-admin-link" id="admin-link" href="./admin.html" hidden>Admin</a>
             <button class="icon-button notification-button" id="notification-button" type="button" aria-label="View notifications"><svg viewBox="0 0 24 24"><path d="M12 2a6 6 0 0 1 6 6v4.8l2 3V18H4v-2.2l2-3V8a6 6 0 0 1 6-6Zm0 2a4 4 0 0 0-4 4v5.4L6.3 16h11.4L16 13.4V8a4 4 0 0 0-4-4Zm-2 16h4a2 2 0 0 1-4 0Z"/></svg><span class="notification-dot" id="notification-dot" hidden></span></button>
-            <button class="button button-primary top-new-request" id="top-new-request" type="button"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>New request</button>
-            <button class="button button-ghost top-signout" id="signout-button" type="button">Sign out</button>
+            <button class="button button-primary top-new-request" id="top-new-request" type="button"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>New Request</button>
+            <button class="button button-ghost top-signout" id="signout-button" type="button">Sign Out</button>
+            <div class="top-account-wrap">
+              <button class="top-account" id="top-account-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="account-menu" aria-label="Account menu"><span id="top-account-avatar">CL</span></button>
+              <div class="account-menu" id="account-menu" role="menu" hidden>
+                <button type="button" role="menuitem" id="account-menu-profile">Your Profile</button>
+                <button type="button" role="menuitem" id="account-menu-signout">Sign Out</button>
+              </div>
+            </div>
           </div>
         </header>
 
         <div class="content-wrap">
+          <section class="page" id="page-chooser" data-page-view="chooser">
+            <div class="welcome-row">
+              <div><p class="eyebrow">Welcome</p><h1>Choose a project</h1></div>
+            </div>
+            <div class="account-project-list" id="chooser-projects"></div>
+          </section>
+
           <section class="page is-visible" id="page-overview" data-page-view="overview">
             <div class="welcome-row">
-              <div><p class="eyebrow">Your workspace</p><h1>Welcome, <span id="welcome-name">there</span>.</h1><p>Here’s what’s happening with your project.</p></div>
-              <button class="button button-primary overview-new-request" type="button" data-open-request><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>New request</button>
+              <div><p class="eyebrow">Home</p><h1>Welcome, <span id="welcome-name">there</span>.</h1></div>
+              <button class="button button-primary overview-new-request" type="button" data-open-request><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>New Request</button>
             </div>
-            <section class="project-hero card">
+            <section class="card panel-card" id="overview-projects-panel" hidden>
+              <div class="panel-heading"><div><p class="eyebrow">Your Work</p><h2 id="overview-projects-heading">Your Projects</h2></div></div>
+              <div class="account-project-list" id="overview-projects"></div>
+            </section>
+            <section class="project-hero card" id="overview-single-hero">
               <div class="project-hero-top">
-                <div class="project-identity"><span class="project-large-icon" id="project-large-icon">P</span><div><span class="status-badge"><i></i><span id="hero-project-status">Not started</span></span><h2 id="hero-project-name">Project</h2><p id="hero-service">Not set</p></div></div>
-                <button class="text-button" type="button" data-go-page="project">View project <span>→</span></button>
+                <div class="project-identity"><span class="project-large-icon" id="project-large-icon">P</span><div><span class="status-badge"><i></i><span id="hero-project-status">Not Started</span></span><h2 id="hero-project-name">Project</h2><p id="hero-service">Not Set</p></div></div>
+                <button class="text-button" type="button" data-go-page="project">View Project <span>→</span></button>
               </div>
-              <div class="progress-block"><div class="progress-meta"><span>Overall progress</span><strong id="progress-value">0%</strong></div><div class="progress-track"><span id="progress-bar"></span></div><div class="progress-stages"><span>Discovery</span><span>Design</span><span>Development</span><span>Launch</span></div></div>
+              <div class="progress-block"><div class="progress-meta"><span>Overall Progress</span><strong id="progress-value">0%</strong></div><div class="progress-track"><span id="progress-bar"></span></div><div class="progress-stages" id="progress-stages"><span>Discovery</span><span>Design</span><span>Development</span><span>Launch</span></div></div>
               <div class="project-quick-facts">
-                <div><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2ZM6 9v11h12V9H6Zm0-3v1h12V6H6Zm2 6h3v3H8v-3Z"/></svg></span><span><small>Target completion</small><strong id="target-date">Not set</strong></span></div>
-                <div><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M3 4h18v16H3V4Zm2 2v12h14V6H5Zm2 3h10v2H7V9Zm0 4h7v2H7v-2Z"/></svg></span><span><small>Current stage</small><strong id="current-stage">Planning</strong></span></div>
-                <div><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="m9.2 16.6-4.4-4.4 1.4-1.4 3 3 8.6-8.6 1.4 1.4-10 10Z"/></svg></span><span><small>Milestones complete</small><strong id="milestone-ratio">0 of 0</strong></span></div>
+                <div><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2ZM6 9v11h12V9H6Zm0-3v1h12V6H6Zm2 6h3v3H8v-3Z"/></svg></span><span><small>Start date</small><strong id="start-date">Not Set</strong></span></div>
+                <div><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2ZM6 9v11h12V9H6Zm0-3v1h12V6H6Zm2 6h3v3H8v-3Z"/></svg></span><span><small>Projected completion</small><strong id="target-date">Not Set</strong></span></div>
+                <div><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M3 4h18v16H3V4Zm2 2v12h14V6H5Zm2 3h10v2H7V9Zm0 4h7v2H7v-2Z"/></svg></span><span><small>Current Stage</small><strong id="current-stage">Planning</strong></span></div>
+                <div><span class="quick-icon"><svg viewBox="0 0 24 24"><path d="m9.2 16.6-4.4-4.4 1.4-1.4 3 3 8.6-8.6 1.4 1.4-10 10Z"/></svg></span><span><small>Milestones Complete</small><strong id="milestone-ratio">0 of 0</strong></span></div>
               </div>
             </section>
+            <div id="overview-open-project-details">
             <div class="overview-grid">
-              <section class="card panel-card action-card" id="next-action-card"><div class="panel-heading"><div><p class="eyebrow" id="next-action-eyebrow">Where things stand</p><h2>Next action</h2></div><span class="attention-badge" id="next-action-badge" hidden>Action needed</span></div><div class="next-action-body" id="next-action-body"></div></section>
-              <section class="card panel-card"><div class="panel-heading"><div><p class="eyebrow">Latest updates</p><h2>Recent activity</h2></div><button class="text-button" type="button" id="overview-activity-link" data-go-page="project" hidden>View project</button></div><div class="activity-list" id="overview-activity"></div></section>
+              <section class="card panel-card action-card" id="next-action-card"><div class="panel-heading"><div><p class="eyebrow" id="next-action-eyebrow">Where Things Stand</p><h2>Next Action</h2></div><span class="attention-badge" id="next-action-badge" hidden>Action Needed</span></div><div class="next-action-body" id="next-action-body"></div></section>
+              <section class="card panel-card"><div class="panel-heading"><div><p class="eyebrow">Latest Updates</p><h2>Recent Activity</h2></div><button class="text-button" type="button" id="overview-activity-link" data-go-page="project" hidden>View Project</button></div><div class="activity-list" id="overview-activity"></div></section>
             </div>
-            <section class="card panel-card request-preview-panel"><div class="panel-heading"><div><p class="eyebrow">At a glance</p><h2>Recent requests</h2></div><button class="text-button" type="button" data-go-page="requests">View all <span>→</span></button></div><div class="request-list compact" id="overview-requests"></div></section>
+            <section class="card panel-card request-preview-panel"><div class="panel-heading"><div><p class="eyebrow">At a Glance</p><h2>Recent Requests</h2></div><button class="text-button" type="button" data-go-page="requests">View All <span>→</span></button></div><div class="request-list compact" id="overview-requests"></div></section>
+            </div>
           </section>
 
           <section class="page" id="page-project" data-page-view="project">
-            <div class="page-heading"><div><p class="eyebrow">Project workspace</p><h1 id="project-page-name">Project</h1><p>Each stage has its own conversation. When a stage is awaiting your review, reply, request changes, or approve in that thread. When Geeslane is reviewing, you can add a follow-up note.</p></div><span class="status-badge large"><i></i><span id="project-page-status">Not started</span></span></div>
+            <div class="page-heading"><div><p class="eyebrow">Project</p><h1 id="project-page-name">Project</h1></div><span class="status-badge large"><i></i><span id="project-page-status">Not Started</span></span></div>
             <div class="project-layout">
-              <section class="card panel-card milestones-panel"><div class="panel-heading"><div><p class="eyebrow">Delivery plan</p><h2>Project milestones</h2></div><strong class="completion-label" id="milestone-percent">0% complete</strong></div><div class="milestone-list" id="milestone-list"></div></section>
+              <section class="card panel-card milestones-panel"><div class="panel-heading"><div><p class="eyebrow">Stages</p><h2>Project Milestones</h2></div><strong class="completion-label" id="milestone-percent">0% Complete</strong></div><div class="milestone-list" id="milestone-list"></div></section>
               <aside class="project-side">
-                <section class="card panel-card project-details-card"><p class="eyebrow">Project details</p><h2>Summary</h2><dl id="project-details"></dl><button class="button button-secondary full-button" type="button" id="edit-project-button">Edit project details</button><button class="button button-primary full-button spaced-button" type="button" id="manage-brand-button">Manage Brand & Content</button></section>
-                <section class="card panel-card project-note-card"><span class="note-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-1 3h2v6h-2V7Zm0 8h2v2h-2v-2Z"/></svg></span><div><strong>Feedback stays on the stage</strong><p>Wireframe, design, and development reviews live in that milestone’s thread. Approvals also appear under Requests.</p></div></section>
+                <section class="card panel-card project-details-card"><p class="eyebrow">Project Details</p><h2>Summary</h2><dl id="project-details"></dl><button class="button button-secondary full-button" type="button" id="edit-project-button">Edit Project Details</button><button class="button button-secondary full-button spaced-button" type="button" id="project-agreement-button" data-go-page="agreement">View Agreement</button><button class="button button-secondary full-button spaced-button" type="button" data-go-page="payments">View Payments</button><button class="button button-primary full-button spaced-button" type="button" id="manage-brand-button">Open Brief &amp; Brand</button></section>
               </aside>
             </div>
           </section>
 
           <section class="page" id="page-brand" data-page-view="brand">
-            <div class="page-heading with-action"><div><p class="eyebrow">Project materials</p><h1>Brand & Content</h1><p>Everything Geeslane needs to design and build this project accurately.</p></div><span class="autosave-label" id="brand-save-status">Saved in this browser</span></div>
+            <div class="page-heading with-action"><div><p class="eyebrow">Your Inputs</p><h1 id="brand-page-title">Brief &amp; Brand</h1><p class="page-project-name" id="brand-project-name"></p></div><span class="autosave-label" id="brand-save-status">Saved in This Browser</span></div>
 
             <div class="brand-layout">
               <section class="card panel-card brand-main-card">
-                <div class="section-tabs" role="tablist" aria-label="Brand and content sections">
-                  <button class="section-tab is-active" type="button" data-brand-tab="identity">Brand Identity</button>
-                  <button class="section-tab" type="button" data-brand-tab="content">Website Content</button>
-                  <button class="section-tab" type="button" data-brand-tab="media">Logos & Media</button>
+                <div class="section-tabs" role="tablist" aria-label="Brief and Brand">
+                  <button class="section-tab is-active" type="button" data-brand-tab="brief">Project Brief</button>
+                  <button class="section-tab" type="button" data-brand-tab="identity" data-track-feature="identity">Brand Identity</button>
+                  <button class="section-tab" type="button" data-brand-tab="content" data-track-feature="content">Website Content</button>
+                  <button class="section-tab" type="button" data-brand-tab="media" data-track-feature="media">Logos & Media</button>
                 </div>
 
-                <form id="brand-form" class="brand-section is-visible" data-brand-section="identity" novalidate>
-                  <div class="section-intro"><p class="eyebrow">Visual direction</p><h2>Brand Identity</h2><p>Add colours, typography, and guidance that should shape this project.</p></div>
+                <form id="brief-form" class="brand-section is-visible" data-brand-section="brief" novalidate>
+                  <div class="section-intro"><p class="eyebrow">Discovery</p><h2>Project Brief</h2></div>
+                  <div class="form-grid brand-form-grid">
+                    <div class="field field-full"><label for="brief-description">Business Description</label><textarea id="brief-description" name="businessDescription" placeholder="What the business or organisation does."></textarea></div>
+                    <div class="field field-full"><label for="brief-social">Social Media Links</label><textarea id="brief-social" name="socialLinks" placeholder="Relevant business social profiles."></textarea></div>
+                    <div class="field"><label for="brief-website">Website URL</label><input id="brief-website" name="websiteUrl" type="url" placeholder="https://…" /></div>
+                    <div class="field field-full"><label for="brief-goal" id="brief-goal-label">What do you want this website to help you achieve? <span>*</span></label><textarea id="brief-goal" name="goal" placeholder="More customers, clearer information, bookings, or something else?" required></textarea></div>
+                    <div class="field field-full"><label for="brief-audience" id="brief-audience-label">Who is this website mainly for? <span>*</span></label><textarea id="brief-audience" name="audience" placeholder="New visitors, existing customers, a specific group, or mixed?" required></textarea></div>
+                    <fieldset class="field field-full" data-website-brief><legend>Features Needed</legend>
+                      <div class="choice-grid">
+                        <label class="choice-item"><input type="checkbox" name="features" value="Contact / enquiry form" /><span>Contact / Enquiry Form</span></label>
+                        <label class="choice-item"><input type="checkbox" name="features" value="Blog / articles" /><span>Blog / Articles</span></label>
+                        <label class="choice-item"><input type="checkbox" name="features" value="Online payments" /><span>Online Payments</span></label>
+                        <label class="choice-item"><input type="checkbox" name="features" value="E-commerce / product sales" /><span>E-commerce / Product Sales</span></label>
+                        <label class="choice-item"><input type="checkbox" name="features" value="Booking / appointments" /><span>Booking / Appointments</span></label>
+                        <label class="choice-item"><input type="checkbox" name="features" value="Newsletter signup" /><span>Newsletter Signup</span></label>
+                        <label class="choice-item"><input type="checkbox" name="features" value="User accounts / login" /><span>User Accounts / Login</span></label>
+                        <label class="choice-item"><input type="checkbox" name="features" value="WhatsApp integration" /><span>WhatsApp Integration</span></label>
+                        <label class="choice-item"><input type="checkbox" name="features" value="Portfolio / gallery" /><span>Portfolio / Gallery</span></label>
+                        <label class="choice-item"><input type="checkbox" name="features" value="Other" /><span>Other</span></label>
+                      </div>
+                    </fieldset>
+                    <div class="field field-full" data-other-for="features" data-website-brief hidden>
+                      <label for="brief-features-other">Which other features?</label>
+                      <textarea id="brief-features-other" name="featuresOther" placeholder="List the extra features this first version should include."></textarea>
+                    </div>
+                    <div class="field field-full" data-website-brief><label for="brief-visitor-details">Anything else the website should help visitors do?</label><textarea id="brief-visitor-details" name="visitorDetails" placeholder="Optional. Add outcomes that are not already covered by the features above."></textarea></div>
+                    <div class="field" data-website-brief><label for="brief-domain">Do you have a domain name?</label>
+                      <select id="brief-domain" name="hasDomain"><option value="">Choose One</option><option>Yes</option><option>No</option><option>Not sure</option></select>
+                    </div>
+                    <div class="field" data-website-brief><label for="brief-hosting">Do you have website hosting?</label>
+                      <select id="brief-hosting" name="hasHosting"><option value="">Choose One</option><option>Yes</option><option>No</option><option>Not sure</option></select>
+                    </div>
+                    <fieldset class="field field-full"><legend>Assets Readily Available</legend>
+                      <div class="choice-grid">
+                        <label class="choice-item"><input type="checkbox" name="availableAssets" value="Logo" /><span>Logo</span></label>
+                        <label class="choice-item"><input type="checkbox" name="availableAssets" value="Brand colours / fonts" /><span>Brand Colours / Fonts</span></label>
+                        <label class="choice-item" data-website-brief><input type="checkbox" name="availableAssets" value="Website copy / written content" /><span>Website Copy</span></label>
+                        <label class="choice-item" data-website-brief><input type="checkbox" name="availableAssets" value="Professional photos" /><span>Professional Photos</span></label>
+                        <label class="choice-item"><input type="checkbox" name="availableAssets" value="Product / service information" /><span>Product / Service Information</span></label>
+                        <label class="choice-item"><input type="checkbox" name="availableAssets" value="Testimonials" /><span>Testimonials</span></label>
+                        <label class="choice-item" data-website-brief><input type="checkbox" name="availableAssets" value="Privacy / legal content" /><span>Privacy / Legal Content</span></label>
+                        <label class="choice-item"><input type="checkbox" name="availableAssets" value="None yet" /><span>None Yet</span></label>
+                      </div>
+                    </fieldset>
+                  </div>
+                  <div class="form-footer"><button class="button button-primary" type="submit">Save Project Brief</button></div>
+                </form>
+
+                <form id="brand-form" class="brand-section" data-brand-section="identity" data-track-feature="identity" novalidate>
+                  <div class="section-intro"><p class="eyebrow">Look</p><h2>Brand Identity</h2></div>
                   <div class="colour-grid">
-                    <label class="colour-field"><span>Primary colour</span><div><input id="brand-primary-picker" type="color" value="#0b6b45" aria-label="Choose primary colour" /><input id="brand-primary" name="primaryColor" placeholder="red or #0B6B45" autocomplete="off" spellcheck="false" /></div></label>
-                    <label class="colour-field"><span>Secondary colour</span><div><input id="brand-secondary-picker" type="color" value="#ffffff" aria-label="Choose secondary colour" /><input id="brand-secondary" name="secondaryColor" placeholder="white or #FFFFFF" autocomplete="off" spellcheck="false" /></div></label>
-                    <label class="colour-field"><span>Accent colour</span><div><input id="brand-accent-picker" type="color" value="#c83b3b" aria-label="Choose accent colour" /><input id="brand-accent" name="accentColor" placeholder="gold or #C83B3B" autocomplete="off" spellcheck="false" /></div></label>
+                    <label class="colour-field"><span>Primary Colour</span><div><input id="brand-primary-picker" type="color" value="#0b6b45" aria-label="Choose primary colour" /><input id="brand-primary" name="primaryColor" placeholder="red or #0B6B45" autocomplete="off" spellcheck="false" /></div></label>
+                    <label class="colour-field"><span>Secondary Colour</span><div><input id="brand-secondary-picker" type="color" value="#ffffff" aria-label="Choose secondary colour" /><input id="brand-secondary" name="secondaryColor" placeholder="white or #FFFFFF" autocomplete="off" spellcheck="false" /></div></label>
+                    <label class="colour-field"><span>Accent Colour</span><div><input id="brand-accent-picker" type="color" value="#c83b3b" aria-label="Choose accent colour" /><input id="brand-accent" name="accentColor" placeholder="gold or #C83B3B" autocomplete="off" spellcheck="false" /></div></label>
                   </div>
                   <div class="form-grid brand-form-grid">
-                    <div class="field"><label for="brand-heading-font">Preferred heading font</label><input id="brand-heading-font" name="headingFont" placeholder="e.g. Poppins" /></div>
-                    <div class="field"><label for="brand-body-font">Preferred body font</label><input id="brand-body-font" name="bodyFont" placeholder="e.g. Inter" /></div>
-                    <div class="field field-full"><label for="brand-personality">Brand personality</label><input id="brand-personality" name="personality" placeholder="e.g. Professional, calm, modern, trustworthy" /></div>
-                    <div class="field field-full"><label for="brand-style-notes">Style guidance</label><textarea id="brand-style-notes" name="styleNotes" placeholder="Describe what the project should look and feel like, including anything to avoid."></textarea></div>
-                    <div class="field field-full"><label for="brand-reference-links">Reference websites or inspiration</label><textarea id="brand-reference-links" name="referenceLinks" placeholder="Paste one link per line and explain what you like about each one."></textarea></div>
+                    <div class="field"><label for="brand-heading-font">Preferred Heading Font</label><input id="brand-heading-font" name="headingFont" placeholder="e.g. Poppins" /></div>
+                    <div class="field"><label for="brand-body-font">Preferred Body Font</label><input id="brand-body-font" name="bodyFont" placeholder="e.g. Inter" /></div>
+                    <div class="field field-full"><label for="brand-personality">Brand Personality</label><input id="brand-personality" name="personality" placeholder="e.g. Professional, calm, modern, trustworthy" /></div>
+                    <div class="field field-full"><label for="brand-style-notes">Style Guidance</label><textarea id="brand-style-notes" name="styleNotes" placeholder="Describe what the project should look and feel like, including anything to avoid."></textarea></div>
+                    <div class="field field-full"><label for="brand-reference-links">Reference Websites or Inspiration</label><textarea id="brand-reference-links" name="referenceLinks" placeholder="Paste one link per line and explain what you like about each one."></textarea></div>
                   </div>
                   <div class="form-footer"><button class="button button-primary" type="submit">Save Brand Identity</button></div>
                 </form>
 
-                <form id="content-form" class="brand-section" data-brand-section="content" novalidate>
-                  <div class="section-intro"><p class="eyebrow">Page copy</p><h2>Website Content</h2><p>Clients can return and edit this content while the project is active.</p></div>
-                  <div class="content-completion"><div><span>Content readiness</span><strong id="content-completion-value">0%</strong></div><div class="progress-track"><span id="content-completion-bar"></span></div></div>
+                <form id="content-form" class="brand-section" data-brand-section="content" data-track-feature="content" novalidate>
+                  <div class="section-intro"><p class="eyebrow">Words</p><h2>Website Content</h2></div>
+                  <div class="content-completion"><div><span>Content Readiness</span><strong id="content-completion-value">0%</strong></div><div class="progress-track"><span id="content-completion-bar"></span></div></div>
                   <div class="form-grid brand-form-grid">
-                    <div class="field field-full"><label for="content-headline">Homepage headline</label><input id="content-headline" name="headline" placeholder="The main message visitors should see first" /></div>
-                    <div class="field field-full"><label for="content-introduction">Short business introduction</label><textarea id="content-introduction" name="introduction" placeholder="What does the business do and who does it help?"></textarea></div>
-                    <div class="field field-full"><label for="content-about">About the business</label><textarea id="content-about" name="about" placeholder="Business story, experience, values, and differentiators"></textarea></div>
-                    <div class="field field-full"><label for="content-services">Services or products</label><textarea id="content-services" name="services" placeholder="List the services or products and briefly describe each one"></textarea></div>
+                    <div class="field field-full"><label for="content-headline">Homepage Headline</label><input id="content-headline" name="headline" placeholder="The main message visitors should see first" /></div>
+                    <div class="field field-full"><label for="content-introduction">Short Business Introduction</label><textarea id="content-introduction" name="introduction" placeholder="What does the business do and who does it help?"></textarea></div>
+                    <div class="field field-full"><label for="content-about">About the Business</label><textarea id="content-about" name="about" placeholder="Business story, experience, values, and differentiators"></textarea></div>
+                    <div class="field field-full"><label for="content-services">Services or Products</label><textarea id="content-services" name="services" placeholder="List the services or products and briefly describe each one"></textarea></div>
                     <div class="field field-full"><label for="content-testimonials">Testimonials</label><textarea id="content-testimonials" name="testimonials" placeholder="Add client name, role/business, and testimonial text"></textarea></div>
-                    <div class="field"><label for="content-cta">Primary call to action</label><input id="content-cta" name="callToAction" placeholder="e.g. Book a consultation" /></div>
-                    <div class="field"><label for="content-contact">Contact details</label><input id="content-contact" name="contactDetails" placeholder="Email, phone, location" /></div>
-                    <div class="field field-full"><label for="content-extra">Additional content notes</label><textarea id="content-extra" name="extraNotes" placeholder="FAQs, policies, team profiles, pricing, or other information"></textarea></div>
+                    <div class="field"><label for="content-cta">Primary Call to Action</label><input id="content-cta" name="callToAction" placeholder="e.g. Book a consultation" /></div>
+                    <div class="field"><label for="content-contact">Contact Details</label><input id="content-contact" name="contactDetails" placeholder="Email, phone, location" /></div>
+                    <div class="field field-full"><label for="content-extra">Additional Content Notes</label><textarea id="content-extra" name="extraNotes" placeholder="FAQs, policies, team profiles, pricing, or other information"></textarea></div>
                   </div>
                   <div class="form-footer"><button class="button button-primary" type="submit">Save Website Content</button></div>
                 </form>
 
-                <section class="brand-section" data-brand-section="media">
-                  <div class="section-intro"><p class="eyebrow">Project assets</p><h2>Logos, Photos & Documents</h2><p>Uploads are stored privately with this project.</p></div>
+                <section class="brand-section" data-brand-section="media" data-track-feature="media">
+                  <div class="section-intro"><p class="eyebrow">Files</p><h2>Logos, Photos & Documents</h2></div>
                   <div class="upload-panel">
                     <span class="upload-icon"><svg viewBox="0 0 24 24"><path d="M12 3 7 8l1.4 1.4 2.6-2.6V16h2V6.8l2.6 2.6L17 8l-5-5ZM5 18h14v3H5v-3Z"/></svg></span>
-                    <div><h3>Upload project files</h3><p>Logo files, brand guidelines, product photos, team pictures, and documents.</p><small>Files are private and available only to this client and Geeslane.</small></div>
-                    <button class="button button-primary" id="open-upload-form" type="button">Choose files</button>
+                    <div><h3>Upload Project Files</h3></div>
+                    <button class="button button-primary" id="open-upload-form" type="button">Choose Files</button>
                     <input id="brand-file-input" type="file" multiple hidden accept=".svg,.png,.jpg,.jpeg,.webp,.pdf,.doc,.docx,.txt" />
                   </div>
-                  <div class="media-guidance"><div><strong>Recommended logo files</strong><span>SVG, PNG with transparent background, and the highest-resolution original.</span></div><div><strong>Recommended pictures</strong><span>Original JPG or PNG files; avoid screenshots and compressed WhatsApp copies where possible.</span></div></div>
-                  <div class="panel-heading media-list-heading"><div><p class="eyebrow">Added resources</p><h2>Project media</h2></div><button class="button button-secondary" type="button" id="brand-add-resource">Add a file link</button></div>
+                  <div class="panel-heading media-list-heading"><div><p class="eyebrow">Added Resources</p><h2>Project Media</h2></div><button class="button button-secondary" type="button" id="brand-add-resource">Add a File Link</button></div>
                   <div class="resource-list" id="brand-resource-list"></div>
                 </section>
               </section>
 
               <aside class="brand-side">
-                <section class="card panel-card brand-preview-card"><p class="eyebrow">Live preview</p><h2>Brand snapshot</h2><div class="brand-preview" id="brand-preview"><div class="preview-logo" id="brand-preview-initial">B</div><strong id="brand-preview-name">Your brand</strong><p id="brand-preview-personality">Add your brand personality.</p><div class="preview-swatches"><span id="preview-primary"></span><span id="preview-secondary"></span><span id="preview-accent"></span></div></div></section>
+                <section class="card panel-card brand-preview-card" data-track-feature="identity"><p class="eyebrow">Live Preview</p><h2>Brand Snapshot</h2><div class="brand-preview" id="brand-preview"><div class="preview-logo" id="brand-preview-initial">B</div><strong id="brand-preview-name">Your Brand</strong><p id="brand-preview-personality">Add your brand personality.</p><div class="preview-swatches"><span id="preview-primary"></span><span id="preview-secondary"></span><span id="preview-accent"></span></div></div></section>
                 <section class="card panel-card brand-talk-card" id="brand-conversation"></section>
-                <section class="card panel-card project-note-card"><span class="note-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm-1 3h2v6h-2V7Zm0 8h2v2h-2v-2Z"/></svg></span><div><strong>Content can evolve</strong><p>Clients can save partial content and return later. Every saved update will be tied to this project.</p></div></section>
               </aside>
             </div>
           </section>
 
-          <section class="page" id="page-requests" data-page-view="requests">
-            <div class="page-heading with-action"><div><p class="eyebrow">Complete history</p><h1>Requests & Approvals</h1><p>Formal approvals and change requests from each stage, plus any briefs you submitted.</p></div><button class="button button-primary" type="button" data-open-request><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>New request</button></div>
-            <section class="card panel-card">
-              <div class="toolbar"><div class="filter-tabs" role="tablist" aria-label="Filter requests"><button class="filter-tab is-active" data-filter="all" type="button">All</button><button class="filter-tab" data-filter="discovery" type="button">Projects</button><button class="filter-tab" data-filter="milestone" type="button">Approvals</button><button class="filter-tab" data-filter="change" type="button">Changes</button></div><label class="search-field"><svg viewBox="0 0 24 24"><path d="M11 3a8 8 0 1 1-4.9 14.3l-3.4 3.4-1.4-1.4 3.4-3.4A8 8 0 0 1 11 3Zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z"/></svg><input id="request-search" type="search" placeholder="Search requests" /></label></div>
-              <div class="request-list" id="request-history"></div>
+          <section class="page" id="page-agreement" data-page-view="agreement">
+            <div class="page-heading with-action"><div><p class="eyebrow">Agreement</p><h1>Project Agreement</h1><p class="page-project-name" id="agreement-project-name"></p></div><div class="agreement-actions"><a class="button button-secondary" href="../terms.html">General Terms</a><button class="button button-primary" type="button" id="download-agreement-pdf">Download PDF</button></div></div>
+            <div class="agreement-wrap" id="agreement-document"></div>
+          </section>
+
+          <section class="page" id="page-payments" data-page-view="payments">
+            <div class="page-heading with-action">
+              <div>
+                <p class="eyebrow">Billing</p>
+                <h1>Payments</h1>
+                <p class="page-project-name" id="payments-project-name"></p>
+              </div>
+            </div>
+            <section class="billing-strip" id="payment-summary" hidden></section>
+            <section class="card panel-card" id="bank-transfer-card" hidden>
+              <div class="panel-heading"><div><h2>Bank transfer</h2></div></div>
+              <div id="bank-transfer-body"></div>
+            </section>
+            <section class="card panel-card billing-panel">
+              <div class="panel-heading with-action"><div><h2>Invoices</h2></div><label class="search-field"><input id="client-invoice-search" type="search" placeholder="Search invoices" /></label></div>
+              <div class="billing-table-wrap">
+                <table class="billing-table">
+                  <thead>
+                    <tr>
+                      <th>Invoice</th>
+                      <th>Due</th>
+                      <th class="num">Amount</th>
+                      <th class="num">Remaining</th>
+                      <th>Status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="invoice-list"></tbody>
+                </table>
+              </div>
+              <div class="table-pager" id="client-invoices-pager"></div>
+            </section>
+            <section class="card panel-card billing-panel">
+              <div class="panel-heading with-action"><div><h2>Receipts</h2></div><label class="search-field"><input id="client-receipt-search" type="search" placeholder="Search receipts" /></label></div>
+              <div class="billing-table-wrap">
+                <table class="billing-table">
+                  <thead>
+                    <tr>
+                      <th>Receipt</th>
+                      <th>Date</th>
+                      <th>Method</th>
+                      <th class="num">Amount</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="receipt-list"></tbody>
+                </table>
+              </div>
+              <div class="table-pager" id="client-receipts-pager"></div>
             </section>
           </section>
 
-          <section class="page" id="page-files" data-page-view="files">
-            <div class="page-heading with-action"><div><p class="eyebrow">Shared resources</p><h1>Files & Links</h1><p>Keep project documents, previews, and useful links together.</p></div><button class="button button-primary" type="button" id="add-resource-button"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>Add resource</button></div>
-            <section class="card panel-card resources-panel"><div class="resource-header"><span>Resource</span><span>Type</span><span>Added</span><span></span></div><div class="resource-list" id="resource-list"></div></section>
+          <section class="page" id="page-requests" data-page-view="requests">
+            <div class="page-heading with-action"><div><p class="eyebrow">History</p><h1>Requests & Approvals</h1></div><button class="button button-primary" type="button" data-open-request><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>New Request</button></div>
+            <section class="card panel-card">
+              <div class="toolbar"><div class="filter-tabs" role="tablist" aria-label="Filter requests"><button class="filter-tab is-active" data-filter="all" type="button">All</button><button class="filter-tab" data-filter="discovery" type="button">Projects</button><button class="filter-tab" data-filter="milestone" type="button">Approvals</button><button class="filter-tab" data-filter="change" type="button">Changes</button></div><label class="search-field"><svg viewBox="0 0 24 24"><path d="M11 3a8 8 0 1 1-4.9 14.3l-3.4 3.4-1.4-1.4 3.4-3.4A8 8 0 0 1 11 3Zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z"/></svg><input id="request-search" type="search" placeholder="Search requests" /></label></div>
+              <div class="request-list" id="request-history"></div>
+              <div class="table-pager" id="client-requests-pager"></div>
+            </section>
           </section>
 
           <section class="page" id="page-profile" data-page-view="profile">
-            <div class="page-heading"><div><p class="eyebrow">Account settings</p><h1>Your profile</h1><p>Keep your contact and business details accurate.</p></div></div>
+            <div class="page-heading"><div><p class="eyebrow">Account</p><h1>Your Profile</h1></div></div>
             <div class="profile-layout">
-              <section class="card panel-card profile-summary-card"><span class="profile-avatar-large" id="profile-avatar-large">CL</span><h2 id="profile-display-name">Client account</h2><p id="profile-display-business">Geeslane client</p><span class="account-type-badge">Client account</span><div class="profile-stat"><span>Member since</span><strong id="member-since">—</strong></div><div class="profile-stat"><span>Total requests</span><strong id="profile-request-count">0</strong></div></section>
-              <section class="card panel-card profile-form-card"><div class="panel-heading"><div><p class="eyebrow">Contact information</p><h2>Profile details</h2></div><span class="save-status" id="profile-save-status"></span></div><form id="profile-form" novalidate><div class="form-grid"><div class="name-with-title"><div class="field field-title"><label for="profile-title">Title</label><select id="profile-title" name="title"><option value="">Choose</option><option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option><option value="Engr">Engr</option><option value="Chief">Chief</option><option value="Pastor">Pastor</option><option value="Barr">Barr</option></select></div><div class="field"><label for="profile-name">Full name <span>*</span></label><input id="profile-name" name="name" required /></div></div><div class="field"><label for="profile-business">Business or brand <span>*</span></label><input id="profile-business" name="business" required /></div><div class="field"><label for="profile-email">Account email</label><input id="profile-email" name="email" type="email" readonly /><small class="field-help">Contact Geeslane to change the email used for sign-in.</small></div><div class="field"><label for="profile-phone">Phone number</label><input id="profile-phone" name="phone" type="tel" placeholder="+234 801 234 5678" autocomplete="tel" /><small class="field-help">Include country code. Geeslane also sends SMS when we comment or update a milestone.</small></div><div class="field field-full"><label for="profile-contact">Preferred communication</label><select id="profile-contact" name="contact"><option>Email</option><option>WhatsApp</option><option>Phone call</option></select></div></div><div class="form-footer"><button class="button button-primary" type="submit">Save changes</button></div></form></section>
-              <section class="card panel-card data-card"><div><p class="eyebrow">Your records</p><h2>Portal data</h2><p>Download a copy of your profile, project, request history, and resources.</p></div><button class="button button-secondary" id="export-data-button" type="button">Export data</button></section>
+              <section class="card panel-card profile-summary-card"><span class="profile-avatar-large" id="profile-avatar-large">CL</span><h2 id="profile-display-name">Client Account</h2><p id="profile-display-business">Geeslane client</p><span class="account-type-badge">Client Account</span><div class="profile-stat"><span>Member Since</span><strong id="member-since">—</strong></div><div class="profile-stat"><span>Total Requests</span><strong id="profile-request-count">0</strong></div></section>
+              <section class="card panel-card profile-form-card"><div class="panel-heading"><div><p class="eyebrow">Contact Information</p><h2>Profile Details</h2></div><span class="save-status" id="profile-save-status"></span></div><form id="profile-form" novalidate><div class="form-grid"><div class="name-with-title"><div class="field field-title"><label for="profile-title">Courtesy title</label><select id="profile-title" name="title"><option value="">Choose</option><option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option><option value="Engr">Engr</option><option value="Chief">Chief</option><option value="Pastor">Pastor</option><option value="Barr">Barr</option></select></div><div class="field"><label for="profile-name">Full Name <span>*</span></label><input id="profile-name" name="name" required /></div></div><div class="field"><label for="profile-business">Business name <span>*</span></label><input id="profile-business" name="business" required /></div><div class="field"><label for="profile-email">Account Email</label><input id="profile-email" name="email" type="email" readonly /><small class="field-help">Contact Geeslane to change the email used for sign-in.</small></div><div class="field field-full"><label for="profile-phone-local">Phone Number</label><div class="phone-combo" data-phone-combo="profile-phone"><select id="profile-phone-code" aria-label="Country code"></select><input id="profile-phone-local" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="801 234 5678" /><input id="profile-phone" name="phone" type="hidden" /></div></div><div class="field field-full"><label for="profile-contact">Preferred Communication</label><select id="profile-contact" name="contact"><option>Email</option><option>WhatsApp</option><option>Phone Call</option></select></div></div><div class="form-footer"><button class="button button-primary" type="submit">Save Changes</button></div>              </form></section>
             </div>
           </section>
         </div>
@@ -262,7 +394,7 @@
     <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden>
       <button class="is-active" data-page="overview" type="button"><svg viewBox="0 0 24 24"><path d="M4 3h6v8H3V4a1 1 0 0 1 1-1Zm10 0h6a1 1 0 0 1 1 1v5h-7V3ZM3 15h7v6H4a1 1 0 0 1-1-1v-5Zm11-2h7v7a1 1 0 0 1-1 1h-6v-8Z"/></svg><span>Home</span></button>
       <button data-page="project" type="button"><svg viewBox="0 0 24 24"><path d="M4 3h6l2 2h8a1 1 0 0 1 1 1v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a1 1 0 0 1 1-1Zm1 4v12h14V7H5Z"/></svg><span>Project</span></button>
-      <button class="mobile-create" data-open-request type="button" aria-label="Create request"><span><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg></span></button>
+      <button class="mobile-create" data-open-request type="button" aria-label="Create Request"><span><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg></span></button>
       <button data-page="requests" type="button"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H5V4a1 1 0 0 1 1-1Zm1 2v14h10V8h-3V5H7Z"/></svg><span>Requests</span></button>
       <button data-page="profile" type="button"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 12c5 0 9 2.2 9 5v3H3v-3c0-2.8 4-5 9-5Z"/></svg><span>Profile</span></button>
     </nav>
@@ -271,22 +403,22 @@
 
     <div class="modal-backdrop" id="request-modal" hidden>
       <section class="modal request-modal-panel" role="dialog" aria-modal="true" aria-labelledby="request-modal-title">
-        <header class="modal-header"><div><p class="eyebrow">Client request</p><h2 id="request-modal-title">Create a new request</h2></div><button class="icon-button modal-close" type="button" data-close-modal="request" aria-label="Close request form"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header>
+        <header class="modal-header"><div><p class="eyebrow">Client Request</p><h2 id="request-modal-title">Create a New Request</h2></div><button class="icon-button modal-close" type="button" data-close-modal="request" aria-label="Close request form"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header>
         <div class="request-stepper"><span class="is-active" data-request-step-indicator="1">1. Type</span><i></i><span data-request-step-indicator="2">2. Details</span><i></i><span data-request-step-indicator="3">3. Review</span></div>
         <div class="modal-body">
-          <div class="request-step is-visible" data-request-step="1"><h3>What would you like to do?</h3><p>Choose the option that best matches your need.</p><div class="request-type-grid"><button type="button" data-request-type="discovery"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-5l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></span><span><strong>New project brief</strong><small>Start work and add the first brand details.</small></span></button><button type="button" data-request-type="milestone"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="m9.2 16.6-4.4-4.4 1.4-1.4 3 3 8.6-8.6 1.4 1.4-10 10Z"/></svg></span><span><strong>Milestone review</strong><small>Approve progress or leave feedback.</small></span></button><button type="button" data-request-type="change"><span class="type-icon red"><svg viewBox="0 0 24 24"><path d="M17.6 2.6 21.4 6.4l-9.9 9.9-4.2.9.9-4.2 9.4-10.4Z"/></svg></span><span><strong>Change request</strong><small>Ask for a focused project update.</small></span></button></div></div>
-          <div class="request-step" data-request-step="2"><div class="request-step-heading"><button class="back-link" type="button" data-request-back="1">← Change type</button><h3 id="request-details-title">Request details</h3><p id="request-details-copy">Add the information Geeslane needs.</p></div><form id="request-form" novalidate><div class="form-grid" id="request-fields"></div><div class="form-error" id="request-form-error" hidden>Please complete the highlighted fields.</div></form></div>
-          <div class="request-step" data-request-step="3"><div class="request-step-heading"><button class="back-link" type="button" data-request-back="2">← Edit details</button><h3>Review your request</h3><p>Check the information before adding it to your portal history.</p></div><div class="review-box"><div class="review-box-heading"><span id="review-request-label">Request</span><strong id="review-request-title">New request</strong></div><dl id="request-review-list"></dl></div><label class="confirm-check"><input id="request-confirm" type="checkbox" /><span><strong>These details are accurate.</strong><small>The request is saved to this portal and will sync when project storage is connected.</small></span></label></div>
+          <div class="request-step is-visible" data-request-step="1"><h3>What would you like to do?</h3><p>Choose one.</p><div class="request-type-grid"><button type="button" data-request-type="discovery"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-5l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg></span><span><strong>New Project</strong><small>Start another project. The ones you have stay.</small></span></button><button type="button" data-request-type="milestone"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="m9.2 16.6-4.4-4.4 1.4-1.4 3 3 8.6-8.6 1.4 1.4-10 10Z"/></svg></span><span><strong>Milestone Review</strong><small>Approve progress or leave feedback.</small></span></button><button type="button" data-request-type="change"><span class="type-icon red"><svg viewBox="0 0 24 24"><path d="M17.6 2.6 21.4 6.4l-9.9 9.9-4.2.9.9-4.2 9.4-10.4Z"/></svg></span><span><strong>Change Request</strong><small>Ask for a project change.</small></span></button></div></div>
+          <div class="request-step" data-request-step="2"><div class="request-step-heading"><button class="back-link" type="button" data-request-back="1">← Change Type</button><h3 id="request-details-title">Request Details</h3><p id="request-details-copy">Add the information Geeslane needs.</p></div><form id="request-form" novalidate><div class="form-grid" id="request-fields"></div><div class="form-error" id="request-form-error" hidden>Please complete the highlighted fields.</div></form></div>
+          <div class="request-step" data-request-step="3"><div class="request-step-heading"><button class="back-link" type="button" data-request-back="2">← Edit Details</button><h3>Review Your Request</h3><p>Check this before you send it.</p></div><div class="review-box"><div class="review-box-heading"><span id="review-request-label">Request</span><strong id="review-request-title">New Request</strong></div><dl id="request-review-list"></dl></div><label class="confirm-check"><input id="request-confirm" type="checkbox" /><span><strong>These details are accurate.</strong><small>This will be saved to your portal.</small></span></label></div>
         </div>
         <footer class="modal-footer" id="request-modal-footer"><button class="button button-secondary" type="button" data-close-modal="request">Cancel</button><button class="button button-primary" id="request-next-button" type="button" disabled>Continue <span>→</span></button></footer>
       </section>
     </div>
 
-    <div class="modal-backdrop" id="resource-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="resource-title"><header class="modal-header"><div><p class="eyebrow">Project resource</p><h2 id="resource-title">Add a file link</h2></div><button class="icon-button modal-close" type="button" data-close-modal="resource" aria-label="Close"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header><form id="resource-form" class="modal-body" novalidate><div class="form-grid one-column"><div class="field"><label for="resource-name">Resource name <span>*</span></label><input id="resource-name" name="name" placeholder="e.g. Website Content draft" required /></div><div class="field"><label for="resource-url">Link <span>*</span></label><input id="resource-url" name="url" type="url" placeholder="https://..." required /></div><div class="field"><label for="resource-type">Type</label><select id="resource-type" name="type"><option>Document</option><option>Design</option><option>Preview</option><option>Shared folder</option><option>Other</option></select></div></div><p class="form-error" id="resource-error" hidden>Please add a valid name and link.</p></form><footer class="modal-footer"><button class="button button-secondary" type="button" data-close-modal="resource">Cancel</button><button class="button button-primary" id="save-resource-button" type="button">Add resource</button></footer></section></div>
+    <div class="modal-backdrop" id="resource-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="resource-title"><header class="modal-header"><div><p class="eyebrow">Project Resource</p><h2 id="resource-title">Add a File Link</h2></div><button class="icon-button modal-close" type="button" data-close-modal="resource" aria-label="Close"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header><form id="resource-form" class="modal-body" novalidate><div class="form-grid one-column"><div class="field"><label for="resource-name">Resource Name <span>*</span></label><input id="resource-name" name="name" placeholder="e.g. Website Content draft" required /></div><div class="field"><label for="resource-url">Link <span>*</span></label><input id="resource-url" name="url" type="url" placeholder="https://..." required /></div><div class="field"><label for="resource-type">Type</label><select id="resource-type" name="type"><option>Document</option><option>Design</option><option>Preview</option><option>Shared Folder</option><option>Other</option></select></div></div><p class="form-error" id="resource-error" hidden>Please add a valid name and link.</p></form><footer class="modal-footer"><button class="button button-secondary" type="button" data-close-modal="resource">Cancel</button><button class="button button-primary" id="save-resource-button" type="button">Add Resource</button></footer></section></div>
 
-    <div class="modal-backdrop" id="project-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="project-edit-title"><header class="modal-header"><div><p class="eyebrow">Project settings</p><h2 id="project-edit-title">Edit project details</h2></div><button class="icon-button modal-close" type="button" data-close-modal="project" aria-label="Close"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header><form id="project-form" class="modal-body" novalidate><div class="form-grid one-column"><div class="field"><label for="project-edit-name">Project name <span>*</span></label><input id="project-edit-name" name="name" required /></div><div class="field"><label for="project-edit-service">Project type</label><input id="project-edit-service" name="service" /></div><div class="field"><label for="project-edit-stage">Current stage (managed by Geeslane)</label><select id="project-edit-stage" name="stage" disabled><option>Discovery</option><option>Brand assets &amp; content</option><option>Wireframe</option><option>Visual design</option><option>Development</option><option>QA &amp; Testing</option><option>Launch &amp; handover</option></select></div><div class="field"><label for="project-edit-progress">Overall progress (calculated from milestones)</label><input id="project-edit-progress" name="progress" type="range" min="0" max="100" step="1" disabled /><output id="project-progress-output">0%</output></div><div class="field"><label for="project-edit-target">Target completion</label><input id="project-edit-target" name="targetDate" type="date" /></div></div></form><footer class="modal-footer"><button class="button button-secondary" type="button" data-close-modal="project">Cancel</button><button class="button button-primary" id="save-project-button" type="button">Save project</button></footer></section></div>
+    <div class="modal-backdrop" id="project-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="project-edit-title"><header class="modal-header"><div><p class="eyebrow">Project Settings</p><h2 id="project-edit-title">Edit Project Details</h2></div><button class="icon-button modal-close" type="button" data-close-modal="project" aria-label="Close"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header><form id="project-form" class="modal-body" novalidate><div class="form-grid one-column"><div class="field"><label for="project-edit-name">Project Name <span>*</span></label><input id="project-edit-name" name="name" required /></div><div class="field"><label for="project-edit-service">Project Type</label><input id="project-edit-service" name="service" /></div><div class="field"><label for="project-edit-stage">Current Stage</label><select id="project-edit-stage" name="stage" disabled><option>Discovery</option><option>Brand Assets &amp; Content</option><option>Wireframe</option><option>Visual Design</option><option>Development</option><option>QA &amp; Testing</option><option>Launch &amp; Handover</option></select></div><div class="field"><label for="project-edit-progress">Overall Progress</label><input id="project-edit-progress" name="progress" type="range" min="0" max="100" step="1" disabled /><output id="project-progress-output">0%</output></div></div></form><footer class="modal-footer"><button class="button button-secondary" type="button" data-close-modal="project">Cancel</button><button class="button button-primary" id="save-project-button" type="button">Save Project</button></footer></section></div>
 
-    <div class="modal-backdrop" id="detail-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="detail-title"><header class="modal-header"><div><p class="eyebrow" id="detail-kicker">Request details</p><h2 id="detail-title">Request</h2></div><button class="icon-button modal-close" type="button" data-close-modal="detail" aria-label="Close"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header><div class="modal-body"><div class="detail-status-row"><span class="request-status" id="detail-status">Received</span><span id="detail-date"></span></div><dl class="detail-list" id="detail-list"></dl></div><footer class="modal-footer"><button class="button button-secondary" type="button" data-close-modal="detail">Close</button></footer></section></div>
+    <div class="modal-backdrop" id="detail-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="detail-title"><header class="modal-header"><div><p class="eyebrow" id="detail-kicker">Request Details</p><h2 id="detail-title">Request</h2></div><button class="icon-button modal-close" type="button" data-close-modal="detail" aria-label="Close"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header><div class="modal-body"><div class="detail-status-row"><span class="request-status" id="detail-status">Received</span><span id="detail-date"></span></div><dl class="detail-list" id="detail-list"></dl></div><footer class="modal-footer"><button class="button button-secondary" type="button" data-close-modal="detail">Close</button></footer></section></div>
 
     <div class="page-loader" id="page-loader" hidden>
       <div class="page-loader-card" role="status" aria-live="polite" aria-busy="true">
@@ -294,11 +426,30 @@
         <p class="page-loader-copy">Loading…</p>
       </div>
     </div>
+    <div class="portal-tour" id="portal-tour" hidden>
+      <div class="portal-tour-scrim" id="portal-tour-scrim"></div>
+      <section class="portal-tour-card" id="portal-tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+        <p class="eyebrow">A quick look around</p>
+        <h2 id="tour-title">Overview</h2>
+        <p id="tour-copy"></p>
+        <div class="portal-tour-actions">
+          <button class="text-button tour-skip" id="tour-skip" type="button">Skip</button>
+          <span id="tour-step-label">1 of 7</span>
+          <button class="button button-primary" id="tour-next" type="button">Next</button>
+        </div>
+      </section>
+    </div>
     <div class="toast" id="toast" role="status" aria-live="polite"><span class="toast-icon"><svg viewBox="0 0 24 24"><path d="m9.2 16.6-4.4-4.4 1.4-1.4 3 3 8.6-8.6 1.4 1.4-10 10Z"/></svg></span><span id="toast-message">Saved</span></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="./config.js"></script>
     <script src="./mail.js"></script>
     <script src="./api.js"></script>
+    <script src="./ui.js"></script>
+    <script src="./agreement.js"></script>
+    <script src="./docs.js"></script>
+    <script src="./receipt.js"></script>
+    <script src="./invoice.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

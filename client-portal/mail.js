@@ -42,6 +42,9 @@
     const person = parsePersonName(name);
     return person.respectful || givenName(name);
   }
+  function portalName(name) {
+    return parsePersonName(name).bareName || String(name || "").trim();
+  }
   function firstName(name) {
     return givenName(name);
   }
@@ -49,12 +52,15 @@
     return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
   }
 
-  function portalLink(page, fragment) {
+  function portalLink(page, fragment, query) {
     const base = String(config().portalUrl || "https://geeslane.com/client-portal/").replace(/\/?$/, "/");
-    const url = page === "admin" ? `${base}admin.html` : base;
-    if (!fragment) return url;
-    const hash = String(fragment).startsWith("#") ? fragment : `#${fragment}`;
-    return `${url}${hash}`;
+    const url = new URL(page === "admin" ? `${base}admin.html` : base);
+    const params = query && typeof query === "object" ? query : {};
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) url.searchParams.set(key, String(value));
+    });
+    if (fragment) url.hash = String(fragment).replace(/^#/, "");
+    return url.href;
   }
 
   function commentLink({ audience, projectId, milestoneId, noteId } = {}) {
@@ -82,18 +88,23 @@
     }).join(" ");
   }
 
+  function cellText(value) {
+    return escapeHtml(value).replace(/\r\n|\n|\r/g, "<br>");
+  }
+
   function rowsHtml(rows) {
-    const filled = (rows || []).filter((row) => row && row[1]);
+    const filled = (rows || []).filter((row) => row && String(row[1] || "").trim());
     if (!filled.length) return "";
     return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 22px;">${filled.map(([label, value]) => `
       <tr>
-        <td style="padding:8px 0;border-bottom:1px solid #edf2ef;font-size:12px;color:#697870;width:38%;">${escapeHtml(label)}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #edf2ef;font-size:14px;color:#17211c;">${escapeHtml(value)}</td>
+        <td valign="top" style="padding:10px 12px 10px 0;border-bottom:1px solid #edf2ef;font-size:12px;color:#697870;width:34%;">${escapeHtml(label)}</td>
+        <td valign="top" style="padding:10px 0;border-bottom:1px solid #edf2ef;font-size:14px;line-height:1.55;color:#17211c;">${cellText(value)}</td>
       </tr>`).join("")}</table>`;
   }
 
-  function buildHtml({ greeting, heading, intro, rows, ctaLabel, ctaUrl, signoff }) {
+  function buildHtml({ greeting, heading, intro, rows, ctaLabel, ctaUrl, signoff, attachmentNote }) {
     const hello = greeting ? `<p style="margin:0 0 6px;font-size:14px;color:#0b6b45;font-weight:600;text-align:center;">${escapeHtml(greeting)}</p>` : "";
+    const note = attachmentNote ? `<p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#697870;text-align:center;">${escapeHtml(attachmentNote)}</p>` : "";
     const bye = `<p style="margin:22px 0 0;font-size:14px;line-height:1.6;color:#2a3931;text-align:center;">${escapeHtml(signoff || "Kind regards,")}<br><strong style="color:#063b29;">Geeslane</strong></p>`;
     const button = ctaLabel && ctaUrl ? `
       <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:8px auto 0;">
@@ -111,15 +122,16 @@
         <td align="center">
           <table role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid #d7ebe0;border-radius:20px;overflow:hidden;">
             <tr>
-              <td align="center" style="padding:30px 36px 8px;">
-                <img src="${LOGO_URL}" alt="Geeslane" width="132" style="display:block;margin:0 auto;border:0;height:auto;max-width:132px;" />
+              <td align="center" style="padding:22px 36px 10px;background:#063b29;">
+                <img src="${LOGO_URL}" alt="Geeslane" width="132" style="display:block;margin:0 auto;border:0;height:auto;max-width:132px;background:#ffffff;padding:10px 14px;border-radius:12px;" />
               </td>
             </tr>
             <tr>
-              <td align="center" style="padding:18px 36px 36px;">
+              <td align="center" style="padding:24px 36px 36px;">
                 ${hello}
                 <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;letter-spacing:-.02em;color:#063b29;text-align:center;">${escapeHtml(heading)}</h1>
-                <p style="margin:0 0 20px;font-size:16px;line-height:1.65;color:#2a3931;text-align:center;">${escapeHtml(intro)}</p>
+                <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#2a3931;text-align:center;">${escapeHtml(intro)}</p>
+                ${note}
                 ${rowsHtml(rows)}
                 ${button}
                 ${bye}
@@ -133,8 +145,8 @@
 </html>`;
   }
 
-  function plainText({ greeting, heading, intro, rows, ctaUrl, signoff }) {
-    const lines = [greeting, heading, intro, ""].filter(Boolean);
+  function plainText({ greeting, heading, intro, rows, ctaUrl, signoff, attachmentNote }) {
+    const lines = [greeting, heading, intro, attachmentNote, ""].filter(Boolean);
     (rows || []).filter((row) => row && row[1]).forEach(([label, value]) => lines.push(`${label}: ${value}`));
     if (ctaUrl) lines.push("", ctaUrl);
     lines.push("", signoff || "Kind regards,", "Geeslane");
@@ -156,10 +168,12 @@
       rows: options.rows || [],
       ctaLabel,
       ctaUrl,
-      signoff: options.signoff
+      signoff: options.signoff,
+      attachmentNote: options.attachmentNote || ""
     };
     const mail = {
       audience,
+      kind: options.kind || "",
       subject,
       heading,
       intro: options.intro || "",
@@ -168,7 +182,8 @@
       clientEmail: options.clientEmail || "",
       clientPhone: options.clientPhone || "",
       ctaUrl,
-      replyTo: options.replyTo || supportEmail()
+      replyTo: options.replyTo || supportEmail(),
+      attachments: Array.isArray(options.attachments) ? options.attachments.filter((item) => item?.filename && item?.content) : []
     };
     if (window.GeeslaneAPI?.sendPortalMail) {
       try {
@@ -183,14 +198,16 @@
     form.append("from_name", TEAM_NAME);
     form.append("replyto", mail.replyTo);
     form.append("message", mail.text);
+    form.append("html", mail.html);
     form.append("botcheck", "");
     if ((audience === "client" || audience === "both") && mail.clientEmail && /@/.test(mail.clientEmail)) {
+      form.append("email", String(mail.clientEmail).trim());
       form.append("ccemail", String(mail.clientEmail).trim());
     }
     return fetch("https://api.web3forms.com/submit", { method: "POST", body: form }).then(() => true).catch(() => false);
   }
 
   window.GeeslaneMail = Object.freeze({
-    notify, portalLink, commentLink, titleCase, logoUrl: LOGO_URL, parsePersonName, composePersonName, respectfulName, givenName, formatTitle
+    notify, portalLink, commentLink, titleCase, logoUrl: LOGO_URL, parsePersonName, composePersonName, respectfulName, givenName, portalName, formatTitle
   });
 })();

@@ -1,6 +1,8 @@
 (function () {
   "use strict";
 
+  /* Backend client: auth, project load, admin mutations, Paystack helpers. */
+
   const config = window.GEESLANE_CONFIG || {};
   let database = null;
   let cachedSession = null;
@@ -59,9 +61,104 @@
     if (/expired|otp_expired|access_denied|invalid.*(link|otp|token)/i.test(message)) return "That sign-in code or link is no longer valid. Request a new code.";
     if (/redirect|not allowed|whitelist|allow list/i.test(message)) return "This sign-in could not be completed. Confirm the portal address is listed in Supabase Auth redirect URLs.";
     if (/failed to fetch|network|load failed/i.test(message)) return "The portal could not reach Supabase. Check your connection and try again.";
+    if (/could not find the function|schema cache|pgrst202/i.test(message) && /receipt/i.test(message)) return "Could not save the receipt. Run projects_invoices.sql in Supabase if this is the first time.";
+    if (/could not find the function|schema cache|pgrst202/i.test(message) && /billing|online_payment|contract_amount/i.test(message)) return "Could not save project totals. Run project_payments.sql in Supabase, then try again.";
+    if (/could not find the function|schema cache|pgrst202/i.test(message) && /portal_settings|bank/i.test(message)) return "Could not save bank details. Run portal_settings.sql in Supabase, then try again.";
+    if (/could not find the function|schema cache|pgrst202/i.test(message) && /client_add_project/i.test(message)) return "Could not add another project. Run client_add_project.sql in Supabase, then try again.";
+    if (/column .*goal.*does not exist|42703/i.test(message)) return "Run portal_settings.sql in Supabase so project briefs can be saved, then try again.";
     if (/profile not found|no Geeslane portal profile/i.test(message)) return "This sign-in is valid, but no Geeslane portal profile exists for this email yet.";
     if (/Administrator access is required/i.test(message)) return "Administrator access is required.";
     return fallback;
+  }
+
+  const PHONE_COUNTRIES = [
+    ["NG", "Nigeria", "+234"], ["GH", "Ghana", "+233"], ["KE", "Kenya", "+254"], ["ZA", "South Africa", "+27"],
+    ["CM", "Cameroon", "+237"], ["CI", "Côte d’Ivoire", "+225"], ["SN", "Senegal", "+221"], ["TG", "Togo", "+228"],
+    ["BJ", "Benin", "+229"], ["NE", "Niger", "+227"], ["EG", "Egypt", "+20"], ["RW", "Rwanda", "+250"],
+    ["UG", "Uganda", "+256"], ["TZ", "Tanzania", "+255"], ["GB", "United Kingdom", "+44"], ["US", "United States", "+1"],
+    ["CA", "Canada", "+1"], ["AE", "United Arab Emirates", "+971"], ["IN", "India", "+91"], ["IE", "Ireland", "+353"],
+    ["FR", "France", "+33"], ["DE", "Germany", "+49"], ["AU", "Australia", "+61"]
+  ];
+
+  function phoneDigits(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  function splitPhone(value) {
+    const raw = String(value || "").trim();
+    const compact = raw.replace(/[^\d+]/g, "");
+    const ranked = PHONE_COUNTRIES.slice().sort((a, b) => b[2].length - a[2].length);
+    for (const [iso, , dial] of ranked) {
+      const code = phoneDigits(dial);
+      if (compact.startsWith(dial) || compact.replace(/^\+/, "").startsWith(code)) {
+        return { iso, dial, local: compact.replace(/^\+/, "").slice(code.length).replace(/^0+/, "") };
+      }
+    }
+    return { iso: "NG", dial: "+234", local: phoneDigits(compact.replace(/^\+?234/, "")).replace(/^0+/, "") };
+  }
+
+  function composePhone(dial, local) {
+    const rest = phoneDigits(local).replace(/^0+/, "");
+    if (!rest) return "";
+    return `${dial || "+234"}${rest}`;
+  }
+
+  function phoneSelectOptions(selectedDial) {
+    return PHONE_COUNTRIES.map(([iso, name, dial]) => {
+      const chosen = dial === selectedDial ? " selected" : "";
+      return `<option value="${dial}" data-iso="${iso}"${chosen}>${iso} ${dial}</option>`;
+    }).join("");
+  }
+
+  function fillPhoneField(root, value) {
+    const combo = typeof root === "string" ? document.querySelector(`[data-phone-combo="${root}"]`) : root;
+    if (!combo) return;
+    const select = combo.querySelector("select");
+    const local = combo.querySelector('input[type="tel"]');
+    const hidden = combo.querySelector('input[type="hidden"]');
+    const parts = splitPhone(value);
+    if (select && !select.options.length) select.innerHTML = phoneSelectOptions(parts.dial);
+    if (select) {
+      if (![...select.options].some((option) => option.value === parts.dial)) {
+        select.insertAdjacentHTML("afterbegin", `<option value="${parts.dial}">${parts.dial}</option>`);
+      }
+      select.value = parts.dial;
+    }
+    if (local) local.value = parts.local;
+    if (hidden) hidden.value = composePhone(parts.dial, parts.local);
+  }
+
+  function syncPhoneField(combo) {
+    if (!combo) return "";
+    const select = combo.querySelector("select");
+    const local = combo.querySelector('input[type="tel"]');
+    const hidden = combo.querySelector('input[type="hidden"]');
+    const value = composePhone(select?.value, local?.value);
+    if (hidden) hidden.value = value;
+    if (local) local.setAttribute("aria-invalid", local.value.trim() && !phoneDigits(local.value) ? "true" : "false");
+    return value;
+  }
+
+  function readPhoneField(name) {
+    const combo = document.querySelector(`[data-phone-combo="${name}"]`);
+    if (combo) return syncPhoneField(combo);
+    const node = document.querySelector(`[name="${name}"]`);
+    return String(node?.value || "").trim();
+  }
+
+  function bindPhoneFields(scope = document) {
+    scope.querySelectorAll("[data-phone-combo]").forEach((combo) => {
+      const select = combo.querySelector("select");
+      const local = combo.querySelector('input[type="tel"]');
+      if (select && !select.options.length) select.innerHTML = phoneSelectOptions("+234");
+      if (combo.dataset.phoneBound) return;
+      combo.dataset.phoneBound = "1";
+      const sync = () => syncPhoneField(combo);
+      select?.addEventListener("change", sync);
+      local?.addEventListener("input", sync);
+      combo.closest("form")?.addEventListener("submit", sync);
+      sync();
+    });
   }
 
   function resultOrThrow(result, fallback = "The portal request failed") {
@@ -86,16 +183,18 @@
     return `${origin}${directory.endsWith("/") ? directory : `${directory}/`}`;
   }
 
-  function clientSignInRedirect() {
-    return portalBaseUrl();
+  function clientSignInRedirect(nextPage) {
+    const url = new URL(portalBaseUrl());
+    if (nextPage) url.searchParams.set("next", nextPage);
+    return url.href;
   }
 
   function adminSignInRedirect() {
     return new URL("admin.html", portalBaseUrl()).href;
   }
 
-  function portalRedirect() {
-    return clientSignInRedirect();
+  function portalRedirect(nextPage) {
+    return clientSignInRedirect(nextPage);
   }
 
   function hasIncomingMagicLink() {
@@ -236,7 +335,7 @@
 
   function startMagicLinkCooldown(button, seconds = 60) {
     if (!button) return;
-    const idle = button.dataset.idleLabel || button.textContent.trim() || "Send code";
+    const idle = button.dataset.idleLabel || button.textContent.trim() || "Send Code";
     button.dataset.idleLabel = idle;
     if (button.dataset.cooldownTimer) clearInterval(Number(button.dataset.cooldownTimer));
     button.classList.remove("is-loading");
@@ -277,8 +376,78 @@
     return {
       id: row.id, clientId: row.client_id, name: row.name, service: row.service, status: row.status, stage: row.stage,
       progress: Number(row.progress || 0), startDate: row.start_date || "", targetDate: row.target_date || "",
-      createdAt: row.created_at || "", updatedAt: row.updated_at || ""
+      createdAt: row.created_at || "", updatedAt: row.updated_at || "",
+      hasWireframe: row.has_wireframe !== false && row.hasWireframe !== false,
+      hasVisualDesign: row.has_visual_design !== false && row.hasVisualDesign !== false,
+      isActive: row.is_active !== false && row.isActive !== false,
+      contractAmount: row.contract_amount || row.contractAmount || "",
+      contractCurrency: row.contract_currency || row.contractCurrency || "NGN",
+      showPaymentSummary: row.show_payment_summary !== false && row.showPaymentSummary !== false,
+      onlinePayments: row.online_payments !== false && row.onlinePayments !== false
     };
+  }
+
+  function projectTrack(service) {
+    const value = String(service || "").toLowerCase();
+    if (/automat|chatbot|workflow|n8n|zapier|make\.com|(^|[^a-z])ai([^a-z]|$)/.test(value)) return "automation";
+    if (/consult|strateg|advice/.test(value)) return "consultation";
+    if (/(host|domain|dns|ssl|monitor|maintenance)/.test(value) || (/\bsupport\b/.test(value) && !/(website|revamp|landing|portfolio)/.test(value))) return "support";
+    if (/website|revamp|landing|portfolio|web\s*app|\bweb\b/.test(value)) return "website";
+    return "other";
+  }
+
+  function milestoneTemplates(service) {
+    const packs = {
+      automation: [
+        ["A1", "Discovery", "What to automate, the tools in use, and what success looks like.", 25],
+        ["A2", "Build & Connect", "Design and connect the workflow, then test it with real cases.", 50],
+        ["A3", "Review & Handover", "Confirm it works, then hand over access and how to use it.", 25]
+      ],
+      support: [
+        ["S1", "Discovery", "What is needed, access details, and the current setup.", 25],
+        ["S2", "Setup & Fix", "Complete the setup, change, or repair.", 50],
+        ["S3", "Review & Handover", "Confirm it is working and hand over what you need.", 25]
+      ],
+      consultation: [
+        ["C1", "Discovery", "The business problem and what success should look like.", 30],
+        ["C2", "Recommendation", "Practical options and a recommended next step.", 45],
+        ["C3", "Review & Next Steps", "Agree the advice and what happens next.", 25]
+      ],
+      other: [
+        ["O1", "Discovery", "What is needed and what success looks like.", 30],
+        ["O2", "Delivery", "Complete the agreed work.", 45],
+        ["O3", "Review & Close", "Confirm the work and close the project.", 25]
+      ],
+      website: [
+        ["M1", "Discovery", "What the project needs, and who it is for.", 10],
+        ["M2", "Brand Assets & Content", "Logos, colours, photos, and copy.", 15],
+        ["M3", "Wireframe", "How the pages are laid out.", 15],
+        ["M4", "Visual Design", "How the site looks.", 20],
+        ["M5", "Development", "Building the site.", 25],
+        ["M6", "QA & Testing", "Final check before launch.", 10],
+        ["M7", "Launch & Handover", "Go live and hand over.", 5]
+      ]
+    };
+    return packs[projectTrack(service)] || packs.website;
+  }
+
+  function progressStageLabels(service) {
+    return {
+      automation: ["Discovery", "Build", "Handover"],
+      support: ["Discovery", "Setup", "Handover"],
+      consultation: ["Discovery", "Advice", "Next Steps"],
+      other: ["Discovery", "Delivery", "Close"],
+      website: ["Discovery", "Design", "Development", "Launch"]
+    }[projectTrack(service)] || ["Discovery", "Design", "Development", "Launch"];
+  }
+
+  function milestoneIsIncluded(item, project) {
+    if (projectTrack(project?.service) !== "website") return true;
+    const code = String(item?.code || item?.id || "").toUpperCase();
+    const title = String(item?.title || "");
+    if ((code === "M3" || /wireframe/i.test(title)) && project && project.hasWireframe === false) return false;
+    if ((code === "M4" || /visual\s*design/i.test(title)) && project && project.hasVisualDesign === false) return false;
+    return true;
   }
 
   function mapMilestone(row) {
@@ -318,7 +487,224 @@
     return {
       headline: row?.headline || "", introduction: row?.introduction || "", about: row?.about || "",
       services: row?.services || "", testimonials: row?.testimonials || "", callToAction: row?.call_to_action || "",
-      contactDetails: row?.contact_details || "", extraNotes: row?.extra_notes || ""
+      contactDetails: row?.contact_details || "", extraNotes: row?.extra_notes || "",
+      goal: row?.goal || "", audience: row?.audience || "", scope: row?.scope || ""
+    };
+  }
+
+  function mapInvoice(row) {
+    if (!row) return null;
+    return {
+      id: row.id, projectId: row.project_id || row.projectId, reference: row.reference || "",
+      title: row.title || "", description: row.description || "", amount: row.amount || "",
+      currency: row.currency || "NGN", dueDate: row.due_date || row.dueDate || "",
+      status: row.status || "Draft", paidAmount: row.paid_amount || row.paidAmount || "",
+      notes: row.notes || "", sentAt: row.sent_at || row.sentAt || "",
+      paidAt: row.paid_at || row.paidAt || "", createdAt: row.created_at || row.createdAt || "",
+      updatedAt: row.updated_at || row.updatedAt || "",
+      projectName: row.projectName || "", business: row.business || "",
+      kind: row.kind || "invoice"
+    };
+  }
+
+  function mapReceipt(row) {
+    if (!row) return null;
+    return {
+      id: row.id, projectId: row.project_id || row.projectId,
+      invoiceId: row.invoice_id || row.invoiceId || "",
+      invoiceReference: row.invoiceReference || row.invoice_reference || "",
+      reference: row.reference || "", title: row.title || "", description: row.description || "",
+      amount: row.amount || "", currency: row.currency || "NGN",
+      paidOn: row.paid_on || row.paidOn || "", method: row.method || "",
+      notes: row.notes || "", status: row.status || "Draft",
+      sentAt: row.sent_at || row.sentAt || "",
+      createdAt: row.created_at || row.createdAt || "",
+      updatedAt: row.updated_at || row.updatedAt || "",
+      projectName: row.projectName || "", business: row.business || "",
+      clientName: row.clientName || row.client_name || "",
+      kind: "receipt"
+    };
+  }
+
+  function parseMoney(value) {
+    const cleaned = String(value ?? "").replace(/[^\d.-]/g, "");
+    if (!cleaned || cleaned === "-" || cleaned === ".") return null;
+    const amount = Number(cleaned);
+    return Number.isFinite(amount) ? amount : null;
+  }
+
+  function formatMoney(amount, currency) {
+    if (amount == null || !Number.isFinite(amount)) return "";
+    const rounded = Math.round(amount * 100) / 100;
+    const formatted = Number.isInteger(rounded)
+      ? rounded.toLocaleString("en-NG")
+      : rounded.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return [String(currency || "NGN").trim() || "NGN", formatted].join(" ");
+  }
+
+  function invoiceBalance(invoice) {
+    const total = parseMoney(invoice?.amount);
+    if (total == null) return null;
+    const status = String(invoice?.status || "").trim();
+    const paid = status === "Paid" ? total : Math.min(total, Math.max(0, parseMoney(invoice?.paidAmount) ?? 0));
+    const remaining = status === "Paid" || status === "Cancelled" ? 0 : Math.max(0, total - paid);
+    const currency = String(invoice?.currency || "NGN").trim() || "NGN";
+    return {
+      currency,
+      total,
+      paid,
+      remaining,
+      totalLabel: formatMoney(total, currency),
+      paidLabel: formatMoney(paid, currency),
+      remainingLabel: formatMoney(remaining, currency)
+    };
+  }
+
+  function invoiceBalanceSum(invoices) {
+    const balances = (invoices || [])
+      .filter((invoice) => {
+        const status = String(invoice?.status || "").trim();
+        return status && status !== "Draft" && status !== "Cancelled";
+      })
+      .map(invoiceBalance)
+      .filter(Boolean);
+    if (!balances.length) return null;
+    const currency = balances[0].currency;
+    if (balances.some((item) => item.currency !== currency)) return null;
+    const total = balances.reduce((sum, item) => sum + item.total, 0);
+    const paid = balances.reduce((sum, item) => sum + item.paid, 0);
+    const remaining = balances.reduce((sum, item) => sum + item.remaining, 0);
+    return {
+      currency,
+      total,
+      paid,
+      remaining,
+      totalLabel: formatMoney(total, currency),
+      paidLabel: formatMoney(paid, currency),
+      remainingLabel: formatMoney(remaining, currency)
+    };
+  }
+
+  function projectBalance({ project, invoices, receipts, agreement } = {}) {
+    const currency = String(project?.contractCurrency || "NGN").trim() || "NGN";
+    const receiptPaid = (receipts || [])
+      .filter((item) => item && item.status !== "Draft" && item.status !== "Cancelled")
+      .reduce((sum, item) => sum + (parseMoney(item.amount) || 0), 0);
+    const invoicePaid = (invoices || [])
+      .filter((item) => {
+        const status = String(item?.status || "").trim();
+        return status && status !== "Draft" && status !== "Cancelled";
+      })
+      .reduce((sum, item) => sum + (parseMoney(item.paidAmount) || 0), 0);
+    const paid = Math.max(receiptPaid, invoicePaid);
+    const contract = parseMoney(project?.contractAmount);
+    const fee = parseMoney(agreement?.fee);
+    const invoiced = invoiceBalanceSum(invoices);
+    const total = contract ?? fee ?? invoiced?.total ?? null;
+    if (total == null && paid <= 0) return null;
+    const due = total == null ? 0 : Math.max(0, total - paid);
+    return {
+      currency,
+      total: total == null ? paid : total,
+      paid,
+      remaining: due,
+      totalLabel: formatMoney(total == null ? paid : total, currency),
+      paidLabel: formatMoney(paid, currency),
+      remainingLabel: formatMoney(due, currency),
+      showSummary: project?.showPaymentSummary !== false
+    };
+  }
+
+  function paystackEnabled() {
+    return Boolean(String((window.GEESLANE_CONFIG || {}).paystackPublicKey || "").trim());
+  }
+
+  function paymentReturnReference() {
+    try {
+      const params = new URLSearchParams(location.search);
+      return String(params.get("reference") || params.get("trxref") || "").trim();
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function clearPaymentReturn() {
+    if (!paymentReturnReference()) return;
+    try {
+      const url = new URL(location.href);
+      url.searchParams.delete("reference");
+      url.searchParams.delete("trxref");
+      history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    } catch (_) { /* ignore */ }
+  }
+
+  async function invokePayment(name, body, fallback) {
+    const result = await client().functions.invoke(name, { body: body || {} });
+    const payload = result.data || {};
+    if (result.error || payload.error) {
+      const message = payload.error || result.error?.message || fallback;
+      throw Object.assign(new Error(message), { userMessage: message });
+    }
+    return payload;
+  }
+
+  async function startPayment(details) {
+    if (!backendConfigured()) {
+      throw Object.assign(new Error("Online payments are not configured"), { userMessage: "Online payments are not available right now." });
+    }
+    return withLoader(() => invokePayment("start-payment", details, "Could not start online payment."), "Opening payment…");
+  }
+
+  async function verifyPayment(reference) {
+    if (!backendConfigured()) {
+      throw Object.assign(new Error("Online payments are not configured"), { userMessage: "Online payments are not available right now." });
+    }
+    return withLoader(() => invokePayment("verify-payment", { reference }, "Could not confirm this payment."), "Confirming payment…");
+  }
+
+  function mapAgreement(row) {
+    if (!row) return null;
+    return {
+      clientName: row.client_name || row.clientName || "",
+      projectTitle: row.project_title || row.projectTitle || "",
+      deliverables: row.deliverables || "",
+      fee: row.fee || "",
+      paymentPlan: row.payment_plan || row.paymentPlan || "",
+      revisionRounds: Number(row.revision_rounds ?? row.revisionRounds ?? 0),
+      timeline: row.timeline || "",
+      handover: row.handover && typeof row.handover === "object" ? row.handover : {},
+      savedAt: row.saved_at || row.savedAt || row.updated_at || "",
+      updatedAt: row.updated_at || row.updatedAt || "",
+      saved: true
+    };
+  }
+
+  function mapBrief(row, requests = []) {
+    const discovery = row?.discovery && typeof row.discovery === "object" ? row.discovery : {};
+    const fromRow = {
+      goal: String(row?.goal || discovery.purpose || discovery.goal || "").trim(),
+      audience: String(row?.audience || discovery.audience || "").trim(),
+      scope: String(row?.scope || discovery.visitorDetails || discovery.visitorsCanDo || discovery.scope || "").trim(),
+      businessDescription: String(discovery.businessDescription || row?.about || row?.introduction || "").trim(),
+      socialLinks: String(discovery.socialLinks || "").trim(),
+      websiteUrl: String(discovery.websiteUrl || discovery.existingUrl || discovery.supportUrl || "").trim(),
+      visitorDetails: String(discovery.visitorDetails || discovery.visitorsCanDo || row?.scope || discovery.scope || "").trim(),
+      features: String(discovery.features || "").trim(),
+      featuresOther: String(discovery.featuresOther || "").trim(),
+      hasDomain: String(discovery.hasDomain || "").trim(),
+      hasHosting: String(discovery.hasHosting || "").trim(),
+      availableAssets: String(discovery.availableAssets || "").trim(),
+      location: String(discovery.location || "").trim(),
+      industry: String(discovery.industry || "").trim(),
+      serviceLabel: String(discovery.serviceLabel || "").trim()
+    };
+    if (fromRow.goal || fromRow.audience || fromRow.scope || fromRow.businessDescription) return fromRow;
+    const request = (requests || []).find((item) => item.type === "discovery");
+    return {
+      ...fromRow,
+      goal: String(request?.values?.goal || request?.payload?.goal || "").trim(),
+      audience: String(request?.values?.audience || request?.payload?.audience || "").trim(),
+      scope: String(request?.values?.scope || request?.values?.mustHaves || request?.payload?.scope || request?.payload?.mustHaves || "").trim()
     };
   }
 
@@ -487,8 +873,8 @@
     }, "Signing you in…");
   }
 
-  async function requestMagicLink(email, destination = "client") {
-    const redirectTo = destination === "admin" ? adminSignInRedirect() : clientSignInRedirect();
+  async function requestMagicLink(email, destination = "client", nextPage) {
+    const redirectTo = destination === "admin" ? adminSignInRedirect() : clientSignInRedirect(nextPage);
     return sendMagicLink(email, redirectTo);
   }
 
@@ -552,7 +938,7 @@
       cachedProfile = mapProfile(profileResult.data);
       await client().rpc("touch_portal_login");
       const projectRows = resultOrThrow(await client().from("projects").select("*").order("created_at", { ascending: false }));
-      return { user: cachedProfile, projects: (projectRows || []).map(mapProject), session: cachedSession };
+      return { user: cachedProfile, projects: await loadProjectSummaries(projectRows || []), session: cachedSession };
     }, "Loading your workspace…");
   }
 
@@ -562,10 +948,57 @@
         p_name: details.name, p_business: details.business, p_email: details.email, p_phone: details.phone || "",
         p_contact: details.contact || "Email", p_service: details.service, p_description: details.description
       };
-      if (details.targetDate) payload.p_target_date = details.targetDate;
-      resultOrThrow(await client().rpc("submit_portal_registration", payload), "Could not submit the access request");
+      try {
+        resultOrThrow(await client().rpc("submit_portal_registration", { ...payload, p_discovery: details.discovery || {} }), "Could not submit the service request");
+      } catch (error) {
+        if (details.discovery) {
+          try {
+            resultOrThrow(await client().rpc("submit_portal_registration", payload), "Could not submit the service request");
+          } catch (_) {
+            throw error;
+          }
+        } else {
+          throw error;
+        }
+      }
       return { received: true };
     }, "Sending…");
+  }
+
+  async function loadProjectSummaries(projectRows) {
+    const projects = (projectRows || []).map(mapProject);
+    const ids = projects.map((item) => item.id).filter(Boolean);
+    if (!ids.length) return projects;
+    let invoiceRows = [];
+    let receiptRows = [];
+    let milestoneRows = [];
+    let requestRows = [];
+    try { invoiceRows = resultOrThrow(await client().from("project_invoices").select("*").in("project_id", ids)) || []; } catch (_) { invoiceRows = []; }
+    try { receiptRows = resultOrThrow(await client().from("project_receipts").select("*").in("project_id", ids)) || []; } catch (_) { receiptRows = []; }
+    try { milestoneRows = resultOrThrow(await client().from("milestones").select("id, project_id, code, title, status, weight, sort_order").in("project_id", ids).order("sort_order")) || []; } catch (_) { milestoneRows = []; }
+    try { requestRows = resultOrThrow(await client().from("portal_requests").select("id, project_id, type, title, status, created_at").in("project_id", ids).order("created_at", { ascending: false })) || []; } catch (_) { requestRows = []; }
+    return projects.map((project) => {
+      const invoices = invoiceRows.filter((row) => row.project_id === project.id).map(mapInvoice);
+      const receipts = receiptRows.filter((row) => row.project_id === project.id).map(mapReceipt);
+      const milestones = milestoneRows.filter((row) => row.project_id === project.id).map(mapMilestone).filter((item) => milestoneIsIncluded(item, project));
+      const requests = requestRows.filter((row) => row.project_id === project.id);
+      const balance = projectBalance({ project, invoices, receipts });
+      const review = milestones.find((item) => item.status === "review");
+      const unpaid = invoices.filter((item) => ["Sent", "Part paid", "Overdue"].includes(item.status));
+      return {
+        ...project,
+        summary: {
+          milestoneComplete: milestones.filter((item) => item.status === "complete").length,
+          milestoneTotal: milestones.length,
+          remaining: balance?.showSummary ? Number(balance.remaining || 0) : 0,
+          remainingLabel: balance?.showSummary ? balance.remainingLabel : "",
+          paidLabel: balance?.showSummary ? balance.paidLabel : "",
+          unpaidCount: unpaid.length,
+          reviewTitle: review?.title || "",
+          requestCount: requests.length
+        }
+      };
+    });
   }
 
   async function signedAssetUrls(rows) {
@@ -584,9 +1017,16 @@
   async function readProject(projectId) {
     if (!isConnected()) throw new Error("Private portal access is required");
     return withLoader(async () => {
-      let query = client().from("projects").select("*");
-      query = projectId ? query.eq("id", projectId) : query.order("created_at", { ascending: false }).limit(1);
-      const projectRow = resultOrThrow(await query.maybeSingle(), "Could not load this project");
+      let projectRow = null;
+      if (projectId) {
+        projectRow = resultOrThrow(await client().from("projects").select("*").eq("id", projectId).maybeSingle(), "Could not load this project");
+      } else {
+        try {
+          projectRow = resultOrThrow(await client().from("projects").select("*").order("is_active", { ascending: false }).order("created_at", { ascending: false }).limit(1).maybeSingle(), "Could not load this project");
+        } catch (_) {
+          projectRow = resultOrThrow(await client().from("projects").select("*").order("created_at", { ascending: false }).limit(1).maybeSingle(), "Could not load this project");
+        }
+      }
       if (!projectRow) throw new Error("No project workspace is available for this account");
 
       const results = await Promise.all([
@@ -597,7 +1037,7 @@
         client().from("portal_requests").select("*").eq("project_id", projectRow.id).order("created_at", { ascending: false }),
         client().from("assets").select("*").eq("project_id", projectRow.id).is("archived_at", null).order("created_at", { ascending: false }),
         client().from("activity").select("*").eq("project_id", projectRow.id).order("created_at", { ascending: false }).limit(30),
-        client().from("projects").select("*").order("created_at", { ascending: false })
+        client().from("projects").select("*").eq("client_id", projectRow.client_id).order("created_at", { ascending: false })
       ]);
       const clientRow = resultOrThrow(results[0]);
       const brandRow = resultOrThrow(results[1]);
@@ -606,7 +1046,19 @@
       const requestRows = resultOrThrow(results[4]) || [];
       const assetRows = resultOrThrow(results[5]) || [];
       const activityRows = resultOrThrow(results[6]) || [];
-      const allProjects = resultOrThrow(results[7]) || [];
+      const allProjects = await loadProjectSummaries(resultOrThrow(results[7]) || []);
+      let agreementRow = null;
+      try {
+        agreementRow = resultOrThrow(await client().from("project_agreements").select("*").eq("project_id", projectRow.id).maybeSingle());
+      } catch (_) { agreementRow = null; }
+      let invoiceRows = [];
+      try {
+        invoiceRows = resultOrThrow(await client().from("project_invoices").select("*").eq("project_id", projectRow.id).order("created_at", { ascending: false })) || [];
+      } catch (_) { invoiceRows = []; }
+      let receiptRows = [];
+      try {
+        receiptRows = resultOrThrow(await client().from("project_receipts").select("*").eq("project_id", projectRow.id).order("created_at", { ascending: false })) || [];
+      } catch (_) { receiptRows = []; }
       let messageRows = [];
       try {
         messageRows = resultOrThrow(await client().from("milestone_messages").select("*").eq("project_id", projectRow.id).order("created_at")) || [];
@@ -615,20 +1067,29 @@
       const project = mapProject(projectRow);
       project.brandKit = mapBrand(brandRow);
       project.content = mapContent(contentRow);
+      project.brief = mapBrief(contentRow, requestRows.map((row) => mapRequest(row, true)));
 
       return {
         user: cachedProfile,
-        projects: allProjects.map(mapProject),
+        projects: allProjects,
         workspace: {
           initialized: true,
           createdAt: cachedProfile?.createdAt || clientRow.created_at,
           profile: { name: clientRow.name, business: clientRow.business, email: clientRow.email, phone: clientRow.phone || "", contact: clientRow.contact_preference || "Email" },
           project,
-          milestones: milestoneRows.map(mapMilestone),
+          milestones: milestoneRows.map(mapMilestone).filter((item) => milestoneIsIncluded(item, project)),
           requests: requestRows.map((row) => mapRequest(row, true)),
           resources,
           activity: activityRows.map((row) => ({ id: row.id, title: row.title, detail: row.detail, type: row.type, createdAt: row.created_at })),
-          messages: messageRows.map(mapMessage)
+          messages: messageRows.map(mapMessage),
+          agreement: mapAgreement(agreementRow),
+          invoices: invoiceRows.map(mapInvoice),
+          receipts: receiptRows.map((row) => {
+            const receipt = mapReceipt(row);
+            const linked = invoiceRows.find((item) => item.id === row.invoice_id);
+            receipt.invoiceReference = receipt.invoiceReference || linked?.reference || "";
+            return receipt;
+          })
         }
       };
     }, "Loading your workspace…");
@@ -639,9 +1100,30 @@
     return withLoader(async () => {
       const projectId = payload?.projectId;
       if (action === "updateProfile") return resultOrThrow(await client().rpc("update_my_profile", { p_name: payload.profile.name, p_business: payload.profile.business, p_phone: payload.profile.phone || "", p_contact: payload.profile.contact || "Email" }));
-      if (action === "updateProject") return resultOrThrow(await client().rpc("update_my_project", { p_project_id: projectId, p_name: payload.project.name, p_service: payload.project.service, p_target_date: payload.project.targetDate || null }));
+      if (action === "updateProject") return resultOrThrow(await client().rpc("update_my_project", { p_project_id: projectId, p_name: payload.project.name, p_service: payload.project.service }));
       if (action === "saveBrandKit") return resultOrThrow(await client().rpc("save_project_brand", { p_project_id: projectId, p_brand: payload.brandKit }));
       if (action === "saveContent") return resultOrThrow(await client().rpc("save_project_content", { p_project_id: projectId, p_content: payload.content }));
+      if (action === "saveBrief") {
+        try {
+          return resultOrThrow(await client().rpc("save_project_brief", { p_project_id: projectId, p_brief: payload.brief }));
+        } catch (_) {
+          return resultOrThrow(await client().rpc("create_portal_request", {
+            p_project_id: projectId,
+            p_reference: "PROJECT-BRIEF",
+            p_type: "discovery",
+            p_title: "Project brief",
+            p_values: payload.brief
+          }));
+        }
+      }
+      if (action === "createProject") {
+        const created = resultOrThrow(await client().rpc("client_add_project", {
+          p_name: payload.projectName || payload.request?.values?.projectName || "New project",
+          p_service: payload.service || payload.request?.values?.projectType || "Website project",
+          p_values: payload.request?.values || payload.values || {}
+        }), "Could not add another project. Run client_add_project.sql in Supabase, then try again.");
+        return created;
+      }
       if (action === "createRequest") return resultOrThrow(await client().rpc("create_portal_request", { p_project_id: projectId, p_reference: payload.request.id, p_type: payload.request.type, p_title: payload.request.title, p_values: payload.request.values || {} }));
       if (action === "addResource") {
         const id = resultOrThrow(await client().rpc("add_project_resource", { p_project_id: projectId, p_name: payload.resource.name, p_type: payload.resource.type, p_url: payload.resource.url }));
@@ -703,7 +1185,7 @@
         client().from("portal_requests").select("*").order("created_at", { ascending: false }),
         client().from("milestones").select("*").order("sort_order")
       ]);
-      const registrations = (resultOrThrow(results[0]) || []).map((row) => ({ id: row.id, email: row.email, name: row.name, business: row.business, phone: row.phone, contact: row.contact_preference, service: row.requested_service, description: row.project_description, targetDate: row.target_date || "", status: row.status, notes: row.admin_notes, createdAt: row.created_at }));
+      const registrations = (resultOrThrow(results[0]) || []).map((row) => ({ id: row.id, email: row.email, name: row.name, business: row.business, phone: row.phone, contact: row.contact_preference, service: row.requested_service, description: row.project_description, targetDate: row.target_date || "", status: row.status, notes: row.admin_notes, createdAt: row.created_at, discovery: row.discovery || {} }));
       const users = (resultOrThrow(results[1]) || []).map(mapProfile);
       const clients = resultOrThrow(results[2]) || [];
       const projects = (resultOrThrow(results[3]) || []).map(mapProject);
@@ -730,18 +1212,53 @@
       const results = await Promise.all([
         client().from("brand_kits").select("*").eq("project_id", id).maybeSingle(),
         client().from("project_content").select("*").eq("project_id", id).maybeSingle(),
-        client().from("assets").select("*").eq("project_id", id).is("archived_at", null).order("created_at", { ascending: false })
+        client().from("assets").select("*").eq("project_id", id).is("archived_at", null).order("created_at", { ascending: false }),
+        client().from("portal_requests").select("*").eq("project_id", id).eq("type", "discovery").order("updated_at", { ascending: false })
       ]);
       const brandRow = resultOrThrow(results[0], "Could not load brand details");
       const contentRow = resultOrThrow(results[1], "Could not load website content");
       const assetRows = resultOrThrow(results[2], "Could not load project files") || [];
+      const requestRows = resultOrThrow(results[3]) || [];
       return {
         projectId: id,
         brand: mapBrand(brandRow),
         content: mapContent(contentRow),
+        brief: mapBrief(contentRow, requestRows.map((row) => mapRequest(row, false))),
         files: await signedAssetUrls(assetRows)
       };
     }, "Loading project materials…");
+  }
+
+  async function adminAgreementContext(projectId) {
+    if (!cachedProfile || cachedProfile.role !== "admin" || cachedProfile.status !== "active") throw new Error("Administrator access is required");
+    const id = String(projectId || "").trim();
+    if (!id) throw Object.assign(new Error("Choose a project"), { userMessage: "Choose a project to edit the agreement." });
+    return withLoader(async () => {
+      const projectRow = resultOrThrow(await client().from("projects").select("*").eq("id", id).maybeSingle(), "Could not load this project");
+      if (!projectRow) throw Object.assign(new Error("Project not found"), { userMessage: "That project could not be found." });
+      const results = await Promise.all([
+        client().from("clients").select("*").eq("id", projectRow.client_id).maybeSingle(),
+        client().from("project_content").select("*").eq("project_id", id).maybeSingle(),
+        client().from("portal_requests").select("*").eq("project_id", id).eq("type", "discovery").order("updated_at", { ascending: false })
+      ]);
+      const clientRow = resultOrThrow(results[0]) || {};
+      const contentRow = resultOrThrow(results[1]);
+      const requestRows = resultOrThrow(results[2]) || [];
+      let agreementRow = null;
+      try {
+        agreementRow = resultOrThrow(await client().from("project_agreements").select("*").eq("project_id", id).maybeSingle());
+      } catch (_) { agreementRow = null; }
+      return {
+        project: mapProject(projectRow),
+        profile: {
+          name: clientRow.name || "",
+          business: clientRow.business || "",
+          email: clientRow.email || ""
+        },
+        brief: mapBrief(contentRow, requestRows.map((row) => mapRequest(row, false))),
+        saved: mapAgreement(agreementRow)
+      };
+    }, "Loading agreement…");
   }
 
   async function adminSubmit(action, payload) {
@@ -749,19 +1266,35 @@
       let result;
       if (action === "adminApproveRegistration") {
         result = resultOrThrow(await client().rpc("admin_approve_registration", { p_registration_id: payload.registrationId, p_project_name: payload.projectName, p_service: payload.service, p_target_date: payload.targetDate || null, p_notes: payload.notes || "" }));
-        await sendMagicLink(result.email, portalRedirect(), result.profileData);
+        await sendMagicLink(result.email, portalRedirect("payments"), result.profileData);
         result.user = await profileByEmail(result.email);
         return result;
       }
       if (action === "adminRejectRegistration") return resultOrThrow(await client().rpc("admin_reject_registration", { p_registration_id: payload.registrationId, p_notes: payload.notes || "" }));
       if (action === "adminCreateClientProject") {
         result = resultOrThrow(await client().rpc("admin_create_client_project", { p_name: payload.name, p_business: payload.business, p_email: payload.email, p_phone: payload.phone || "", p_contact: payload.contact || "Email", p_project_name: payload.projectName, p_service: payload.service || "Website project", p_target_date: payload.targetDate || null }));
-        await sendMagicLink(result.email, portalRedirect(), result.profileData);
+        await sendMagicLink(result.email, portalRedirect("payments"), result.profileData);
         result.user = await profileByEmail(result.email);
         return result;
       }
       if (action === "adminUpdateRequest") return resultOrThrow(await client().rpc("admin_update_request", { p_request_id: payload.requestId, p_status: payload.status }));
       if (action === "adminUpdateMilestone") return resultOrThrow(await client().rpc("admin_update_milestone", { p_project_id: payload.projectId, p_milestone_id: payload.milestoneId, p_status: payload.status }));
+      if (action === "adminUpdateProject") {
+        return resultOrThrow(await client().rpc("update_my_project", {
+          p_project_id: payload.projectId,
+          p_name: payload.name || "",
+          p_service: payload.service || "",
+          p_target_date: payload.targetDate || null,
+          p_start_date: payload.startDate || null
+        }));
+      }
+      if (action === "adminSetProjectStages") {
+        return resultOrThrow(await client().rpc("admin_set_project_stages", {
+          p_project_id: payload.projectId,
+          p_has_wireframe: payload.hasWireframe !== false,
+          p_has_visual_design: payload.hasVisualDesign !== false
+        }), "Could not save which stages this project includes.");
+      }
       if (action === "adminAddMilestoneMessage") {
         const message = resultOrThrow(await client().rpc("add_milestone_message", {
           p_milestone_id: payload.milestoneId, p_body: payload.body, p_kind: payload.kind || "comment"
@@ -772,6 +1305,64 @@
         const profile = resultOrThrow(await client().from("profiles").select("*").eq("user_id", payload.userId).single());
         await sendMagicLink(profile.email, portalRedirect(), { name: profile.name, business: profile.business, phone: profile.phone, contact: profile.contact_preference });
         return { sent: true };
+      }
+      if (action === "adminSaveAgreement") {
+        return resultOrThrow(await client().rpc("save_project_agreement", {
+          p_project_id: payload.projectId,
+          p_agreement: payload.agreement || {}
+        }), "Could not save the project agreement. Run project_agreements.sql in Supabase if this is the first time.");
+      }
+      if (action === "adminAddProject") {
+        return resultOrThrow(await client().rpc("admin_add_project", {
+          p_client_id: payload.clientId,
+          p_name: payload.projectName,
+          p_service: payload.service || "Website project",
+          p_target_date: payload.targetDate || null,
+          p_is_active: payload.isActive !== false
+        }), "Could not add the project. Run projects_invoices.sql in Supabase if this is the first time.");
+      }
+      if (action === "adminSetProjectActive") {
+        return resultOrThrow(await client().rpc("admin_set_project_active", {
+          p_project_id: payload.projectId,
+          p_is_active: payload.isActive !== false
+        }), "Could not update the active project. Run projects_invoices.sql in Supabase if this is the first time.");
+      }
+      if (action === "adminSaveInvoice") {
+        return resultOrThrow(await client().rpc("admin_save_invoice", {
+          p_project_id: payload.projectId,
+          p_invoice: payload.invoice || {}
+        }), "Could not save the invoice. Run projects_invoices.sql in Supabase if this is the first time.");
+      }
+      if (action === "adminSaveReceipt") {
+        return resultOrThrow(await client().rpc("admin_save_receipt", {
+          p_project_id: payload.projectId,
+          p_receipt: {
+            id: payload.receipt?.id || "",
+            title: payload.receipt?.title || "",
+            description: payload.receipt?.description || "",
+            amount: payload.receipt?.amount || "",
+            currency: payload.receipt?.currency || "NGN",
+            paidOn: String(payload.receipt?.paidOn || "").slice(0, 10),
+            method: payload.receipt?.method || "",
+            invoiceId: payload.receipt?.invoiceId || "",
+            status: payload.receipt?.status || "Draft",
+            notes: payload.receipt?.notes || ""
+          }
+        }), "Could not save the receipt. Run projects_invoices.sql in Supabase if this is the first time.");
+      }
+      if (action === "adminSetProjectBilling") {
+        return resultOrThrow(await client().rpc("admin_set_project_billing", {
+          p_project_id: payload.projectId,
+          p_contract_amount: payload.contractAmount || "",
+          p_contract_currency: payload.contractCurrency || "NGN",
+          p_show_payment_summary: payload.showPaymentSummary !== false,
+          p_online_payments: payload.onlinePayments !== false
+        }), "Could not save project totals. Run project_payments.sql in Supabase, then try again.");
+      }
+      if (action === "adminSavePortalSettings") {
+        return resultOrThrow(await client().rpc("admin_save_portal_settings", {
+          p_settings: payload.settings || {}
+        }), "Could not save bank details. Run portal_settings.sql in Supabase, then try again.");
       }
       throw new Error("Unknown administrator action");
     }, "Saving…");
@@ -788,8 +1379,69 @@
     }
   }
 
+  async function adminInvoices(projectId) {
+    if (!cachedProfile || cachedProfile.role !== "admin" || cachedProfile.status !== "active") throw new Error("Administrator access is required");
+    const id = String(projectId || "").trim();
+    if (!id) return [];
+    try {
+      return (resultOrThrow(await client().from("project_invoices").select("*").eq("project_id", id).order("created_at", { ascending: false })) || []).map(mapInvoice);
+    } catch (error) {
+      throw Object.assign(error, { userMessage: "Could not load invoices. Run projects_invoices.sql in Supabase if this is the first time." });
+    }
+  }
+
+  async function adminReceipts(projectId) {
+    if (!cachedProfile || cachedProfile.role !== "admin" || cachedProfile.status !== "active") throw new Error("Administrator access is required");
+    const id = String(projectId || "").trim();
+    if (!id) return [];
+    try {
+      const rows = resultOrThrow(await client().from("project_receipts").select("*").eq("project_id", id).order("created_at", { ascending: false })) || [];
+      const invoices = (resultOrThrow(await client().from("project_invoices").select("id, reference").eq("project_id", id)) || []);
+      const refs = new Map(invoices.map((row) => [row.id, row.reference]));
+      return rows.map((row) => {
+        const receipt = mapReceipt(row);
+        receipt.invoiceReference = receipt.invoiceReference || refs.get(row.invoice_id) || "";
+        return receipt;
+      });
+    } catch (error) {
+      throw Object.assign(error, { userMessage: "Could not load receipts. Run projects_invoices.sql in Supabase if this is the first time." });
+    }
+  }
+
+  async function trackInvoice(reference, email) {
+    if (!backendConfigured()) {
+      throw Object.assign(new Error("Tracking is not configured"), { userMessage: "Payment tracking is not available right now." });
+    }
+    return withLoader(async () => {
+      const row = resultOrThrow(await client().rpc("track_project_invoice", {
+        p_reference: String(reference || "").trim(),
+        p_email: String(email || "").trim()
+      }), "No payment matches those details");
+      if (row?.kind === "receipt") return mapReceipt(row);
+      return mapInvoice(row) || row;
+    }, "Checking…");
+  }
+
+  function mapPortalSettings(row) {
+    return {
+      bankName: row?.bank_name || row?.bankName || "",
+      accountName: row?.account_name || row?.accountName || "",
+      accountNumber: row?.account_number || row?.accountNumber || "",
+      bankNotes: row?.bank_notes || row?.bankNotes || ""
+    };
+  }
+
+  async function readPortalSettings() {
+    try {
+      const row = resultOrThrow(await client().from("portal_settings").select("*").eq("id", 1).maybeSingle());
+      return mapPortalSettings(row);
+    } catch (_) {
+      return mapPortalSettings(null);
+    }
+  }
+
   async function sendPortalMail(payload) {
-    if (!backendConfigured() || !hasAuthSession()) return false;
+    if (!backendConfigured()) return false;
     try {
       const result = await client().functions.invoke("send-portal-mail", { body: payload || {} });
       if (result.error) throw result.error;
@@ -824,16 +1476,36 @@
     requestMagicLink,
     verifySignInCode,
     adminPasswordLogin,
+    bindPhoneFields,
+    fillPhoneField,
+    readPhoneField,
     requestAccess,
     readProject,
+    readPortalSettings,
     submit,
     notifyTeam: async () => ({ queued: true }),
     uploadFile,
     logout,
+    milestoneIsIncluded,
+    projectTrack,
+    milestoneTemplates,
+    progressStageLabels,
     adminDashboard,
     adminSubmit,
     adminProjectMaterials,
+    adminAgreementContext,
     adminMilestoneMessages,
+    adminInvoices,
+    adminReceipts,
+    trackInvoice,
+    invoiceBalance,
+    invoiceBalanceSum,
+    projectBalance,
+    paystackEnabled,
+    paymentReturnReference,
+    clearPaymentReturn,
+    startPayment,
+    verifyPayment,
     sendPortalMail,
     uploadUrl: () => ""
   });

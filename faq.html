@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Frequently Asked Questions | Geeslane Technologies</title>
+    <meta name="description" content="Answers to common questions about Geeslane websites, hosting, AI automation, timelines, payments, and the client portal." />
+    <link rel="icon" href="favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'], display: ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+            colors: {
+              brand: { 50:'#EEFBF4',100:'#D6F3E2',200:'#A7E2C0',400:'#33AE73',500:'#14803D',600:'#0C6B32',700:'#005426',800:'#04431F',900:'#04321A' }
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body { font-family: 'DM Sans', sans-serif; }
+      [x-cloak] { display: none !important; }
+      details.faq-item > summary { list-style: none; }
+      details.faq-item > summary::-webkit-details-marker { display: none; }
+      details.faq-item[open] .faq-chevron { transform: rotate(180deg); }
+    </style>
+  </head>
+  <body x-data="{ navOpen: false, sticky: false, scrollTop: false }" x-init="window.addEventListener('scroll', () => { sticky = window.pageYOffset > 20; scrollTop = window.pageYOffset > 400; })" class="bg-white text-slate-700 antialiased">
+    <header class="fixed inset-x-0 top-0 z-50 border-b transition-all duration-300" :class="sticky ? 'bg-white/95 backdrop-blur-md border-slate-100 shadow-sm py-3' : 'bg-white/70 backdrop-blur-sm border-transparent py-5'">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-5 sm:px-8">
+        <a href="index.html" class="shrink-0"><img src="images/logo.png" alt="Geeslane Technologies" class="h-8 w-auto sm:h-9" /></a>
+        <nav class="hidden lg:flex items-center gap-9">
+          <a href="index.html#home" class="text-sm font-semibold text-slate-600 hover:text-brand-700">Home</a>
+          <a href="index.html#services" class="text-sm font-semibold text-slate-600 hover:text-brand-700">Services</a>
+          <a href="work.html" class="text-sm font-semibold text-slate-600 hover:text-brand-700">Our Work</a>
+          <a href="faq.html" class="text-sm font-semibold text-brand-700">FAQ</a>
+          <a href="index.html#contact" class="text-sm font-semibold text-slate-600 hover:text-brand-700">Contact</a>
+        </nav>
+        <div class="hidden lg:flex items-center gap-4">
+          <a href="client-portal/" class="text-sm font-semibold text-slate-600 hover:text-brand-700">Sign In</a>
+          <a href="client-portal/request.html" class="inline-flex items-center rounded-full bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-800">Request a Service</a>
+        </div>
+        <button @click="navOpen = !navOpen" class="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-700" aria-label="Toggle menu">
+          <svg x-show="!navOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+          <svg x-show="navOpen" x-cloak class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <div x-show="navOpen" x-cloak class="lg:hidden border-t border-slate-100 bg-white px-5 pb-6 pt-4">
+        <nav class="flex flex-col gap-1">
+          <a href="index.html#home" class="rounded-lg px-3 py-2.5 text-sm font-semibold">Home</a>
+          <a href="index.html#services" class="rounded-lg px-3 py-2.5 text-sm font-semibold">Services</a>
+          <a href="work.html" class="rounded-lg px-3 py-2.5 text-sm font-semibold">Our Work</a>
+          <a href="faq.html" class="rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-700">FAQ</a>
+          <a href="client-portal/" class="rounded-lg px-3 py-2.5 text-sm font-semibold">Sign In</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="pt-28 pb-20">
+      <section class="mx-auto max-w-3xl px-5 sm:px-8">
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">Help</p>
+        <h1 class="mt-3 text-4xl font-extrabold tracking-tight text-brand-900 sm:text-5xl">Frequently Asked Questions</h1>
+        <p class="mt-5 text-lg leading-relaxed text-slate-600">A few answers people usually want before they start. If yours is not here, send a request or email us.</p>
+
+        <div class="mt-12 space-y-3">
+          <details class="faq-item group rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40" open>
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">How do I get started?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>Use <a class="font-semibold text-brand-700 hover:text-brand-900" href="client-portal/request.html">Request a Service</a> and tell us about the business and what you need. We review every request, then email you with the next step. Sending a request does not start paid work or create a contract.</p>
+            </div>
+          </details>
+
+          <details class="faq-item rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">How much does a website cost?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>It depends on the pages, features, and whether you need a new site, a revamp, hosting, or automation. We quote after we understand the work. There is no fixed public price list because two businesses rarely need the same thing.</p>
+            </div>
+          </details>
+
+          <details class="faq-item rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">How long does a project take?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>A small site can move in a few weeks. A fuller website, a revamp, or automation takes longer. The timeline in your proposal is the working plan. Delays usually come from missing content, late feedback, or extra features added mid-way.</p>
+            </div>
+          </details>
+
+          <details class="faq-item rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">Do I need to provide content, photos, and a logo?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>Yes, you supply the words, images, brand files, and approvals we need, unless we agreed otherwise in writing. You confirm you have permission to use everything you send. We can help tidy copy and layout once the material is with us.</p>
+            </div>
+          </details>
+
+          <details class="faq-item rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">What is the client portal for?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>Once a project is accepted, we open a portal for that work. You can follow milestones, share the brief and brand files, read the agreement, and see invoices or receipts. Sign in from the website when we invite you.</p>
+            </div>
+          </details>
+
+          <details class="faq-item rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">Can you work on a website I already have?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>Yes. We can fix, improve, or rebuild an existing site. You will need authorised administrator access, or be able to get it. A small repair is different from a full redesign, so we agree the scope before we start.</p>
+            </div>
+          </details>
+
+          <details class="faq-item rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">Do you handle domain, hosting, and email?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>We can help with domain, DNS, hosting, SSL, and business email. Those services often have their own yearly fees, which can change at renewal. We will tell you the known cost before you approve.</p>
+            </div>
+          </details>
+
+          <details class="faq-item rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">What do you mean by AI automation?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>Repeat work that currently takes time: follow-ups, moving information between tools, or a process that should run without you watching it. Automation jobs usually have a few phases: understand the process, build and connect it, then hand it over.</p>
+            </div>
+          </details>
+
+          <details class="faq-item rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">How do payments work?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>We send invoices for the agreed fee, often with a deposit before work starts. Payments shows the project total, how much has been paid, and what is still remaining. You can pay an open invoice online, or by transfer. After a successful payment, a receipt is issued automatically and also appears in Payments.</p>
+            </div>
+          </details>
+
+          <details class="faq-item rounded-2xl border border-slate-200 bg-white open:border-brand-200 open:bg-brand-50/40">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <span class="text-base font-bold text-brand-900">Who owns the website when it is finished?</span>
+              <svg class="faq-chevron h-5 w-5 shrink-0 text-brand-700 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <div class="space-y-3 px-5 pb-5 text-sm leading-relaxed text-slate-600">
+              <p>After the agreed fee is paid, you own the finished site we built for you, along with the content you supplied. Third-party tools, fonts, plugins, and hosting stay under their own licences. Full terms are on the <a class="font-semibold text-brand-700 hover:text-brand-900" href="terms.html">Terms &amp; Agreement</a> page.</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="mt-12 rounded-2xl border border-brand-200 bg-brand-50/50 px-5 py-6 sm:px-7">
+          <p class="text-base font-bold text-brand-900">Still have a question?</p>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">Email <a class="font-semibold text-brand-700 hover:text-brand-900" href="mailto:contact@geeslane.com">contact@geeslane.com</a> or <a class="font-semibold text-brand-700 hover:text-brand-900" href="client-portal/request.html">request a service</a>.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-slate-900">
+      <div class="mx-auto flex max-w-7xl flex-col-reverse items-center justify-between gap-4 px-5 py-6 sm:flex-row sm:px-8">
+        <p class="text-sm text-slate-500">&copy; 2026 Geeslane Technologies. All rights reserved.</p>
+        <nav class="flex flex-wrap justify-center gap-5 text-sm text-slate-400">
+          <a href="index.html" class="hover:text-brand-400">Home</a>
+          <a href="terms.html" class="hover:text-brand-400">Terms &amp; Agreement</a>
+          <a href="client-portal/track.html" class="hover:text-brand-400">Track Payment</a>
+        </nav>
+      </div>
+    </footer>
+    <script defer src="bundle.js"></script>
+  </body>
+</html>

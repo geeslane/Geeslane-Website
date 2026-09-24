@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Track Invoice | Geeslane</title>
+    <link rel="icon" href="../favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="request-body">
+    <section class="request-screen">
+      <header class="auth-header">
+        <a class="auth-brand" href="../index.html" aria-label="Geeslane home">
+          <img class="brand-logo" src="../images/logo.png" alt="Geeslane Technologies" />
+        </a>
+        <nav class="auth-actions">
+          <a class="button button-ghost" href="../index.html">Website</a>
+          <a class="button button-primary" href="./">Client Sign In</a>
+        </nav>
+      </header>
+      <main class="request-main">
+        <section class="request-intro">
+          <p class="eyebrow">Payments</p>
+          <h1>Track an Invoice</h1>
+          <p>Check whether an invoice is still due, part paid, or marked paid — without signing in. After you pay, Geeslane emails a receipt PDF. Those receipts also stay in Payments after you sign in.</p>
+        </section>
+        <section class="card request-card" style="padding: 28px;">
+          <form id="track-form" novalidate>
+            <div class="form-grid">
+              <div class="field"><label for="track-reference">Invoice Number <span>*</span></label><input id="track-reference" name="reference" placeholder="INV-2026-0001" required /></div>
+              <div class="field"><label for="track-email">Project Email <span>*</span></label><input id="track-email" name="email" type="email" autocomplete="email" required /></div>
+            </div>
+            <p class="form-error" id="track-error" hidden></p>
+            <div class="form-footer"><button class="button button-primary" type="submit">Check Status</button></div>
+          </form>
+          <div class="detail-list" id="track-result" hidden></div>
+          <div class="form-footer" id="track-pay-wrap" hidden>
+            <button class="button button-primary" type="button" id="track-pay">Pay Remaining</button>
+          </div>
+        </section>
+      </main>
+      <footer class="auth-footer">
+        <nav class="auth-footer-links">
+          <a href="../index.html">Website</a>
+          <a href="../faq.html">FAQ</a>
+          <a href="../terms.html">Terms &amp; Agreement</a>
+        </nav>
+      </footer>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./config.js"></script>
+    <script src="./api.js"></script>
+    <script>
+      (function () {
+        const form = document.getElementById("track-form");
+        const error = document.getElementById("track-error");
+        const result = document.getElementById("track-result");
+        const payWrap = document.getElementById("track-pay-wrap");
+        const payBtn = document.getElementById("track-pay");
+        let lastPayment = null;
+        function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]); }
+        function showError(message) {
+          error.hidden = !message;
+          error.textContent = message || "";
+        }
+        function renderPayment(payment) {
+          lastPayment = payment;
+          const isReceipt = payment.kind === "receipt";
+          const balance = isReceipt ? null : window.GeeslaneAPI.invoiceBalance(payment);
+          const rows = [
+            [isReceipt ? "Receipt" : "Invoice", payment.reference],
+            ["Project", payment.projectName],
+            ["Business", payment.business],
+            ["Title", payment.title],
+            ["Amount", balance ? balance.totalLabel : [payment.currency, payment.amount].filter(Boolean).join(" ")],
+            ["Status", payment.status],
+            ["Due", payment.dueDate],
+            ["Paid so far", balance ? balance.paidLabel : payment.paidAmount],
+            ["Remaining", balance ? balance.remainingLabel : ""],
+            ["Paid on", payment.paidAt || payment.paidOn],
+            ["Method", payment.method],
+            ["Related invoice", payment.invoiceReference]
+          ].filter((row) => row[1]);
+          result.innerHTML = rows.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("");
+          result.hidden = false;
+          const canPay = !isReceipt
+            && window.GeeslaneAPI.paystackEnabled()
+            && payment.onlinePayments !== false
+            && balance
+            && balance.remaining > 0
+            && !["Draft", "Cancelled", "Paid"].includes(String(payment.status || ""));
+          payWrap.hidden = !canPay;
+        }
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const reference = String(form.elements.reference.value || "").trim();
+          const email = String(form.elements.email.value || "").trim();
+          const button = form.querySelector("button[type=submit]");
+          if (!reference || email.indexOf("@") < 1) { showError("Enter the invoice number and email."); return; }
+          window.GeeslaneAPI.setButtonBusy(button, true, "Checking…");
+          result.hidden = true;
+          payWrap.hidden = true;
+          showError("");
+          try {
+            renderPayment(await window.GeeslaneAPI.trackInvoice(reference, email));
+          } catch (err) {
+            showError(err.userMessage || window.GeeslaneAPI.userFacingError(err, "No payment matches those details."));
+          } finally {
+            window.GeeslaneAPI.setButtonBusy(button, false);
+          }
+        });
+        payBtn.addEventListener("click", async () => {
+          if (!lastPayment || lastPayment.kind === "receipt") return;
+          window.GeeslaneAPI.setButtonBusy(payBtn, true, "Opening payment…");
+          showError("");
+          try {
+            const started = await window.GeeslaneAPI.startPayment({
+              invoiceId: lastPayment.id,
+              reference: lastPayment.reference,
+              email: String(form.elements.email.value || "").trim(),
+              callbackUrl: `${location.origin}${location.pathname}`
+            });
+            if (started.authorizationUrl) location.href = started.authorizationUrl;
+            else showError("Paystack did not return a checkout link.");
+          } catch (err) {
+            showError(err.userMessage || window.GeeslaneAPI.userFacingError(err, "Could not start online payment."));
+          } finally {
+            window.GeeslaneAPI.setButtonBusy(payBtn, false);
+          }
+        });
+        Promise.resolve(window.GEESLANE_ENV_READY).then(async () => {
+          const reference = window.GeeslaneAPI.paymentReturnReference();
+          if (!reference) return;
+          try {
+            const verified = await window.GeeslaneAPI.verifyPayment(reference);
+            window.GeeslaneAPI.clearPaymentReturn();
+            if (verified?.paid) showError("");
+            result.hidden = false;
+            result.innerHTML = `<div><dt>Payment</dt><dd>Received. Your receipt is in email and in Payments after you sign in.</dd></div>`;
+            payWrap.hidden = true;
+          } catch (err) {
+            window.GeeslaneAPI.clearPaymentReturn();
+            showError(err.userMessage || window.GeeslaneAPI.userFacingError(err, "Payment is still confirming. Check again in a moment."));
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

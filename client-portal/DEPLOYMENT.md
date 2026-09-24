@@ -72,11 +72,15 @@ In **Supabase → Authentication → URL Configuration**:
 **Redirect URLs** (add all of these):
 
 - `http://localhost:4173/`
+- `http://localhost:4173/?next=payments`
 - `http://localhost:4173/admin.html`
 - `http://localhost:4173/client-portal/`
+- `http://localhost:4173/client-portal/?next=payments`
 - `http://localhost:4173/client-portal/admin.html`
 - `https://geeslane.com/client-portal/`
+- `https://geeslane.com/client-portal/?next=payments`
 - `https://geeslane.com/client-portal/admin.html`
+- `https://geeslane.com/client-portal/**`
 
 The portal builds `emailRedirectTo` from the current origin and path:
 
@@ -137,6 +141,8 @@ Do this once. Do not put the Resend API key in the website, `.env`, or Git.
 3. Name it exactly `send-portal-mail`.
 4. Replace the editor contents with `supabase/functions/send-portal-mail/index.ts` from this repo.
 5. Deploy.
+
+Redeploy this function whenever `supabase/functions/send-portal-mail/index.ts` changes. Service-request emails (logo, full answers, and the client confirmation) need the latest version.
 
 **Option B — CLI**
 
@@ -219,6 +225,56 @@ npx supabase functions deploy send-portal-mail
 3. The client should get the email and an SMS that starts with `Geeslane`.
 
 If SMS is missing, open **Edge Functions → send-portal-mail → Logs**. A Termii sender-ID error means `TERMII_SENDER_ID` is not registered. A Twilio 21608/21610 error means the From number cannot send to that destination.
+
+## Database extras
+
+After the base schema, run these in **SQL Editor** if they are not already applied:
+
+1. `supabase/milestone_conversations.sql`
+2. `supabase/milestone_review_statuses.sql`
+3. `supabase/project_brief.sql` — stores the client Discovery answers (goal, audience, first version)
+4. `supabase/project_stage_options.sql` — lets admin include or skip Wireframe and Visual design per project, and keeps target date admin-only. After this runs, the Milestones page shows Include checkboxes. Existing projects keep both stages until you uncheck them. If you already ran an earlier version, run this file again.
+5. `supabase/service_request.sql` — public Request a Service form, stores the full discovery answers, and copies them into the portal when you approve the client.
+6. `supabase/project_agreements.sql` — website project agreement fields (fee, timeline, revisions, deliverables). Admin edits them; clients can view and download the agreement.
+7. `supabase/projects_invoices.sql` — lets admin mark one or more projects as active, create invoices and receipts, send them to the client, and lets customers track payment in the portal or on the website with invoice/receipt number + email. If you already ran an earlier version, run this file again to add receipts.
+8. `supabase/project_milestone_templates.sql` — new projects get website stages, or three general phases for AI automation, hosting/support, and consultation. Existing projects keep their current milestones. Run this even if you already ran `seed_portal_project.sql`.
+9. `supabase/client_add_project.sql` — lets a signed-in client open another project without replacing the ones they already have. More than one project can stay open at the same time. After this runs, Overview lists every project with its brief, payments, milestones, and files.
+10. `supabase/project_payments.sql` — project total, paid/remaining on both portals, automatic receipts after Paystack payments. Run this after `projects_invoices.sql`.
+11. `supabase/portal_settings.sql` — adds missing brief columns (`goal`, `audience`, `scope`), store bank transfer details for invoices, and lets admin create a client without that error. Run this if you see `column "goal" of relation "project_content" does not exist`. After it runs, set bank details on **Invoices & Receipts**. Redeploy `send-portal-mail` so invoice and receipt emails can attach the PDF.
+
+## Online payments (Paystack)
+
+There is no free card processor. Paystack charges per successful payment and has **no monthly fee**. That is the usual option for NGN on this site.
+
+Do not put the Paystack **secret** key in `config.js`, `.env`, or Git.
+
+1. Create a business at [paystack.com](https://paystack.com) (test mode is enough to try it).
+2. Copy the **public key** (`pk_test_…` or `pk_live_…`) into `client-portal/config.js` as `paystackPublicKey`.
+3. In **Supabase → Project Settings → Edge Functions → Secrets**, add:
+   - `PAYSTACK_SECRET_KEY` — the secret key (`sk_test_…` or `sk_live_…`)
+   - `PAYSTACK_PUBLIC_KEY` — same public key as in `config.js`
+   - `PORTAL_URL` — `https://geeslane.com/client-portal/`
+4. Deploy these functions (dashboard paste, or CLI):
+   - `start-payment` from `supabase/functions/start-payment/index.ts` (`verify_jwt` off)
+   - `verify-payment` from `supabase/functions/verify-payment/index.ts` (`verify_jwt` off)
+   - `paystack-webhook` from `supabase/functions/paystack-webhook/index.ts` (`verify_jwt` off)
+5. In Paystack **Settings → API Keys & Webhooks**, set the webhook URL to:
+   `https://xostzntvowmdjlwpsevq.supabase.co/functions/v1/paystack-webhook`
+6. In Paystack, set **one** default callback URL (test and live each have their own). Use `https://geeslane.com/client-portal/`. You cannot paste a list of callback URLs in the dashboard. Each payment already sends its own `callback_url` (portal or track page, local or live), and that overrides the default.
+7. In admin, open **Invoices & Receipts**, set **Project Total**, leave **Show paid and remaining** and **Allow online payment** on, then send an invoice. The client sees **Pay** on unpaid invoices. If Paystack is not configured, that button is **How to pay** and they can use the bank details you saved (those details also print on the invoice PDF).
+
+CLI deploy example:
+
+```
+npx supabase functions deploy start-payment
+npx supabase functions deploy verify-payment
+npx supabase functions deploy paystack-webhook
+npx supabase secrets set PAYSTACK_SECRET_KEY=sk_test_your_secret
+npx supabase secrets set PAYSTACK_PUBLIC_KEY=pk_test_your_public
+npx supabase secrets set PORTAL_URL=https://geeslane.com/client-portal/
+```
+
+Manual bank transfers still use **Create a receipt**. Online payments write that receipt themselves.
 
 ## Auth behaviour preserved
 

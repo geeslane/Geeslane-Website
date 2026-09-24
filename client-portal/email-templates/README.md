@@ -25,6 +25,15 @@ Keep the `{{ .ConfirmationURL }}` and `{{ .Token }}` placeholders. Supabase repl
 The magic-link template shows a 6-digit code first so people can stay on the portal page and type it into the six boxes. The button is still there as a backup.
 If user metadata includes `name`, the greeting becomes `Hi Ada,`. If it does not, it stays `Hi there,`.
 
-Portal activity emails (Brand & Content, requests, milestone updates) are sent from the website using the shared layout in `portal-update.html` / `mail.js`. They use the Geeslane logo at `https://geeslane.com/images/logo.png`. Client emails greet by first name when it is known.
+Portal activity emails (Brand & Content, requests, milestone updates) are sent from the website using the shared layout in `portal-update.html` / `mail.js`. Billing emails use the same Geeslane logo, green header, and card layout:
 
-Custom SMTP (Resend) is configured only in the Supabase dashboard. See `DEPLOYMENT.md`.
+| Mail | File | Who receives it | Attachment |
+| --- | --- | --- | --- |
+| Invoice due | `invoice-due.html` | Client | Invoice PDF |
+| Invoice sent | same layout, different copy | Admin | Invoice PDF |
+| Payment received | `payment-received.html` | Client | Receipt PDF |
+| Payment received | same layout, different copy | Admin | Receipt PDF |
+
+They use the Geeslane logo at `https://geeslane.com/images/logo.png`. Client emails greet by first name when it is known. The PDF is attached so nobody has to open the portal only to download it.
+
+Custom SMTP (Resend) is configured only in the Supabase dashboard. See `DEPLOYMENT.md`. Redeploy `send-portal-mail`, `paystack-webhook`, and `verify-payment` after changing Edge Function mail.

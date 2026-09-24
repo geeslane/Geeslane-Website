@@ -1,6 +1,7 @@
--- New projects start Discovery in progress. Admin can later set Ready for client review.
--- Milestones follow the service type: website, automation, support, or consultation.
--- Run this in Supabase → SQL Editor, or run project_milestone_templates.sql which updates this function.
+-- New projects get milestones that match the service type.
+-- Website: Discovery through Launch. Automation, support, and consultation: three general phases.
+-- Run in Supabase → SQL Editor after seed_portal_project.sql (or instead of re-running it).
+-- Existing projects keep their current milestones.
 
 create or replace function public.seed_portal_project(
   p_client_id uuid, p_name text, p_service text, p_target_date date default null
@@ -58,11 +59,3 @@ begin
   return v_project_id;
 end;
 $$;
-
-update public.milestones set description = 'What the project needs, and who it is for.' where code = 'M1';
-update public.milestones set description = 'Logos, colours, photos, and copy.' where code = 'M2';
-update public.milestones set description = 'How the pages are laid out.' where code = 'M3';
-update public.milestones set description = 'How the site looks.' where code = 'M4';
-update public.milestones set description = 'Building the site.' where code = 'M5';
-update public.milestones set description = 'Final check before launch.' where code = 'M6';
-update public.milestones set description = 'Go live and hand over.' where code = 'M7';

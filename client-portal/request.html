@@ -3,12 +3,221 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Request Portal Access | Geeslane</title>
-    <meta http-equiv="refresh" content="0;url=./?access=1" />
+    <meta name="theme-color" content="#0b6b45" />
+    <meta name="description" content="Tell Geeslane about your business and what you need. We review every request before recommending a service or opening a portal." />
+    <title>Request a Service | Geeslane</title>
     <link rel="icon" href="../favicon.ico" />
-    <script>location.replace("./?access=1");</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
-    <p><a href="./?access=1">Continue to request portal access</a></p>
+  <body class="request-body">
+    <section class="request-screen" aria-labelledby="request-title">
+      <header class="auth-header">
+        <a class="auth-brand" href="../index.html" aria-label="Geeslane home">
+          <img class="brand-logo" src="../images/logo.png" alt="Geeslane Technologies" />
+        </a>
+        <nav class="auth-actions" aria-label="Account actions">
+          <a class="button button-ghost" href="../index.html">Website</a>
+          <a class="button button-primary" href="./">Client Sign In</a>
+        </nav>
+      </header>
+
+      <main class="request-main">
+        <section class="request-intro">
+          <p class="eyebrow">Service Request</p>
+          <h1 id="request-title">Tell Us What You Need</h1>
+          <p id="request-lead" hidden></p>
+          <p class="request-note">Do not submit passwords, card details, secret keys, or other sensitive credentials.</p>
+          <p id="request-followup" hidden><a class="button button-primary" href="../index.html">Go to Website</a></p>
+        </section>
+
+        <section class="card request-card" id="request-card">
+          <div class="request-stepper" aria-hidden="true">
+            <span class="is-active" data-step-indicator="1">1. About You</span><i></i>
+            <span data-step-indicator="2">2. Service</span><i></i>
+            <span data-step-indicator="3">3. Details</span><i></i>
+            <span data-step-indicator="4">4. Send</span>
+          </div>
+
+          <form id="service-request-form" novalidate>
+            <div class="request-step is-visible" data-step="1">
+              <h2>About You</h2>
+              <div class="form-grid">
+                <div class="field field-full"><label for="req-business">Business / Organisation Name <span>*</span></label><input id="req-business" name="business" required /></div>
+                <div class="field"><label for="req-name">Contact Person <span>*</span></label><input id="req-name" name="name" autocomplete="name" required /></div>
+                <div class="field"><label for="req-email">Email Address <span>*</span></label><input id="req-email" name="email" type="email" autocomplete="email" required /></div>
+                <div class="field field-full"><label for="req-phone-local">Phone / WhatsApp Number <span>*</span></label><div class="phone-combo" data-phone-combo="phone"><select id="req-phone-code" aria-label="Country code"></select><input id="req-phone-local" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="801 234 5678" required /><input id="req-phone" name="phone" type="hidden" /></div></div>
+                <div class="field"><label for="req-location">Business Location <span>*</span></label><input id="req-location" name="location" placeholder="City and country" required /></div>
+                <div class="field"><label for="req-industry">Industry / Business Type <span>*</span></label><input id="req-industry" name="industry" required /></div>
+                <div class="field field-full"><label for="req-website">Website URL</label><input id="req-website" name="websiteUrl" type="url" placeholder="https://…" /></div>
+                <div class="field field-full"><label for="req-social">Social Media Links</label><textarea id="req-social" name="socialLinks" placeholder="Add any relevant business social media links."></textarea></div>
+                <div class="field field-full"><label for="req-description">Briefly describe your business or organisation. <span>*</span></label><textarea id="req-description" name="businessDescription" required></textarea></div>
+                <div class="field field-full"><label for="req-heard">How did you hear about Geeslane?</label>
+                  <select id="req-heard" name="heardAbout">
+                    <option value="">Choose One</option>
+                    <option>Referral</option>
+                    <option>Social media</option>
+                    <option>Google / web search</option>
+                    <option>Previous client / previous work</option>
+                    <option>Event / community</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="request-step" data-step="2">
+              <h2>Choose Your Service</h2>
+              <div class="request-type-grid" role="radiogroup" aria-label="What would you like Geeslane to help you with?">
+                <button type="button" data-service="website-new"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H4V5Zm2 2v8h12V7H6Zm-2 12h16v2H4v-2Z"/></svg></span><span><strong>I Need a New Website</strong><small>Build a new site from the ground up.</small></span></button>
+                <button type="button" data-service="website-revamp"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="M12 5v2a5 5 0 1 1-4.3 7.5L6 13.2A7 7 0 1 0 12 5Zm-1 0H5v6h2V8.4l4.6 4.6L13 11.6 8.4 7H11V5Z"/></svg></span><span><strong>Improvements or Fixes</strong><small>Improve or repair an existing website.</small></span></button>
+                <button type="button" data-service="domain-hosting"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18Zm0 2a7 7 0 0 0 0 14V5Z"/></svg></span><span><strong>Domain or Hosting Support</strong><small>Domain, DNS, hosting, email, or SSL.</small></span></button>
+                <button type="button" data-service="monitoring"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6v2h-5l-2 5-4-10-2 5H3v-2Z"/></svg></span><span><strong>Monitoring or Ongoing Support</strong><small>Updates, backups, security, or maintenance.</small></span></button>
+                <button type="button" data-service="automation"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="M4 7h6v2H4V7Zm10 0h6v2h-6V7ZM4 11h16v2H4v-2ZM4 15h9v2H4v-2Zm11 0h5v2h-5v-2Z"/></svg></span><span><strong>AI Automation</strong><small>Workflows, tools, and repeat work.</small></span></button>
+                <button type="button" data-service="strategy"><span class="type-icon"><svg viewBox="0 0 24 24"><path d="M11 3h2v8h8v2h-8v8h-2v-8H3v-2h8V3Z"/></svg></span><span><strong>Strategy, or I’m Not Sure</strong><small>Tell us the business problem. We will advise.</small></span></button>
+              </div>
+              <input id="req-service" name="service" type="hidden" required />
+            </div>
+
+            <div class="request-step" data-step="3">
+              <button class="back-link" type="button" data-go-step="2">← Change Service</button>
+              <div data-service-panel="website-new" hidden>
+                <h2>New Website</h2>
+                <div class="form-grid">
+                  <div class="field field-full"><label for="req-purpose">What is the primary purpose of the website? <span>*</span></label><textarea id="req-purpose" name="purpose"></textarea></div>
+                  <div class="field field-full"><label for="req-audience">Who are the main people you want the website to serve? <span>*</span></label><textarea id="req-audience" name="audience"></textarea></div>
+                  <fieldset class="field field-full"><legend>Which features do you expect to need?</legend>
+                    <div class="choice-grid" data-choice-group="features"></div>
+                  </fieldset>
+                  <div class="field field-full" data-other-for="features" hidden>
+                    <label for="req-features-other">Which other features?</label>
+                    <textarea id="req-features-other" name="featuresOther" placeholder="List the extra features you need."></textarea>
+                  </div>
+                  <div class="field field-full"><label for="req-visitor-details">Anything else the website should help visitors do?</label><textarea id="req-visitor-details" name="visitorDetails" placeholder="Optional. Add outcomes that are not already covered by the features above."></textarea></div>
+                  <div class="field"><label for="req-domain">Do you currently have a domain name? <span>*</span></label>
+                    <select id="req-domain" name="hasDomain"><option value="">Choose One</option><option>Yes</option><option>No</option><option>Not sure</option></select>
+                  </div>
+                  <div class="field"><label for="req-hosting">Do you currently have website hosting? <span>*</span></label>
+                    <select id="req-hosting" name="hasHosting"><option value="">Choose One</option><option>Yes</option><option>No</option><option>Not sure</option></select>
+                  </div>
+                  <fieldset class="field field-full"><legend>Which assets are already available?</legend>
+                    <div class="choice-grid" data-choice-group="availableAssets"></div>
+                  </fieldset>
+                  <div class="field field-full"><label for="req-references">Websites or brands you like</label><textarea id="req-references" name="references" placeholder="Share links or describe any visual references you like."></textarea></div>
+                  <div class="field field-full"><label for="req-website-notes">Anything else we should know about the website?</label><textarea id="req-website-notes" name="websiteNotes"></textarea></div>
+                </div>
+              </div>
+              <div data-service-panel="website-revamp" hidden>
+                <h2>Website Revamp / Correction</h2>
+                <div class="form-grid">
+                  <div class="field field-full"><label for="req-existing-url">Existing Website URL <span>*</span></label><input id="req-existing-url" name="existingUrl" type="url" placeholder="https://…" /></div>
+                  <div class="field field-full"><label for="req-not-working">What is not working well today? <span>*</span></label><textarea id="req-not-working" name="notWorking"></textarea></div>
+                  <div class="field field-full"><label for="req-changes">What would you like changed or improved? <span>*</span></label><textarea id="req-changes" name="changesWanted"></textarea></div>
+                  <fieldset class="field field-full"><legend>What kind of improvement do you need?</legend>
+                    <div class="choice-grid" data-choice-group="improvementTypes"></div>
+                  </fieldset>
+                  <div class="field field-full"><label for="req-prompted">What prompted you to seek help now?</label><textarea id="req-prompted" name="prompted"></textarea></div>
+                  <div class="field"><label for="req-platform">Current Website Platform / CMS</label><input id="req-platform" name="platform" placeholder="WordPress, Wix, Shopify, or custom" /></div>
+                  <div class="field"><label for="req-revamp-hosting">Current Hosting Provider</label><input id="req-revamp-hosting" name="revampHosting" /></div>
+                  <div class="field field-full"><label for="req-admin-access">Do you have authorised administrator access? <span>*</span></label>
+                    <select id="req-admin-access" name="adminAccess"><option value="">Choose One</option><option>Yes, I have administrator access</option><option>I can obtain authorised access</option><option>I am not sure who controls access</option></select>
+                  </div>
+                  <div class="field field-full"><label for="req-revamp-notes">Anything else we should know about the existing website?</label><textarea id="req-revamp-notes" name="revampNotes"></textarea></div>
+                </div>
+              </div>
+              <div data-service-panel="domain-hosting" hidden>
+                <h2>Domain &amp; Hosting Support</h2>
+                <div class="form-grid">
+                  <div class="field"><label for="req-domain-name">Domain Name <span>*</span></label><input id="req-domain-name" name="domainName" /></div>
+                  <div class="field"><label for="req-registrar">Current Registrar</label><input id="req-registrar" name="registrar" /></div>
+                  <div class="field field-full"><label for="req-host-provider">Current Hosting Provider</label><input id="req-host-provider" name="hostingProvider" /></div>
+                  <fieldset class="field field-full"><legend>What do you need help with? <span>*</span></legend>
+                    <div class="choice-grid" data-choice-group="hostingHelp"></div>
+                  </fieldset>
+                  <div class="field field-full"><label for="req-issue">Describe the issue or request. <span>*</span></label><textarea id="req-issue" name="issue"></textarea></div>
+                  <div class="field field-full"><label for="req-issue-started">When did the issue start?</label><input id="req-issue-started" name="issueStarted" /></div>
+                </div>
+              </div>
+              <div data-service-panel="monitoring" hidden>
+                <h2>Monitoring &amp; Support</h2>
+                <div class="form-grid">
+                  <div class="field field-full"><label for="req-support-url">Website URL <span>*</span></label><input id="req-support-url" name="supportUrl" type="url" placeholder="https://…" /></div>
+                  <fieldset class="field field-full"><legend>What support do you need? <span>*</span></legend>
+                    <div class="choice-grid" data-choice-group="supportNeeds"></div>
+                  </fieldset>
+                  <div class="field field-full"><label for="req-urgent">Is anything currently broken or urgent? <span>*</span></label><textarea id="req-urgent" name="urgent"></textarea></div>
+                  <div class="field field-full"><label for="req-current-support">What support arrangement do you currently have, if any?</label><textarea id="req-current-support" name="currentSupport"></textarea></div>
+                </div>
+              </div>
+              <div data-service-panel="automation" hidden>
+                <h2>AI Automation</h2>
+                <div class="form-grid">
+                  <div class="field field-full"><label for="req-automation-need">What should be automated? <span>*</span></label><textarea id="req-automation-need" name="automationNeed" placeholder="Repeat tasks, follow-ups, data moving between tools, or a process that currently takes too long."></textarea></div>
+                  <div class="field field-full"><label for="req-automation-tools">Which tools or systems are involved?</label><textarea id="req-automation-tools" name="automationTools" placeholder="WhatsApp, email, spreadsheets, a website, CRM, or other software."></textarea></div>
+                  <div class="field field-full"><label for="req-automation-success">What should success look like?</label><textarea id="req-automation-success" name="automationSuccess" placeholder="Time saved, fewer missed follow-ups, or a process that runs without you."></textarea></div>
+                </div>
+              </div>
+              <div data-service-panel="strategy" hidden>
+                <h2>Digital Strategy / Not Sure</h2>
+                <div class="form-grid">
+                  <div class="field field-full"><label for="req-problem">What business problem are you trying to solve? <span>*</span></label><textarea id="req-problem" name="businessProblem"></textarea></div>
+                  <div class="field field-full"><label for="req-channels">What digital channels do you currently use?</label><textarea id="req-channels" name="digitalChannels" placeholder="Website, social media, email, marketplaces, or software tools."></textarea></div>
+                  <div class="field field-full"><label for="req-not-well">What is not working as well as you would like? <span>*</span></label><textarea id="req-not-well" name="notWorkingWell"></textarea></div>
+                  <div class="field field-full"><label for="req-success">What would success look like in the next 6–12 months? <span>*</span></label><textarea id="req-success" name="successLookLike"></textarea></div>
+                  <div class="field field-full"><label for="req-tried">What have you already tried?</label><textarea id="req-tried" name="alreadyTried"></textarea></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="request-step" data-step="4">
+              <button class="back-link" type="button" data-go-step="3">← Edit Details</button>
+              <h2>Final Details</h2>
+              <div class="form-grid">
+                <div class="field field-full"><label for="req-timing">Preferred / Expected Timing</label><input id="req-timing" name="timing" placeholder="If there is a deadline, tell us why it matters." /></div>
+                <div class="field field-full"><label for="req-else">Anything else Geeslane should know before reviewing your request?</label><textarea id="req-else" name="anythingElse"></textarea></div>
+                <fieldset class="field field-full"><legend>Please confirm before submitting <span>*</span></legend>
+                  <div class="confirm-stack">
+                    <label class="confirm-check"><input name="confirmAccurate" type="checkbox" required /><span>I confirm that the information supplied is accurate to the best of my knowledge.</span></label>
+                    <label class="confirm-check"><input name="confirmNoContract" type="checkbox" required /><span>I understand that submitting this form does not create a contract or guarantee a project start date.</span></label>
+                    <label class="confirm-check"><input name="confirmFollowUp" type="checkbox" required /><span>I understand that Geeslane may request additional information before the project starts.</span></label>
+                  </div>
+                </fieldset>
+              </div>
+            </div>
+
+            <p class="form-error" id="request-error" hidden></p>
+            <footer class="request-actions" id="request-actions">
+              <button class="button button-secondary" type="button" id="request-back" hidden>Back</button>
+              <button class="button button-primary" type="button" id="request-next">Continue</button>
+            </footer>
+          </form>
+        </section>
+      </main>
+
+      <footer class="auth-footer">
+        <nav class="auth-footer-links" aria-label="Helpful links">
+          <a href="../index.html">Website</a>
+          <a href="../faq.html">FAQ</a>
+          <a href="../terms.html">Terms &amp; Agreement</a>
+          <a href="mailto:contact@geeslane.com">Contact</a>
+        </nav>
+        <a class="auth-admin-link" href="./admin.html">Admin</a>
+      </footer>
+    </section>
+
+    <div class="page-loader" id="page-loader" hidden>
+      <div class="page-loader-card" role="status" aria-live="polite" aria-busy="true">
+        <span class="page-spinner" aria-hidden="true"></span>
+        <p class="page-loader-copy">Sending…</p>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./config.js"></script>
+    <script src="./mail.js"></script>
+    <script src="./api.js"></script>
+    <script src="./request.js"></script>
   </body>
 </html>

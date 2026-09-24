@@ -3,8 +3,8 @@
  * supabaseUrl and supabasePublishableKey are public client values. They must live
  * in this file so production can sign people in. A hosting dashboard .env is not
  * read by this static site.
- * Never paste a service-role key, Resend API key, SMTP password, SMS token, or
- * other secret here. Custom SMTP is configured only in the Supabase dashboard.
+ * Never paste a service-role key, Resend API key, SMTP password, SMS token,
+ * Paystack secret key, or other secret here.
  * Local .env may override these values and supply the admin password shortcut.
  */
 window.GEESLANE_CONFIG = {
@@ -16,6 +16,7 @@ window.GEESLANE_CONFIG = {
   adminPassword: "",
   adminEmail: "contact@geeslane.com",
   web3formsAccessKey: "2a0e630b-0865-4b85-b0da-4824d6f264f2",
+  paystackPublicKey: "pk_test_24d01f7758ba3893d1a620bbb38dfdca98554c5f",
   storageMode: "supabase"
 };
 
@@ -44,6 +45,7 @@ window.GEESLANE_ENV_READY = (async function loadLocalEnv() {
     if (env.ADMIN_USERNAME) window.GEESLANE_CONFIG.adminUsername = String(env.ADMIN_USERNAME).trim();
     if (env.ADMIN_PASSWORD) window.GEESLANE_CONFIG.adminPassword = String(env.ADMIN_PASSWORD);
     if (env.ADMIN_EMAIL) window.GEESLANE_CONFIG.adminEmail = String(env.ADMIN_EMAIL).trim();
+    if (env.PAYSTACK_PUBLIC_KEY) window.GEESLANE_CONFIG.paystackPublicKey = String(env.PAYSTACK_PUBLIC_KEY).trim();
   }
 
   const candidates = [];

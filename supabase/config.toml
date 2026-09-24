@@ -1,6 +1,15 @@
 [functions.send-portal-mail]
 verify_jwt = true
 
+[functions.start-payment]
+verify_jwt = false
+
+[functions.verify-payment]
+verify_jwt = false
+
+[functions.paystack-webhook]
+verify_jwt = false
+
 [auth.email]
 otp_length = 6
 otp_expiry = 3600

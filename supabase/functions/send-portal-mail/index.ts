@@ -98,26 +98,45 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization") || "";
     if (!authHeader.toLowerCase().startsWith("bearer ")) return json({ error: "Sign in required" }, 401);
 
+    const payload = await req.json();
+    const subject = String(payload.subject || "").trim().slice(0, 180);
+    const html = String(payload.html || "").trim().slice(0, 120000);
+    const text = String(payload.text || "").trim().slice(0, 40000);
+    const audience = payload.audience === "client" || payload.audience === "both" ? payload.audience : "team";
+    const kind = String(payload.kind || "").trim();
+    const isServiceRequest = kind === "service-request";
+    if (!subject || (!html && !text)) return json({ error: "Missing mail" }, 400);
+
     const supabase = createClient(Deno.env.get("SUPABASE_URL") || "", Deno.env.get("SUPABASE_ANON_KEY") || "", {
       global: { headers: { Authorization: authHeader } }
     });
     const { data: authData, error: authError } = await supabase.auth.getUser();
-    if (authError || !authData.user) return json({ error: "Sign in required" }, 401);
+    const signedIn = Boolean(authData?.user) && !authError;
+    if (!signedIn && !isServiceRequest) return json({ error: "Sign in required" }, 401);
 
-    const payload = await req.json();
-    const subject = String(payload.subject || "").trim().slice(0, 180);
-    const html = String(payload.html || "").trim();
-    const text = String(payload.text || "").trim();
-    const audience = payload.audience === "client" || payload.audience === "both" ? payload.audience : "team";
-    if (!subject || (!html && !text)) return json({ error: "Missing mail" }, 400);
-
-    const { data: profile } = await supabase.from("profiles").select("role,status,email").eq("user_id", authData.user.id).maybeSingle();
+    const { data: profile } = signedIn
+      ? await supabase.from("profiles").select("role,status,email").eq("user_id", authData.user.id).maybeSingle()
+      : { data: null };
     const isAdmin = profile?.role === "admin" && profile?.status === "active";
+
+    const clientEmail = String(payload.clientEmail || payload.replyTo || "").trim().toLowerCase();
+    if (isServiceRequest && !signedIn) {
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+      if (serviceKey && validEmail(clientEmail)) {
+        const adminClient = createClient(Deno.env.get("SUPABASE_URL") || "", serviceKey);
+        const { data: rows } = await adminClient
+          .from("registrations")
+          .select("id")
+          .ilike("email", clientEmail)
+          .eq("status", "Pending")
+          .limit(1);
+        if (!rows?.length) return json({ error: "Request not found" }, 403);
+      }
+    }
 
     const recipients = new Set<string>();
     if (audience === "team" || audience === "both") recipients.add(teamTo.toLowerCase());
-    const clientEmail = String(payload.clientEmail || "").trim().toLowerCase();
-    if ((audience === "client" || audience === "both") && isAdmin && validEmail(clientEmail)) {
+    if ((audience === "client" || audience === "both") && validEmail(clientEmail) && (isAdmin || isServiceRequest)) {
       recipients.add(clientEmail);
     }
 
@@ -136,6 +155,15 @@ Deno.serve(async (req) => {
     let emailed = false;
     if (recipients.size && apiKey) {
       const replyTo = validEmail(String(payload.replyTo || "")) ? String(payload.replyTo).trim() : teamTo;
+      const attachments = (Array.isArray(payload.attachments) ? payload.attachments : [])
+        .slice(0, 3)
+        .map((item) => {
+          const filename = String(item?.filename || "document.pdf").replace(/[^\w.\- ]+/g, "").slice(0, 80) || "document.pdf";
+          const content = String(item?.content || "").replace(/\s+/g, "");
+          if (!content || content.length > 7000000) return null;
+          return { filename, content, content_type: "application/pdf" };
+        })
+        .filter(Boolean);
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -148,7 +176,8 @@ Deno.serve(async (req) => {
           reply_to: replyTo,
           subject,
           html: html || undefined,
-          text: text || undefined
+          text: text || undefined,
+          attachments: attachments.length ? attachments : undefined
         })
       });
       emailed = response.ok;
