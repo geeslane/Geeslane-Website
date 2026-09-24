@@ -74,7 +74,7 @@ as $$
 begin
   if not exists (
     select 1 from public.profiles
-    where id = auth.uid() and role = 'admin' and status = 'active'
+    where (id = auth.uid() or user_id = auth.uid()) and role = 'admin' and status = 'active'
   ) then
     raise exception 'Administrator access is required';
   end if;

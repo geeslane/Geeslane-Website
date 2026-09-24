@@ -127,7 +127,7 @@
     if (/could not find the function|schema cache|pgrst202/i.test(message) && /portal_settings|bank/i.test(message)) return "Could not save bank details. Run portal_settings.sql in Supabase, then try again.";
     if (/could not find the function|schema cache|pgrst202/i.test(message) && /client_add_project/i.test(message)) return "Could not add another project. Run client_add_project.sql in Supabase, then try again.";
     if (/column .*goal.*does not exist|42703/i.test(message)) return "Run portal_settings.sql in Supabase so project briefs can be saved, then try again.";
-    if (/profile not found|no Geeslane portal profile/i.test(message)) return "This sign-in is valid, but no Geeslane portal profile exists for this email yet.";
+    if (/client with this email already exists/i.test(message)) return "That email is still in Clients. The last reset did not finish. Run the updated reset SQL, delete that email under Authentication → Users, then try again.";
     if (/Administrator access is required/i.test(message)) return "Administrator access is required.";
     return fallback;
   }
@@ -1521,7 +1521,10 @@
   async function ensurePortalAuthUser(email, metadata = {}) {
     if (!backendConfigured() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""))) return false;
     try {
+      const session = (await client().auth.getSession()).data?.session;
+      const headers = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined;
       const result = await client().functions.invoke("send-portal-mail", {
+        headers,
         body: {
           kind: "ensure-user",
           audience: "team",
@@ -1531,6 +1534,7 @@
         }
       });
       if (result.error) throw result.error;
+      if (result.data?.error) throw Object.assign(new Error(result.data.error), { userMessage: result.data.error });
       return Boolean(result.data?.sent || result.data?.user);
     } catch (error) {
       logPortalError("ensure-user", error);
@@ -1541,7 +1545,9 @@
   async function sendPortalMail(payload) {
     if (!backendConfigured()) return false;
     try {
-      const result = await client().functions.invoke("send-portal-mail", { body: payload || {} });
+      const session = (await client().auth.getSession()).data?.session;
+      const headers = session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined;
+      const result = await client().functions.invoke("send-portal-mail", { headers, body: payload || {} });
       if (result.error) throw result.error;
       if (result.data?.sms === false && result.data?.smsError) {
         logPortalError("portal-sms", result.data.smsError);

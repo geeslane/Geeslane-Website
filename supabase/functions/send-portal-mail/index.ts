@@ -198,10 +198,12 @@ Deno.serve(async (req) => {
     const isEnsureUser = kind === "ensure-user";
     if (!isEnsureUser && (!subject || (!html && !text))) return json({ error: "Missing mail" }, 400);
 
+    const accessToken = authHeader.slice(7).trim();
     const supabase = createClient(Deno.env.get("SUPABASE_URL") || "", Deno.env.get("SUPABASE_ANON_KEY") || "", {
-      global: { headers: { Authorization: authHeader } }
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false, autoRefreshToken: false }
     });
-    const { data: authData, error: authError } = await supabase.auth.getUser();
+    const { data: authData, error: authError } = await supabase.auth.getUser(accessToken);
     const signedIn = Boolean(authData?.user) && !authError;
     if (!signedIn && !isServiceRequest) return json({ error: "Sign in required" }, 401);
 
