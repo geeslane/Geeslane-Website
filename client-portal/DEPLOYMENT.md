@@ -166,9 +166,11 @@ npx supabase functions deploy send-portal-mail
 
 Access requests made before sign-in still go through Web3Forms.
 
-## SMS notes (comments and milestone updates)
+## SMS notes (clients and admin)
 
 Clients still receive email. If a phone number is saved on their profile, the same Geeslane comment or milestone update is also sent by SMS.
+
+Admin and team notes (client brief saves, service requests, payments, and other `notifyTeam` messages) still go to `NOTIFY_TEAM_EMAIL`. Set `NOTIFY_TEAM_PHONE` and the same SMS is sent to that number. More than one number is allowed, separated by commas.
 
 Do not put SMS credentials in the website, `.env`, or Git. Use **Termii** (Nigeria) or **Twilio**. If both are set, Termii is used.
 
@@ -198,6 +200,7 @@ In **Project Settings → Edge Functions → Secrets**, add one of these sets, p
 | `TERMII_SENDER_ID` | `Geeslane` |
 | `TERMII_CHANNEL` | `generic` |
 | `SMS_DEFAULT_COUNTRY` | `234` (used when a number starts with 0) |
+| `NOTIFY_TEAM_PHONE` | admin/team mobile, for example `+2348012345678` |
 
 **Twilio**
 
@@ -207,6 +210,7 @@ In **Project Settings → Edge Functions → Secrets**, add one of these sets, p
 | `TWILIO_AUTH_TOKEN` | your Auth Token |
 | `TWILIO_FROM` | `+15551234567` or an approved sender ID |
 | `SMS_DEFAULT_COUNTRY` | `234` |
+| `NOTIFY_TEAM_PHONE` | admin/team mobile, for example `+2348012345678` |
 
 Then redeploy `send-portal-mail` (same function as portal email). Dashboard: paste the updated `index.ts` and deploy. CLI example for Termii:
 
@@ -215,16 +219,32 @@ npx supabase secrets set TERMII_API_KEY=YOUR_TERMII_KEY
 npx supabase secrets set TERMII_SENDER_ID=Geeslane
 npx supabase secrets set TERMII_CHANNEL=generic
 npx supabase secrets set SMS_DEFAULT_COUNTRY=234
+npx supabase secrets set NOTIFY_TEAM_PHONE=+2348012345678
 npx supabase functions deploy send-portal-mail
 ```
+
+Redeploy `send-portal-mail` after this change even if Termii is already enabled.
 
 ### 3. Check it
 
 1. On **Your profile**, save a phone number with country code (for example `+234 801 234 5678`).
 2. In admin, post a milestone comment or change a milestone status.
 3. The client should get the email and an SMS that starts with `Geeslane`.
+4. Have a client save the project brief, or submit a service request. The `NOTIFY_TEAM_PHONE` number should get the team SMS, and `NOTIFY_TEAM_EMAIL` should still get the email.
 
-If SMS is missing, open **Edge Functions → send-portal-mail → Logs**. A Termii sender-ID error means `TERMII_SENDER_ID` is not registered. A Twilio 21608/21610 error means the From number cannot send to that destination.
+If SMS is missing, open **Edge Functions → send-portal-mail → Logs**. A Termii sender-ID error means `TERMII_SENDER_ID` is not registered. A Twilio 21608/21610 error means the From number cannot send to that destination. Missing admin SMS with working client SMS usually means `NOTIFY_TEAM_PHONE` is not set.
+
+## Installable portal (PWA)
+
+The client portal can be installed on a phone or computer. It uses `client-portal/manifest.webmanifest` and `client-portal/sw.js`. The service worker caches the portal shell (HTML, CSS, JS, icons). Sign-in codes, live project data, and Paystack still need the network.
+
+After you publish these files to `https://geeslane.com/client-portal/`:
+
+1. Open the portal on HTTPS (or localhost).
+2. Chrome or Edge: install from the address bar, or **Menu → Install Geeslane**.
+3. iPhone: **Share → Add to Home Screen**.
+
+The home-screen icon is the Geeslane G from `images/logo.png`. Admin is in the same app (`admin.html` shortcut).
 
 ## Database extras
 

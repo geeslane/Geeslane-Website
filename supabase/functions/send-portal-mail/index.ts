@@ -40,6 +40,15 @@ function smsReady() {
   return termii || twilio;
 }
 
+function teamSmsNumbers(defaultCountry: string) {
+  const unique = new Set<string>();
+  for (const part of String(Deno.env.get("NOTIFY_TEAM_PHONE") || "").split(/[\s,;]+/)) {
+    const n = smsNumber(part, defaultCountry);
+    if (n) unique.add(n);
+  }
+  return [...unique];
+}
+
 function smsText(payload: Record<string, unknown>) {
   const heading = oneLine(payload.heading || payload.subject, 80);
   const intro = oneLine(payload.intro, 140);
@@ -140,16 +149,20 @@ Deno.serve(async (req) => {
       recipients.add(clientEmail);
     }
 
-    let clientPhone = "";
+    const smsTargets = new Set<string>();
     if ((audience === "client" || audience === "both") && isAdmin && canSms) {
-      clientPhone = smsNumber(payload.clientPhone, defaultCountry);
+      let clientPhone = smsNumber(payload.clientPhone, defaultCountry);
       if (validEmail(clientEmail)) {
         const { data: clientProfile } = await supabase.from("profiles").select("phone").ilike("email", clientEmail).maybeSingle();
         clientPhone = smsNumber(clientProfile?.phone, defaultCountry) || clientPhone;
       }
+      if (clientPhone) smsTargets.add(clientPhone);
+    }
+    if ((audience === "team" || audience === "both") && canSms) {
+      for (const n of teamSmsNumbers(defaultCountry)) smsTargets.add(n);
     }
 
-    if (!recipients.size && !clientPhone) return json({ error: "No recipients" }, 400);
+    if (!recipients.size && !smsTargets.size) return json({ error: "No recipients" }, 400);
     if (!apiKey && !canSms) return json({ error: "Mail is not configured" }, 503);
 
     let emailed = false;
@@ -184,12 +197,16 @@ Deno.serve(async (req) => {
     }
 
     let sms = false;
-    if (clientPhone && canSms) {
-      try {
-        sms = await sendSms(clientPhone, smsText(payload));
-      } catch (_) {
-        sms = false;
-      }
+    if (smsTargets.size && canSms) {
+      const body = smsText(payload);
+      const results = await Promise.all([...smsTargets].map(async (to) => {
+        try {
+          return await sendSms(to, body);
+        } catch (_) {
+          return false;
+        }
+      }));
+      sms = results.some(Boolean);
     }
 
     if (!emailed && !sms) return json({ error: "Send failed" }, 502);

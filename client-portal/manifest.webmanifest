@@ -1,0 +1,44 @@
+{
+  "id": "/client-portal/",
+  "name": "Geeslane Portal",
+  "short_name": "Geeslane",
+  "description": "Geeslane client and admin portal for projects, payments, and updates.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef6f1",
+  "theme_color": "#0b6b45",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Client portal",
+      "short_name": "Portal",
+      "url": "./"
+    },
+    {
+      "name": "Admin",
+      "short_name": "Admin",
+      "url": "./admin.html"
+    }
+  ]
+}
