@@ -170,7 +170,7 @@ Access requests made before sign-in still go through Web3Forms.
 
 Clients still receive email. If a phone number is saved on their profile, the same Geeslane comment or milestone update is also sent by SMS.
 
-Admin and team notes (client brief saves, service requests, payments, and other `notifyTeam` messages) still go to `NOTIFY_TEAM_EMAIL`. Set `NOTIFY_TEAM_PHONE` and the same SMS is sent to that number. More than one number is allowed, separated by commas.
+Admin and team notes (client brief saves, service requests, payments, and other `notifyTeam` messages) still go to `NOTIFY_TEAM_EMAIL`. Set `NOTIFY_TEAM_PHONE` and the same SMS is sent to that number. Use one number with country code and no spaces, for example `+2348012345678`. More than one number is allowed, separated by commas only.
 
 Do not put SMS credentials in the website, `.env`, or Git. Use **Termii** (Nigeria) or **Twilio**. If both are set, Termii is used.
 
@@ -246,6 +246,25 @@ After you publish these files to `https://geeslane.com/client-portal/`:
 
 The home-screen icon is the Geeslane G from `images/logo.png`. Admin is in the same app (`admin.html` shortcut).
 
+### Device notifications
+
+After install (and on Chrome/Edge in the browser), a signed-in client or admin is asked once for notification permission. Those alerts use Web Push, not Termii. SMS can stay off until a sender ID is approved.
+
+1. Run `supabase/portal_push.sql` in **SQL Editor**.
+2. Set these Edge Function secrets (public VAPID is also in `client-portal/config.js`):
+
+```
+npx supabase secrets set VAPID_PUBLIC_KEY=YOUR_VAPID_PUBLIC_KEY
+npx supabase secrets set VAPID_PRIVATE_KEY=YOUR_VAPID_PRIVATE_KEY
+npx supabase secrets set VAPID_SUBJECT=mailto:contact@geeslane.com
+npx supabase functions deploy send-portal-mail
+```
+
+3. Publish the latest `client-portal/` files.
+4. Sign in on HTTPS, allow notifications when asked. iPhone only shows them after **Add to Home Screen**.
+
+The same `send-portal-mail` events that email the team or client also send the device notification.
+
 ## Database extras
 
 After the base schema, run these in **SQL Editor** if they are not already applied:
@@ -261,6 +280,7 @@ After the base schema, run these in **SQL Editor** if they are not already appli
 9. `supabase/client_add_project.sql` — lets a signed-in client open another project without replacing the ones they already have. More than one project can stay open at the same time. After this runs, Overview lists every project with its brief, payments, milestones, and files.
 10. `supabase/project_payments.sql` — project total, paid/remaining on both portals, automatic receipts after Paystack payments. Run this after `projects_invoices.sql`.
 11. `supabase/portal_settings.sql` — adds missing brief columns (`goal`, `audience`, `scope`), store bank transfer details for invoices, and lets admin create a client without that error. Run this if you see `column "goal" of relation "project_content" does not exist`. After it runs, set bank details on **Invoices & Receipts**. Redeploy `send-portal-mail` so invoice and receipt emails can attach the PDF.
+12. `supabase/portal_push.sql` — stores PWA notification subscriptions. Needed before device alerts work.
 
 ## Online payments (Paystack)
 

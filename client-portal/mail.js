@@ -102,9 +102,20 @@
       </tr>`).join("")}</table>`;
   }
 
-  function buildHtml({ greeting, heading, intro, rows, ctaLabel, ctaUrl, signoff, attachmentNote }) {
+  function blocksHtml(blocks) {
+    const items = (blocks || []).filter((block) => block && (block.title || block.body));
+    if (!items.length) return "";
+    return items.map((block) => `
+      <div style="margin:0 0 18px;text-align:left;">
+        ${block.title ? `<p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#063b29;">${escapeHtml(block.title)}</p>` : ""}
+        <p style="margin:0;font-size:14px;line-height:1.65;color:#2a3931;">${cellText(block.body)}</p>
+      </div>`).join("");
+  }
+
+  function buildHtml({ greeting, heading, intro, rows, blocks, ctaLabel, ctaUrl, signoff, attachmentNote }) {
     const hello = greeting ? `<p style="margin:0 0 6px;font-size:14px;color:#0b6b45;font-weight:600;text-align:center;">${escapeHtml(greeting)}</p>` : "";
     const note = attachmentNote ? `<p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#697870;text-align:center;">${escapeHtml(attachmentNote)}</p>` : "";
+    const lead = intro ? `<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#2a3931;text-align:center;">${cellText(intro)}</p>` : "";
     const bye = `<p style="margin:22px 0 0;font-size:14px;line-height:1.6;color:#2a3931;text-align:center;">${escapeHtml(signoff || "Kind regards,")}<br><strong style="color:#063b29;">Geeslane</strong></p>`;
     const button = ctaLabel && ctaUrl ? `
       <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:8px auto 0;">
@@ -130,10 +141,11 @@
               <td align="center" style="padding:24px 36px 36px;">
                 ${hello}
                 <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;letter-spacing:-.02em;color:#063b29;text-align:center;">${escapeHtml(heading)}</h1>
-                <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#2a3931;text-align:center;">${escapeHtml(intro)}</p>
+                ${lead}
                 ${note}
                 ${rowsHtml(rows)}
                 ${button}
+                ${blocksHtml(blocks)}
                 ${bye}
               </td>
             </tr>
@@ -145,9 +157,13 @@
 </html>`;
   }
 
-  function plainText({ greeting, heading, intro, rows, ctaUrl, signoff, attachmentNote }) {
+  function plainText({ greeting, heading, intro, rows, blocks, ctaUrl, signoff, attachmentNote }) {
     const lines = [greeting, heading, intro, attachmentNote, ""].filter(Boolean);
     (rows || []).filter((row) => row && row[1]).forEach(([label, value]) => lines.push(`${label}: ${value}`));
+    (blocks || []).filter((block) => block && (block.title || block.body)).forEach((block) => {
+      if (block.title) lines.push("", block.title);
+      if (block.body) lines.push(block.body);
+    });
     if (ctaUrl) lines.push("", ctaUrl);
     lines.push("", signoff || "Kind regards,", "Geeslane");
     return lines.join("\n").trim();
@@ -166,6 +182,7 @@
       heading,
       intro: options.intro,
       rows: options.rows || [],
+      blocks: options.blocks || [],
       ctaLabel,
       ctaUrl,
       signoff: options.signoff,

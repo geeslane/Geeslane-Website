@@ -1265,15 +1265,15 @@
     return withLoader(async () => {
       let result;
       if (action === "adminApproveRegistration") {
+        if (payload.email) await ensurePortalAuthUser(payload.email, payload);
         result = resultOrThrow(await client().rpc("admin_approve_registration", { p_registration_id: payload.registrationId, p_project_name: payload.projectName, p_service: payload.service, p_target_date: payload.targetDate || null, p_notes: payload.notes || "" }));
-        await sendMagicLink(result.email, portalRedirect("payments"), result.profileData);
         result.user = await profileByEmail(result.email);
         return result;
       }
       if (action === "adminRejectRegistration") return resultOrThrow(await client().rpc("admin_reject_registration", { p_registration_id: payload.registrationId, p_notes: payload.notes || "" }));
       if (action === "adminCreateClientProject") {
+        await ensurePortalAuthUser(payload.email, payload);
         result = resultOrThrow(await client().rpc("admin_create_client_project", { p_name: payload.name, p_business: payload.business, p_email: payload.email, p_phone: payload.phone || "", p_contact: payload.contact || "Email", p_project_name: payload.projectName, p_service: payload.service || "Website project", p_target_date: payload.targetDate || null }));
-        await sendMagicLink(result.email, portalRedirect("payments"), result.profileData);
         result.user = await profileByEmail(result.email);
         return result;
       }
@@ -1440,14 +1440,53 @@
     }
   }
 
+  async function ensurePortalAuthUser(email, metadata = {}) {
+    if (!backendConfigured() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""))) return false;
+    try {
+      const result = await client().functions.invoke("send-portal-mail", {
+        body: {
+          kind: "ensure-user",
+          audience: "team",
+          clientEmail: String(email).trim().toLowerCase(),
+          name: metadata.name || metadata.full_name || "",
+          business: metadata.business || ""
+        }
+      });
+      if (result.error) throw result.error;
+      return Boolean(result.data?.sent || result.data?.user);
+    } catch (error) {
+      logPortalError("ensure-user", error);
+      return false;
+    }
+  }
+
   async function sendPortalMail(payload) {
     if (!backendConfigured()) return false;
     try {
       const result = await client().functions.invoke("send-portal-mail", { body: payload || {} });
       if (result.error) throw result.error;
-      return Boolean(result.data?.sent || result.data?.sms);
+      if (result.data?.sms === false && result.data?.smsError) {
+        logPortalError("portal-sms", result.data.smsError);
+      }
+      return Boolean(result.data?.sent || result.data?.sms || result.data?.push);
     } catch (error) {
       logPortalError("portal-mail", error);
+      return false;
+    }
+  }
+
+  async function savePushSubscription(subscription) {
+    if (!backendConfigured() || !subscription?.endpoint || !subscription?.p256dh || !subscription?.auth) return false;
+    try {
+      resultOrThrow(await client().rpc("save_my_push_subscription", {
+        p_endpoint: subscription.endpoint,
+        p_p256dh: subscription.p256dh,
+        p_auth: subscription.auth,
+        p_audience: subscription.audience === "team" ? "team" : "client"
+      }));
+      return true;
+    } catch (error) {
+      logPortalError("portal-push", error);
       return false;
     }
   }
@@ -1507,6 +1546,7 @@
     startPayment,
     verifyPayment,
     sendPortalMail,
+    savePushSubscription,
     uploadUrl: () => ""
   });
 })();

@@ -4,7 +4,7 @@
  * in this file so production can sign people in. A hosting dashboard .env is not
  * read by this static site.
  * Never paste a service-role key, Resend API key, SMTP password, SMS token,
- * Paystack secret key, or other secret here.
+ * Paystack secret key, VAPID private key, or other secret here.
  * Local .env may override these values and supply the admin password shortcut.
  */
 window.GEESLANE_CONFIG = {
@@ -17,6 +17,7 @@ window.GEESLANE_CONFIG = {
   adminEmail: "contact@geeslane.com",
   web3formsAccessKey: "2a0e630b-0865-4b85-b0da-4824d6f264f2",
   paystackPublicKey: "pk_test_24d01f7758ba3893d1a620bbb38dfdca98554c5f",
+  vapidPublicKey: "BBPlHQtchoFRHJivYSio357Yo2mb2z35MBIhrtgc8cGmbt734-DOyc93fqcM6FpFouef5dSkmulc2qxAiCZHCA8",
   storageMode: "supabase"
 };
 

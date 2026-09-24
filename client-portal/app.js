@@ -2046,6 +2046,8 @@
     applyCommentLink();
     await confirmReturningPayment();
     maybeStartTour();
+    const delay = document.getElementById("portal-tour") && !document.getElementById("portal-tour").hidden ? 12000 : 1500;
+    setTimeout(() => window.GeeslanePWA?.enableNotifications?.("client"), delay);
     return true;
   }
 

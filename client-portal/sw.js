@@ -1,5 +1,5 @@
 /* Geeslane portal shell. Live data, OTP, and Paystack still need the network. */
-const CACHE = "geeslane-portal-v1";
+const CACHE = "geeslane-portal-v2";
 const SHELL = [
   "./",
   "./index.html",
@@ -83,5 +83,32 @@ self.addEventListener("fetch", (event) => {
     }
     const fresh = await network;
     return fresh || Response.error();
+  })());
+});
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (_) { data = { body: event.data?.text() || "" }; }
+  const title = String(data.title || "Geeslane");
+  const options = {
+    body: String(data.body || "You have a new portal update."),
+    icon: "./icons/icon-192.png",
+    badge: "./icons/icon-192.png",
+    data: { url: String(data.url || "./") }
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = String(event.notification.data?.url || "./");
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    const existing = windows.find((client) => client.url.includes("/client-portal/"));
+    if (existing) {
+      if (existing.navigate) await existing.navigate(target);
+      return existing.focus();
+    }
+    return self.clients.openWindow(target);
   })());
 });

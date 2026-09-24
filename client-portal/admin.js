@@ -229,7 +229,9 @@
       ctaUrl: extras.ctaUrl,
       ctaLabel: extras.ctaLabel || "Open Your Portal",
       attachments: extras.attachments || [],
-      attachmentNote: extras.attachmentNote
+      attachmentNote: extras.attachmentNote,
+      blocks: extras.blocks || [],
+      sms: extras.sms
     });
   }
 
@@ -249,6 +251,29 @@
     });
   }
 
+  function bankMailRows() {
+    const bank = portalSettings || {};
+    return [
+      bank.bankName ? ["Bank", bank.bankName] : null,
+      bank.accountName ? ["Account name", bank.accountName] : null,
+      bank.accountNumber ? ["Account number", bank.accountNumber] : null,
+      bank.bankNotes ? ["Payment note", bank.bankNotes] : null
+    ].filter(Boolean);
+  }
+
+  function installAppBlocks() {
+    return [
+      {
+        title: "Add Geeslane to your iPhone",
+        body: "1. Open the portal link in Safari. Other iPhone browsers cannot add it to the Home Screen.\n2. Tap the Share button (the square with an arrow pointing up).\n3. Scroll the list and tap Add to Home Screen.\n4. Tap Add. The Geeslane icon will sit on your Home Screen like an app.\n5. Open it from there. Enter your email when you are ready to sign in. A 6-digit code is sent only then — not with this invite."
+      },
+      {
+        title: "Add Geeslane to your Android phone",
+        body: "1. Open the portal link in Chrome.\n2. Tap the menu (three dots) at the top right.\n3. Tap Install app or Add to Home screen.\n4. Tap Install. Geeslane will appear with your other apps.\n5. Open it and enter your email when you are ready to sign in. A 6-digit code is sent only then — not with this invite."
+      }
+    ];
+  }
+
   async function sendBillingMails(kind, { contact, invoice, receipt, attachment }) {
     const attachments = attachment ? [attachment] : [];
     const paymentsUrl = window.GeeslaneMail?.portalLink("client", "payments", { next: "payments" });
@@ -257,14 +282,17 @@
     const email = contact?.email || "";
     const project = contact?.project?.name || "";
     if (kind === "invoice") {
-      await notifyClient(email, "Your invoice", "Please find your invoice attached.", [
+      await notifyClient(email, "Your invoice", "Please find your invoice attached. You can pay in the portal or transfer to the Geeslane account below.", [
         ["Invoice", invoice?.reference],
         ["Amount due", window.GeeslaneAPI.invoiceBalance(invoice)?.remainingLabel || moneyLabel(invoice)],
-        ["Due", invoice?.dueDate ? formatDate(invoice.dueDate) : ""]
+        ["Due", invoice?.dueDate ? formatDate(invoice.dueDate) : ""],
+        ...bankMailRows()
       ], name, {
         ctaUrl: paymentsUrl,
         ctaLabel: "Pay now",
-        attachments
+        attachments,
+        attachmentNote: attachment ? "The invoice PDF is attached." : "",
+        sms: false
       });
       await notifyTeam("Invoice sent", `${name || email || "A client"} was sent invoice ${invoice?.reference || ""}.`, [
         ["Client", name],
@@ -298,18 +326,59 @@
   async function sendPortalReadyMail(contact, invoice, kind = "welcome") {
     const attachment = invoice ? await documentAttachment("invoice", invoiceMailData(invoice, contact)) : null;
     const isProject = kind === "project";
-    const heading = isProject ? "A new project is ready" : "Your portal is ready";
-    const intro = invoice ? "We've attached your invoice." : "Use the button below to get started.";
-    await notifyClient(contact.email, heading, intro, [
-      ["Project", contact.project?.name],
-      invoice?.reference ? ["Invoice", invoice.reference] : null,
-      invoice ? ["Amount", moneyLabel(invoice)] : null
-    ].filter(Boolean), contact.name, {
-      ctaUrl: paymentsLink(),
-      ctaLabel: "Open your portal",
-      attachments: attachment ? [attachment] : []
-    });
+    const portalUrl = window.GeeslaneMail?.portalLink("client") || "https://geeslane.com/client-portal/";
+    const paymentsUrl = paymentsLink();
+    if (!isProject) {
+      await notifyClient(
+        contact.email,
+        "Your portal is ready",
+        "Geeslane opened a client portal for this project. Bookmark the link below. When you are ready, open it, enter this same email, and request a 6-digit code. No password is needed, and no sign-in code is included in this email.\n\nAdd Geeslane to your phone so updates and invoices stay one tap away.",
+        [
+          ["Project", contact.project?.name]
+        ],
+        contact.name,
+        {
+          ctaUrl: portalUrl,
+          ctaLabel: "Open your portal",
+          blocks: installAppBlocks(),
+          sms: false
+        }
+      );
+    } else {
+      await notifyClient(
+        contact.email,
+        "A new project is ready",
+        "A new project is now in your Geeslane portal. Open it with the email you already use to sign in.",
+        [["Project", contact.project?.name]],
+        contact.name,
+        {
+          ctaUrl: portalUrl,
+          ctaLabel: "Open your portal",
+          sms: false
+        }
+      );
+    }
     if (invoice) {
+      await notifyClient(
+        contact.email,
+        "Your invoice",
+        "Your opening invoice is attached as a PDF. Pay in the portal or transfer to the Geeslane account below.",
+        [
+          ["Project", contact.project?.name],
+          ["Invoice", invoice.reference],
+          ["Amount due", window.GeeslaneAPI.invoiceBalance(invoice)?.remainingLabel || moneyLabel(invoice)],
+          invoice.dueDate ? ["Due", formatDate(invoice.dueDate)] : null,
+          ...bankMailRows()
+        ].filter(Boolean),
+        contact.name,
+        {
+          ctaUrl: paymentsUrl,
+          ctaLabel: "View invoice",
+          attachments: attachment ? [attachment] : [],
+          attachmentNote: attachment ? "The invoice PDF is attached." : "",
+          sms: false
+        }
+      );
       await notifyTeam("Invoice sent", `${contact.name || contact.email || "A client"} was invited and sent invoice ${invoice.reference || ""}.`, [
         ["Client", contact.name],
         ["Email", contact.email],
@@ -1858,8 +1927,12 @@
     window.GeeslaneAPI.setButtonBusy(button, true);
     try {
       const formData = Object.fromEntries(new FormData(form));
+      const registration = data.registrations.find((item) => item.id === formData.registrationId);
+      formData.email = registration?.email || "";
+      formData.name = registration?.name || "";
+      formData.business = registration?.business || "";
       const opening = openingPaymentFrom(form);
-      const result = await mutate("adminApproveRegistration", formData, "Client created and invitation queued");
+      const result = await mutate("adminApproveRegistration", formData, "Client created. Portal invite sent.");
       addCreatedWorkspace(result);
       const email = result.user?.email || result.email;
       const projectId = result.project?.id || result.projectId || result.id;
@@ -1911,7 +1984,7 @@
       const formData = Object.fromEntries(new FormData(form));
       formData.name = window.GeeslaneMail?.composePersonName(formData.title, formData.name) || formData.name;
       const opening = openingPaymentFrom(form);
-      const result = await mutate("adminCreateClientProject", formData, "Client, project, and invitation created");
+      const result = await mutate("adminCreateClientProject", formData, "Client created. Portal invite sent.");
       addCreatedWorkspace(result);
       await applyCreatedDates(result.project?.id || result.projectId || result.id, formData.startDate, formData.targetDate, result.project);
       const invoice = await attachOpeningPayment(result.project?.id || result.projectId || result.id, {
@@ -2017,6 +2090,7 @@
     const session = await window.GeeslaneAPI.getSession();
     if (session.user?.role === "admin" && session.user?.status === "active") {
       await enterAdmin();
+      setTimeout(() => window.GeeslanePWA?.enableNotifications?.("team"), 1200);
       return true;
     }
     if (session.user?.role === "admin") {
