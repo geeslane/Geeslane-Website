@@ -99,6 +99,8 @@
           <button class="admin-nav-item" data-admin-page="clients" type="button">Clients</button>
           <button class="admin-nav-item" data-admin-page="projects" type="button">Projects</button>
           <button class="admin-nav-item" data-admin-page="agreements" type="button">Agreements</button>
+          <button class="admin-nav-item" data-admin-page="handover" type="button">Handover</button>
+          <button class="admin-nav-item" data-admin-page="help" type="button">Help Centre</button>
           <button class="admin-nav-item" data-admin-page="invoices" type="button">Payments</button>
           <button class="admin-nav-item" data-admin-page="files" type="button">Brand & Files</button>
           <button class="admin-nav-item" data-admin-page="requests" type="button">Requests & Approvals</button>
@@ -141,7 +143,7 @@
             </div>
             <div class="admin-agreement-toolbar">
               <button class="button button-secondary" type="button" id="agreement-fill-defaults">Fill From Project</button>
-              <button class="button button-secondary" type="button" id="download-admin-agreement-pdf">Download PDF</button>
+              <button class="button button-secondary" type="button" id="download-admin-agreement-pdf">Download T&amp;C</button>
               <button class="button button-primary" type="button" id="save-agreement">Save Agreement</button>
             </div>
             <div class="admin-agreement-layout">
@@ -166,6 +168,59 @@
                 <div class="agreement-wrap" id="admin-agreement-document"></div>
               </section>
             </div>
+          </section>
+
+          <section class="admin-page" data-admin-view="handover">
+            <div class="admin-page-heading with-action">
+              <div><p class="eyebrow">Delivery</p><h2>Handover Pack</h2></div>
+              <div class="admin-heading-actions">
+                <label class="field compact-field admin-project-picker"><span>Project</span><select id="handover-project-filter" aria-label="Choose project"></select></label>
+              </div>
+            </div>
+            <p class="modal-lead" id="handover-status-line">Choose a project. The pack follows the type of work, and you pick which sections to include.</p>
+            <div class="admin-agreement-toolbar">
+              <button class="button button-secondary" type="button" id="download-handover-pdf">Download PDF</button>
+              <button class="button button-secondary" type="button" id="retrieve-handover-pdf">Retrieve saved PDF</button>
+              <button class="button button-secondary" type="button" id="preview-handover-email">Preview email</button>
+              <button class="button button-primary" type="button" id="save-handover">Save pack</button>
+            </div>
+            <div class="admin-agreement-layout">
+              <section class="card admin-card admin-agreement-form-card">
+                <form id="handover-form" novalidate>
+                  <fieldset class="field field-full"><legend>Include sections</legend><div class="confirm-stack" id="handover-section-toggles"></div></fieldset>
+                  <div id="handover-section-fields"></div>
+                  <div class="field field-full"><label for="handover-drive">Drive or file link</label><input id="handover-drive" name="fileDriveUrl" placeholder="https://" /></div>
+                  <div class="field"><label for="handover-retention">Remove our copy after</label>
+                    <select id="handover-retention" name="fileRetentionDays">
+                      <option value="30">30 days</option>
+                      <option value="45">45 days</option>
+                      <option value="60">60 days</option>
+                    </select>
+                  </div>
+                  <div class="field field-full"><label for="handover-notes">Notes</label><textarea id="handover-notes" name="notes" rows="4"></textarea></div>
+                  <fieldset class="field field-full"><legend>Handover checklist</legend><div class="confirm-stack" id="handover-checklist"></div></fieldset>
+                </form>
+              </section>
+              <section class="admin-agreement-preview-wrap">
+                <div class="agreement-wrap" id="admin-handover-document"></div>
+              </section>
+            </div>
+          </section>
+
+          <section class="admin-page" data-admin-view="help">
+            <div class="admin-page-heading with-action">
+              <div><p class="eyebrow">Support</p><h2>Help Centre</h2></div>
+              <button class="button button-primary" id="open-help-guide" type="button">Add article</button>
+            </div>
+            <p class="modal-lead">These answers appear on the client portal and, when marked public, on the website FAQ. Keep a clear path to email Geeslane.</p>
+            <section class="card admin-card">
+              <div class="admin-table-wrap">
+                <table class="admin-table">
+                  <thead><tr><th>Article</th><th>Category</th><th>Shown on</th><th>Status</th><th></th></tr></thead>
+                  <tbody id="help-guides-table"></tbody>
+                </table>
+              </div>
+            </section>
           </section>
 
           <section class="admin-page" data-admin-view="invoices">
@@ -261,11 +316,12 @@
                   <div class="field field-full"><label for="invoice-notes">Payment Notes</label><textarea id="invoice-notes" name="notes" rows="3" placeholder="A note the client will see on this invoice."></textarea></div>
                 </div>
               </form>
-              <div class="admin-agreement-toolbar">
-                <button class="button button-secondary" type="button" id="reset-invoice">New Invoice</button>
-                <button class="button button-secondary" type="button" id="save-invoice">Save</button>
-                <button class="button button-primary" type="button" id="send-invoice">Send Invoice</button>
-              </div>
+                <div class="admin-agreement-toolbar">
+                  <button class="button button-secondary" type="button" id="reset-invoice">New Invoice</button>
+                  <button class="button button-secondary" type="button" id="download-invoice-pdf">Download PDF</button>
+                  <button class="button button-secondary" type="button" id="save-invoice">Save</button>
+                  <button class="button button-primary" type="button" id="send-invoice">Send Invoice</button>
+                </div>
             </details>
             <section class="card admin-card billing-panel">
               <div class="admin-section-heading">
@@ -295,8 +351,16 @@
           <section class="admin-page" data-admin-view="files">
             <div class="admin-page-heading with-action"><div><p class="eyebrow">Files</p><h2>Brand & Files</h2></div><div class="admin-heading-actions"><button class="button button-secondary" id="download-all-files" type="button">Download Files</button><button class="button button-primary" id="export-brand-content" type="button">Export Brand & Content</button></div></div>
             <section class="card admin-card"><div class="admin-toolbar"><label class="field compact-field"><span>Project</span><select id="files-project-filter"></select></label></div>
+              <section class="admin-share-docs" id="admin-share-docs"></section>
               <section class="admin-material-panel admin-brief-panel">
                 <div class="admin-section-heading"><div><p class="eyebrow">Discovery</p><h2>Project Brief</h2></div></div>
+                <p class="admin-share-copy">If you covered this in a call, add it here so the client does not have to type it again.</p>
+                <form id="admin-brief-form" class="form-grid one-column" novalidate>
+                  <div class="field"><label for="admin-brief-goal">What should this help them achieve?</label><textarea id="admin-brief-goal" name="goal" rows="3"></textarea></div>
+                  <div class="field"><label for="admin-brief-audience">Who is this for?</label><textarea id="admin-brief-audience" name="audience" rows="3"></textarea></div>
+                  <div class="field"><label for="admin-brief-scope">Anything else they asked for?</label><textarea id="admin-brief-scope" name="visitorDetails" rows="3"></textarea></div>
+                  <button class="button button-primary" id="save-admin-brief" type="button">Save brief</button>
+                </form>
                 <div id="admin-brief-panel"></div>
               </section>
               <div class="admin-materials-grid">
@@ -314,18 +378,128 @@
             </section>
           </section>
 
-          <section class="admin-page" data-admin-view="requests"><div class="admin-page-heading"><div><p class="eyebrow">Requests</p><h2>Requests & Approvals</h2></div></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="admin-request-search" type="search" placeholder="Search requests" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Request</th><th>Project</th><th>Type</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody id="admin-requests-table"></tbody></table></div><div class="table-pager" id="requests-pager"></div></section></section>
+          <section class="admin-page" data-admin-view="requests"><div class="admin-page-heading with-action"><div><p class="eyebrow">Requests</p><h2>Requests & Approvals</h2></div><button class="button button-primary" id="open-log-item" type="button">Log for Client</button></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="admin-request-search" type="search" placeholder="Search requests" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Request</th><th>Project</th><th>Type</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody id="admin-requests-table"></tbody></table></div><div class="table-pager" id="requests-pager"></div></section></section>
 
           <section class="admin-page" data-admin-view="milestones"><div class="admin-page-heading with-action"><div><p class="eyebrow">Stages</p><h2>Milestones</h2><div class="admin-stage-options"><span>Include</span><label><input id="stage-include-wireframe" type="checkbox" checked /> Wireframe</label><label><input id="stage-include-design" type="checkbox" checked /> Visual Design</label></div></div><div class="admin-heading-actions"><label class="field compact-field admin-project-picker"><span>Project</span><select id="milestone-project-filter" aria-label="Choose project"></select></label><label class="field compact-field admin-target-picker"><span>Start date</span><input id="milestone-start-date" type="date" /></label><label class="field compact-field admin-target-picker"><span>Projected completion</span><input id="milestone-target-date" type="date" min="" /></label></div></div><section class="card admin-card" id="admin-milestone-context"></section><section class="card admin-card"><div id="admin-milestone-list"></div></section></section>
         </div>
       </main>
     </div>
 
-    <div class="modal-backdrop" id="approval-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="approval-title"><header class="modal-header"><div><p class="eyebrow">Review</p><h2 id="approval-title">Approve Client</h2></div><button class="icon-button modal-close" id="close-approval" type="button" aria-label="Close">×</button></header><form id="approval-form" class="modal-body" novalidate><input id="approval-registration-id" name="registrationId" type="hidden" /><div class="approval-summary" id="approval-summary"></div><div class="form-grid one-column"><div class="field"><label for="approval-project-name">Project name <span>*</span></label><input id="approval-project-name" name="projectName" required /></div><div class="field"><label for="approval-service">Type of work <span>*</span></label><input id="approval-service" name="service" required /></div><div class="field"><label for="approval-start">Project start date</label><input id="approval-start" name="startDate" type="date" /></div><div class="field"><label for="approval-target">Expected completion date</label><input id="approval-target" name="targetDate" type="date" /></div><div class="field"><label for="approval-notes">Private admin notes</label><textarea id="approval-notes" name="notes"></textarea></div><div class="field"><label for="approval-contract">Total project fee</label><input id="approval-contract" name="contractAmount" placeholder="e.g. 450,000" /></div><div class="field"><label for="approval-invoice-amount">First invoice amount</label><input id="approval-invoice-amount" name="invoiceAmount" placeholder="e.g. 225,000" /></div><div class="field"><label for="approval-invoice-title">First invoice name</label><input id="approval-invoice-title" name="invoiceTitle" value="Initial payment" /></div></div></form><footer class="modal-footer split-footer"><button class="button button-danger" id="reject-registration" type="button">Reject Request</button><div><button class="button button-secondary" id="cancel-approval" type="button">Cancel</button><button class="button button-primary" id="approve-registration" type="button">Approve & Invite</button></div></footer></section></div>
+    <div class="modal-backdrop" id="approval-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="approval-title"><header class="modal-header"><div><p class="eyebrow">Review</p><h2 id="approval-title">Approve Client</h2></div><button class="icon-button modal-close" id="close-approval" type="button" aria-label="Close">×</button></header><form id="approval-form" class="modal-body" novalidate><input id="approval-registration-id" name="registrationId" type="hidden" /><div class="approval-summary" id="approval-summary"></div><div class="form-grid one-column"><div class="field"><label for="approval-project-name">Project name <span>*</span></label><input id="approval-project-name" name="projectName" required /></div><div class="field"><label for="approval-service">Type of work <span>*</span></label><input id="approval-service" name="service" required /></div><div class="field"><label for="approval-start">Project start date</label><input id="approval-start" name="startDate" type="date" /></div><div class="field"><label for="approval-target">Expected completion date</label><input id="approval-target" name="targetDate" type="date" /></div><div class="field"><label for="approval-notes">Private admin notes</label><textarea id="approval-notes" name="notes"></textarea></div><div class="field"><label for="approval-contract">Total project fee</label><input id="approval-contract" name="contractAmount" placeholder="e.g. 450,000" /></div><div class="field"><label for="approval-invoice-amount">First invoice amount</label><input id="approval-invoice-amount" name="invoiceAmount" placeholder="e.g. 225,000" /></div><div class="field"><label for="approval-invoice-title">First invoice name</label><input id="approval-invoice-title" name="invoiceTitle" value="Initial payment" /></div></div></form><footer class="modal-footer split-footer"><button class="button button-danger" id="reject-registration" type="button">Reject Request</button><div><button class="button button-secondary" id="download-approval-tnc" type="button">Download T&amp;C</button><button class="button button-secondary" id="cancel-approval" type="button">Cancel</button><button class="button button-primary" id="approve-registration" type="button">Approve Client</button></div></footer></section></div>
 
-    <div class="modal-backdrop" id="create-client-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="create-client-title"><header class="modal-header"><div><p class="eyebrow">New Client</p><h2 id="create-client-title">Add Client &amp; Project</h2></div><button class="icon-button modal-close" id="close-create-client" type="button" aria-label="Close">×</button></header><form id="create-client-form" class="modal-body" novalidate><div class="form-grid"><div class="name-with-title"><div class="field field-title"><label for="new-client-title">Courtesy title</label><select id="new-client-title" name="title"><option value="">Optional</option><option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option><option value="Engr">Engr</option><option value="Chief">Chief</option><option value="Pastor">Pastor</option><option value="Barr">Barr</option></select></div><div class="field"><label for="new-client-name">Client full name <span>*</span></label><input id="new-client-name" name="name" placeholder="First and last name" required /></div></div><div class="field"><label for="new-client-business">Business name <span>*</span></label><input id="new-client-business" name="business" placeholder="Company, brand, or organisation" required /></div><div class="field field-full"><label for="new-client-email">Client email address <span>*</span></label><input id="new-client-email" name="email" type="email" required /></div><div class="field"><label for="new-client-phone">Phone number</label><input id="new-client-phone" name="phone" type="tel" /></div><div class="field"><label for="new-client-contact">Preferred contact method</label><select id="new-client-contact" name="contact"><option>Email</option><option>WhatsApp</option><option>Phone Call</option></select></div><div class="field field-full"><label for="new-project-name">Project name <span>*</span></label><input id="new-project-name" name="projectName" required /></div><div class="field"><label for="new-project-service">Type of work</label><input id="new-project-service" name="service" value="Business Website" /></div><div class="field"><label for="new-project-start">Project start date</label><input id="new-project-start" name="startDate" type="date" /></div><div class="field"><label for="new-project-target">Expected completion date</label><input id="new-project-target" name="targetDate" type="date" /></div><div class="field"><label for="new-contract-amount">Total project fee</label><input id="new-contract-amount" name="contractAmount" placeholder="e.g. 450,000" /></div><div class="field"><label for="new-invoice-amount">First invoice amount</label><input id="new-invoice-amount" name="invoiceAmount" placeholder="e.g. 225,000" /></div><div class="field field-full"><label for="new-invoice-title">First invoice name</label><input id="new-invoice-title" name="invoiceTitle" value="Initial payment" /></div></div></form><footer class="modal-footer"><button class="button button-secondary" id="cancel-create-client" type="button">Cancel</button><button class="button button-primary" id="save-create-client" type="button">Create &amp; Send Invite</button></footer></section></div>
+    <div class="modal-backdrop" id="create-client-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="create-client-title"><header class="modal-header"><div><p class="eyebrow">New Client</p><h2 id="create-client-title">Add Client &amp; Project</h2></div><button class="icon-button modal-close" id="close-create-client" type="button" aria-label="Close">×</button></header><form id="create-client-form" class="modal-body" novalidate><div class="form-grid"><div class="name-with-title"><div class="field field-title"><label for="new-client-title">Courtesy title</label><select id="new-client-title" name="title"><option value="">Optional</option><option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option><option value="Engr">Engr</option><option value="Chief">Chief</option><option value="Pastor">Pastor</option><option value="Barr">Barr</option></select></div><div class="field"><label for="new-client-name">Client full name <span>*</span></label><input id="new-client-name" name="name" placeholder="First and last name" required /></div></div><div class="field"><label for="new-client-business">Business name <span>*</span></label><input id="new-client-business" name="business" placeholder="Company, brand, or organisation" required /></div><div class="field field-full"><label for="new-client-email">Client email address <span>*</span></label><input id="new-client-email" name="email" type="email" required /></div><div class="field"><label for="new-client-phone">Phone number</label><input id="new-client-phone" name="phone" type="tel" /></div><div class="field"><label for="new-client-contact">Preferred contact method</label><select id="new-client-contact" name="contact"><option>Email</option><option>WhatsApp</option><option>Phone Call</option></select></div><div class="field field-full"><label for="new-project-name">Project name <span>*</span></label><input id="new-project-name" name="projectName" required /></div><div class="field"><label for="new-project-service">Type of work</label><input id="new-project-service" name="service" value="Business Website" /></div><div class="field"><label for="new-project-start">Project start date</label><input id="new-project-start" name="startDate" type="date" /></div><div class="field"><label for="new-project-target">Expected completion date</label><input id="new-project-target" name="targetDate" type="date" /></div><div class="field"><label for="new-contract-amount">Total project fee</label><input id="new-contract-amount" name="contractAmount" placeholder="e.g. 450,000" /></div><div class="field"><label for="new-invoice-amount">First invoice amount</label><input id="new-invoice-amount" name="invoiceAmount" placeholder="e.g. 225,000" /></div><div class="field field-full"><label for="new-invoice-title">First invoice name</label><input id="new-invoice-title" name="invoiceTitle" value="Initial payment" /></div></div></form><footer class="modal-footer"><button class="button button-secondary" id="cancel-create-client" type="button">Cancel</button><button class="button button-primary" id="save-create-client" type="button">Create Client</button></footer></section></div>
 
     <div class="modal-backdrop" id="add-project-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="add-project-title"><header class="modal-header"><div><p class="eyebrow">Another Project</p><h2 id="add-project-title">Add Project</h2></div><button class="icon-button modal-close" id="close-add-project" type="button" aria-label="Close">×</button></header><form id="add-project-form" class="modal-body" novalidate><div class="form-grid one-column"><div class="field"><label for="add-project-client">Client <span>*</span></label><select id="add-project-client" name="clientId" required></select></div><div class="field"><label for="add-project-name">Project name <span>*</span></label><input id="add-project-name" name="projectName" required /></div><div class="field"><label for="add-project-service">Type of work</label><input id="add-project-service" name="service" value="Business Website" /></div><div class="field"><label for="add-project-start">Project start date</label><input id="add-project-start" name="startDate" type="date" /></div><div class="field"><label for="add-project-target">Expected completion date</label><input id="add-project-target" name="targetDate" type="date" /></div><div class="field"><label for="add-project-contract">Total project fee</label><input id="add-project-contract" name="contractAmount" placeholder="e.g. 450,000" /></div><div class="field"><label for="add-project-invoice-amount">First invoice amount</label><input id="add-project-invoice-amount" name="invoiceAmount" placeholder="e.g. 225,000" /></div><div class="field"><label for="add-project-invoice-title">First invoice name</label><input id="add-project-invoice-title" name="invoiceTitle" value="Initial payment" /></div><label class="admin-active-toggle"><input id="add-project-active" name="isActive" type="checkbox" checked /><span>Mark as active</span></label></div></form><footer class="modal-footer"><button class="button button-secondary" id="cancel-add-project" type="button">Cancel</button><button class="button button-primary" id="save-add-project" type="button">Create Project</button></footer></section></div>
+
+    <div class="modal-backdrop" id="log-item-modal" hidden>
+      <section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="log-item-title">
+        <header class="modal-header">
+          <div><p class="eyebrow">Off-app Update</p><h2 id="log-item-title">Log for Client</h2></div>
+          <button class="icon-button modal-close" id="close-log-item" type="button" aria-label="Close">×</button>
+        </header>
+        <form id="log-item-form" class="modal-body" novalidate>
+          <p class="modal-lead">Use this when a client sends a document, feature, or update outside the portal. It is saved on their project as if they added it.</p>
+          <div class="form-grid one-column">
+            <div class="field"><label for="log-item-project">Project <span>*</span></label><select id="log-item-project" name="projectId" required></select></div>
+            <div class="field"><label for="log-item-kind">What is this? <span>*</span></label>
+              <select id="log-item-kind" name="loggedKind" required>
+                <option value="update">Update</option>
+                <option value="document">Document</option>
+                <option value="feature">Feature request</option>
+                <option value="change">Change request</option>
+                <option value="note">Note</option>
+              </select>
+            </div>
+            <div class="field"><label for="log-item-title-input">Title <span>*</span></label><input id="log-item-title-input" name="title" required placeholder="e.g. Brand folder from WhatsApp" /></div>
+            <div class="field"><label for="log-item-details">Details <span>*</span></label><textarea id="log-item-details" name="details" rows="5" required placeholder="What they sent, and where it came from."></textarea></div>
+            <div class="field"><label for="log-item-link">Link</label><input id="log-item-link" name="link" type="url" placeholder="https://" /></div>
+            <div class="field"><label for="log-item-file">Attach a file</label><input id="log-item-file" name="file" type="file" /></div>
+          </div>
+        </form>
+        <footer class="modal-footer">
+          <button class="button button-secondary" id="cancel-log-item" type="button">Cancel</button>
+          <button class="button button-primary" id="save-log-item" type="button">Save to Project</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="modal-backdrop" id="delete-project-modal" hidden>
+      <section class="modal small-modal danger-modal" role="dialog" aria-modal="true" aria-labelledby="delete-project-title">
+        <header class="modal-header">
+          <div><p class="eyebrow">Delete Project</p><h2 id="delete-project-title">This cannot be undone</h2></div>
+          <button class="icon-button modal-close" id="close-delete-project" type="button" aria-label="Close">×</button>
+        </header>
+        <form id="delete-project-form" class="modal-body" novalidate>
+          <input id="delete-project-id" type="hidden" />
+          <p class="modal-lead">This will permanently delete <strong id="delete-project-label">this project</strong>, including invoices, receipts, files, requests, and milestones.</p>
+          <div class="field">
+            <label for="delete-project-confirm">Type <strong id="delete-project-confirm-name">the project name</strong> to confirm</label>
+            <input id="delete-project-confirm" name="confirm" autocomplete="off" spellcheck="false" />
+          </div>
+        </form>
+        <footer class="modal-footer">
+          <button class="button button-secondary" id="cancel-delete-project" type="button">Cancel</button>
+          <button class="button button-danger" id="confirm-delete-project" type="button" disabled>Delete this project</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="modal-backdrop" id="handover-email-modal" hidden>
+      <section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="handover-email-title">
+        <header class="modal-header">
+          <div><p class="eyebrow">Send Pack</p><h2 id="handover-email-title">Preview handover email</h2></div>
+          <button class="icon-button modal-close" id="close-handover-email" type="button" aria-label="Close">×</button>
+        </header>
+        <form id="handover-email-form" class="modal-body" novalidate>
+          <p class="modal-lead" id="handover-email-preview"></p>
+          <div class="field"><label for="handover-email-subject">Subject</label><input id="handover-email-subject" name="subject" required /></div>
+          <div class="field"><label for="handover-email-intro">Message</label><textarea id="handover-email-intro" name="intro" rows="6" required></textarea></div>
+        </form>
+        <footer class="modal-footer">
+          <button class="button button-secondary" id="cancel-handover-email" type="button">Cancel</button>
+          <button class="button button-primary" id="send-handover-email" type="button">Approve &amp; send</button>
+        </footer>
+      </section>
+    </div>
+
+    <div class="modal-backdrop" id="help-guide-modal" hidden>
+      <section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="help-guide-title">
+        <header class="modal-header">
+          <div><p class="eyebrow">Help article</p><h2 id="help-guide-title">Add article</h2></div>
+          <button class="icon-button modal-close" id="close-help-guide" type="button" aria-label="Close">×</button>
+        </header>
+        <form id="help-guide-form" class="modal-body" novalidate>
+          <input id="help-guide-id" name="id" type="hidden" />
+          <div class="form-grid one-column">
+            <div class="field"><label for="help-guide-title-input">Title <span>*</span></label><input id="help-guide-title-input" name="title" required /></div>
+            <div class="field"><label for="help-guide-slug">Short id <span>*</span></label><input id="help-guide-slug" name="slug" required placeholder="domain-renew" /></div>
+            <div class="field"><label for="help-guide-category">Category</label>
+              <select id="help-guide-category" name="category">
+                <option value="website">Website</option>
+                <option value="domain">Domain</option>
+                <option value="hosting">Hosting</option>
+                <option value="email">Email</option>
+                <option value="portal">Portal</option>
+                <option value="support">Support</option>
+              </select>
+            </div>
+            <div class="field"><label for="help-guide-audience">Shown on</label>
+              <select id="help-guide-audience" name="audience">
+                <option value="both">Website and portal</option>
+                <option value="public">Website only</option>
+                <option value="client">Portal only</option>
+              </select>
+            </div>
+            <div class="field"><label for="help-guide-body">Answer <span>*</span></label><textarea id="help-guide-body" name="body" rows="7" required></textarea></div>
+            <label class="choice-item"><input id="help-guide-published" name="published" type="checkbox" checked /><span>Published</span></label>
+          </div>
+        </form>
+        <footer class="modal-footer">
+          <button class="button button-secondary" id="cancel-help-guide" type="button">Cancel</button>
+          <button class="button button-primary" id="save-help-guide" type="button">Save article</button>
+        </footer>
+      </section>
+    </div>
 
     <div class="modal-backdrop" id="record-payment-modal" hidden>
       <section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="record-payment-title">
@@ -359,6 +533,7 @@
         </form>
         <footer class="modal-footer">
           <button class="button button-secondary" id="cancel-record-payment" type="button">Cancel</button>
+          <button class="button button-secondary" id="download-receipt-pdf" type="button">Download PDF</button>
           <button class="button button-secondary" id="save-receipt" type="button">Save Only</button>
           <button class="button button-primary" id="send-receipt" type="button">Send Receipt</button>
         </footer>
@@ -379,6 +554,7 @@
     <script src="./api.js"></script>
     <script src="./ui.js"></script>
     <script src="./agreement.js"></script>
+    <script src="./handover.js"></script>
     <script src="./docs.js"></script>
     <script src="./receipt.js"></script>
     <script src="./invoice.js"></script>

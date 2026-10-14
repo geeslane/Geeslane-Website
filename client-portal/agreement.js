@@ -260,7 +260,56 @@
   }
 
   function handoverItems(track) {
-    return (TRACKS[track] || TRACKS.website).handover;
+    return (TRACKS[track] || TRACKS.website).handover.slice();
+  }
+
+  function handoverItem(entry, index) {
+    if (typeof entry === "string") {
+      const label = entry.trim();
+      return label ? { key: `item-${index + 1}`, label, done: false } : null;
+    }
+    if (!entry || typeof entry !== "object") return null;
+    const label = String(entry.label || entry.title || entry.text || "").trim();
+    if (!label) return null;
+    const key = String(entry.key || `item-${index + 1}`).trim() || `item-${index + 1}`;
+    return { key, label, done: entry.done === true || entry.checked === true };
+  }
+
+  function defaultHandoverList(track) {
+    return handoverItems(track).map((item) => ({ key: item.key, label: item.label, done: false }));
+  }
+
+  function handoverList(value, track) {
+    if (Array.isArray(value)) {
+      const items = value.map(handoverItem).filter(Boolean);
+      return items.length ? items : defaultHandoverList(track);
+    }
+    const source = value && typeof value === "object" ? value : {};
+    if (Array.isArray(source.items)) {
+      const items = source.items.map(handoverItem).filter(Boolean);
+      return items.length || Object.prototype.hasOwnProperty.call(source, "items") ? items : defaultHandoverList(track);
+    }
+    const defaults = defaultHandoverList(track);
+    const known = new Set(defaults.map((item) => item.key));
+    const fromDefaults = defaults.map((item) => {
+      const entry = source[item.key];
+      if (entry && typeof entry === "object") return handoverItem({ ...item, ...entry }, 0) || { ...item, done: false };
+      return { ...item, done: entry === true };
+    });
+    const extras = Object.keys(source).filter((key) => key !== "items" && !known.has(key)).map((key, index) => {
+      const entry = source[key];
+      if (entry && typeof entry === "object") return handoverItem({ key, ...entry }, index);
+      if (entry === true || entry === false) return { key, label: key, done: entry === true };
+      return null;
+    }).filter(Boolean);
+    return extras.length ? fromDefaults.concat(extras) : fromDefaults;
+  }
+
+  function packHandover(list) {
+    const items = (Array.isArray(list) ? list : []).map(handoverItem).filter(Boolean);
+    const packed = { items };
+    items.forEach((item) => { packed[item.key] = item.done; });
+    return packed;
   }
 
   function defaultPayment(track) {
@@ -293,14 +342,11 @@
   }
 
   function emptyHandover(track) {
-    return handoverItems(track).reduce((acc, item) => { acc[item.key] = false; return acc; }, {});
+    return packHandover(defaultHandoverList(track));
   }
 
   function normalizeHandover(value, track) {
-    const next = emptyHandover(track);
-    const source = value && typeof value === "object" ? value : {};
-    handoverItems(track).forEach((item) => { next[item.key] = source[item.key] === true; });
-    return next;
+    return packHandover(handoverList(value, track));
   }
 
   function blankAgreement(track) {
@@ -436,10 +482,10 @@
   }
 
   function handoverHtml(handover, track) {
-    const flags = normalizeHandover(handover, track);
-    return `<ul class="agreement-checklist">${handoverItems(track).map((item) => {
-      const done = flags[item.key];
-      return `<li class="${done ? "is-done" : ""}"><span class="agreement-check" aria-hidden="true">${done ? "✓" : ""}</span><span>${escapeHtml(item.label)}</span></li>`;
+    const items = handoverList(handover, track);
+    if (!items.length) return '<p class="agreement-checklist-empty">No handover items listed.</p>';
+    return `<ul class="agreement-checklist">${items.map((item) => {
+      return `<li class="${item.done ? "is-done" : ""}"><span class="agreement-check" aria-hidden="true">${item.done ? "✓" : ""}</span><span>${escapeHtml(item.label)}</span></li>`;
     }).join("")}</ul>`;
   }
 
@@ -453,8 +499,8 @@
         <header class="agreement-masthead">
           <img class="agreement-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
           <div>
-            <p class="agreement-kicker">${escapeHtml(pack.title)}</p>
-            <h1>A Clear Agreement Between Geeslane and the Client</h1>
+            <p class="agreement-kicker">Terms &amp; Agreement</p>
+            <h1>${escapeHtml(pack.title)}</h1>
           </div>
         </header>
         <section class="agreement-facts" aria-label="Project summary">
@@ -488,6 +534,7 @@
               <small>Date: ${escapeHtml(dateLabel)}</small>
             </div>
           </div>
+          <p class="agreement-endorsement">This is the same terms document shown in the Geeslane client portal. Price, timeline, and deliverables follow the approved project details.</p>
         </section>
       </article>
     `;
@@ -516,6 +563,7 @@
       .agreement-check { width: 18px; height: 18px; flex: 0 0 18px; display: grid; place-items: center; margin-top: 1px; color: #fff; background: #fff; border: 1.5px solid #0b6b45; border-radius: 4px; font-size: .72rem; font-weight: 800; }
       .agreement-checklist li.is-done { background: #eff9f4; }
       .agreement-checklist li.is-done .agreement-check { background: #0b6b45; border-color: #0b6b45; }
+      .agreement-checklist-empty { margin: 0; color: #697870; font-size: .92rem; }
       .agreement-sign-copy { margin: 0 0 18px; color: #2a3931; font-size: .95rem; line-height: 1.65; }
       .agreement-sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
       .agreement-sign-card { display: grid; gap: 14px; min-height: 170px; padding: 20px; background: linear-gradient(180deg, #f7fbf8, #fff); border: 1px solid #dfe7e2; border-radius: 14px; }
@@ -523,6 +571,7 @@
       .agreement-sign-logo { height: 40px; width: auto; }
       .agreement-client-mark { color: #063b29; font-size: 1.2rem; line-height: 1.3; letter-spacing: -.02em; }
       .agreement-sign-card small { margin-top: auto; color: #697870; font-size: .82rem; }
+      .agreement-endorsement { margin: 18px 0 0; color: #697870; font-size: .82rem; line-height: 1.55; }
       @media (max-width: 720px) {
         .agreement-sheet { padding: 24px 18px 28px; }
         .agreement-masthead, .agreement-facts, .agreement-sign-grid { grid-template-columns: 1fr; }
@@ -597,6 +646,8 @@
     HANDOVER_ITEMS,
     trackFrom,
     handoverItems,
+    handoverList,
+    packHandover,
     defaultPayment,
     documentTitle,
     checklistTitle,

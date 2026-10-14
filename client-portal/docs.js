@@ -170,20 +170,33 @@
     const maxW = pageW - margin * 2;
     const maxH = pageH - margin * 2;
     const ratio = canvas.width / Math.max(canvas.height, 1);
-    let width = maxW;
-    let height = width / ratio;
-    if (height > maxH) {
-      height = maxH;
-      width = height * ratio;
-    }
+    const width = maxW;
+    const height = width / ratio;
+    const image = canvas.toDataURL("image/jpeg", 0.98);
     const pages = pdf.internal.getNumberOfPages();
     for (let page = pages; page > 1; page -= 1) pdf.deletePage(page);
     pdf.setPage(1);
     pdf.setFillColor(255, 255, 255);
     pdf.rect(0, 0, pageW, pageH, "F");
-    pdf.addImage(canvas.toDataURL("image/jpeg", 0.98), "JPEG", margin, margin, width, height, "", "FAST");
-    if (pdf.internal.getNumberOfPages() > 1) {
-      for (let page = pdf.internal.getNumberOfPages(); page > 1; page -= 1) pdf.deletePage(page);
+    if (height <= maxH * 1.04) {
+      let drawW = width;
+      let drawH = height;
+      if (drawH > maxH) {
+        drawH = maxH;
+        drawW = drawH * ratio;
+      }
+      pdf.addImage(image, "JPEG", margin, margin, drawW, drawH, "", "FAST");
+    } else {
+      pdf.addImage(image, "JPEG", margin, margin, width, height, "", "FAST");
+      let remaining = height - maxH;
+      while (remaining > 4) {
+        pdf.addPage();
+        const offset = margin - (height - remaining);
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, pageW, pageH, "F");
+        pdf.addImage(image, "JPEG", margin, offset, width, height, "", "FAST");
+        remaining -= maxH;
+      }
     }
     return pdf;
   }

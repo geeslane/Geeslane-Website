@@ -727,6 +727,8 @@
 
   function mapAgreement(row) {
     if (!row) return null;
+    const timeline = row.timeline || "";
+    const dates = String(timeline).match(/^(\d{4}-\d{2}-\d{2})\s*[–-]\s*(\d{4}-\d{2}-\d{2})$/) || [];
     return {
       clientName: row.client_name || row.clientName || "",
       projectTitle: row.project_title || row.projectTitle || "",
@@ -734,7 +736,9 @@
       fee: row.fee || "",
       paymentPlan: row.payment_plan || row.paymentPlan || "",
       revisionRounds: Number(row.revision_rounds ?? row.revisionRounds ?? 0),
-      timeline: row.timeline || "",
+      timeline,
+      startDate: dates[1] || "",
+      completionDate: dates[2] || "",
       handover: row.handover && typeof row.handover === "object" ? row.handover : {},
       savedAt: row.saved_at || row.savedAt || row.updated_at || "",
       updatedAt: row.updated_at || row.updatedAt || "",
@@ -1128,6 +1132,10 @@
       try {
         messageRows = resultOrThrow(await client().from("milestone_messages").select("*").eq("project_id", projectRow.id).order("created_at")) || [];
       } catch (_) { messageRows = []; }
+      let handoverRow = null;
+      try {
+        handoverRow = resultOrThrow(await client().from("project_handovers").select("*").eq("project_id", projectRow.id).maybeSingle());
+      } catch (_) { handoverRow = null; }
       const resources = await signedAssetUrls(assetRows);
       const project = mapProject(projectRow);
       project.brandKit = mapBrand(brandRow);
@@ -1149,6 +1157,7 @@
           messages: messageRows.map(mapMessage),
           agreement: mapAgreement(agreementRow),
           invoices: invoiceRows.map(mapInvoice),
+          handover: mapHandover(handoverRow),
           receipts: receiptRows.map((row) => {
             const receipt = mapReceipt(row);
             const linked = invoiceRows.find((item) => item.id === row.invoice_id);
@@ -1339,6 +1348,76 @@
     }, "Loading agreement…");
   }
 
+  function mapHandover(row) {
+    if (!row) return null;
+    return {
+      projectId: row.project_id || row.projectId,
+      track: row.track || "website",
+      sections: row.sections && typeof row.sections === "object" ? row.sections : {},
+      checklist: Array.isArray(row.checklist) ? row.checklist : [],
+      notes: row.notes || "",
+      fileDriveUrl: row.file_drive_url || row.fileDriveUrl || "",
+      fileRetentionDays: Number(row.file_retention_days || row.fileRetentionDays || 30),
+      status: row.status || "draft",
+      sentAt: row.sent_at || row.sentAt || "",
+      sentTo: row.sent_to || row.sentTo || "",
+      storagePath: row.storage_path || row.storagePath || "",
+      updatedAt: row.updated_at || row.updatedAt || ""
+    };
+  }
+
+  function mapHelpGuide(row) {
+    if (!row) return null;
+    return {
+      id: row.id,
+      slug: row.slug,
+      category: row.category || "website",
+      title: row.title || "",
+      body: row.body || "",
+      audience: row.audience || "both",
+      sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0),
+      published: row.published !== false
+    };
+  }
+
+  async function readHandover(projectId) {
+    if (!isConnected()) return null;
+    const id = String(projectId || "").trim();
+    if (!id) return null;
+    try {
+      return mapHandover(resultOrThrow(await client().from("project_handovers").select("*").eq("project_id", id).maybeSingle()));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function handoverPdfUrl(path) {
+    if (!path) return "";
+    try {
+      const signed = resultOrThrow(await client().storage.from("project-files").createSignedUrl(path, 3600));
+      return signed?.signedUrl || "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  async function listHelpGuides(audience) {
+    if (!backendConfigured()) return [];
+    try {
+      let query = client().from("help_guides").select("*").eq("published", true).order("sort_order");
+      if (audience === "client") query = query.in("audience", ["client", "both"]);
+      else query = query.in("audience", ["public", "both"]);
+      return (resultOrThrow(await query) || []).map(mapHelpGuide).filter(Boolean);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  async function adminHelpGuides() {
+    if (!cachedProfile || cachedProfile.role !== "admin" || cachedProfile.status !== "active") throw new Error("Administrator access is required");
+    return (resultOrThrow(await client().from("help_guides").select("*").order("sort_order")) || []).map(mapHelpGuide).filter(Boolean);
+  }
+
   async function adminSubmit(action, payload) {
     return withLoader(async () => {
       let result;
@@ -1405,6 +1484,40 @@
           p_is_active: payload.isActive !== false
         }), "Could not update the active project. Run projects_invoices.sql in Supabase if this is the first time.");
       }
+      if (action === "adminDeleteProject") {
+        try {
+          const listed = await client().storage.from("project-files").list(payload.projectId, { limit: 1000 });
+          const files = listed?.data || [];
+          if (files.length) {
+            await client().storage.from("project-files").remove(files.map((file) => `${payload.projectId}/${file.name}`));
+          }
+        } catch (_) { /* database delete still proceeds */ }
+        return resultOrThrow(await client().rpc("admin_delete_project", {
+          p_project_id: payload.projectId
+        }), "Could not delete the project. Run admin_ops.sql in Supabase, then try again.");
+      }
+      if (action === "adminLogClientItem") {
+        const file = payload.file;
+        let asset = null;
+        if (file) asset = await uploadFile(payload.projectId, file);
+        const values = {
+          ...(payload.values || {}),
+          source: "admin",
+          loggedKind: payload.loggedKind || "note",
+          details: payload.details || "",
+          link: payload.link || "",
+          fileName: asset?.name || "",
+          fileUrl: asset?.url || ""
+        };
+        const id = resultOrThrow(await client().rpc("create_portal_request", {
+          p_project_id: payload.projectId,
+          p_reference: payload.reference || `LOG-${Date.now()}`,
+          p_type: payload.type || "change",
+          p_title: payload.title,
+          p_values: values
+        }), "Could not save this item to the project.");
+        return { id, asset, values };
+      }
       if (action === "adminSaveInvoice") {
         return resultOrThrow(await client().rpc("admin_save_invoice", {
           p_project_id: payload.projectId,
@@ -1441,6 +1554,37 @@
         return resultOrThrow(await client().rpc("admin_save_portal_settings", {
           p_settings: payload.settings || {}
         }), "Could not save bank details. Run portal_settings.sql in Supabase, then try again.");
+      }
+      if (action === "adminSaveBrief") {
+        return resultOrThrow(await client().rpc("save_project_brief", {
+          p_project_id: payload.projectId,
+          p_brief: payload.brief || {}
+        }), "Could not save the project brief.");
+      }
+      if (action === "adminSaveHandover") {
+        return mapHandover(resultOrThrow(await client().rpc("save_project_handover", {
+          p_project_id: payload.projectId,
+          p_handover: payload.handover || {}
+        }), "Could not save the handover pack. Run handover_help.sql in Supabase, then try again."));
+      }
+      if (action === "adminStoreHandoverPdf") {
+        const path = `${payload.projectId}/handover.pdf`;
+        const blob = payload.blob;
+        if (blob) {
+          const uploaded = await client().storage.from("project-files").upload(path, blob, { upsert: true, contentType: "application/pdf" });
+          resultOrThrow(uploaded, "Could not store the handover PDF.");
+        }
+        return { storagePath: path, url: await handoverPdfUrl(path) };
+      }
+      if (action === "adminSaveHelpGuide") {
+        return mapHelpGuide(resultOrThrow(await client().rpc("admin_save_help_guide", {
+          p_guide: payload.guide || {}
+        }), "Could not save the help article. Run handover_help.sql in Supabase, then try again."));
+      }
+      if (action === "adminDeleteHelpGuide") {
+        return resultOrThrow(await client().rpc("admin_delete_help_guide", {
+          p_guide_id: payload.guideId
+        }), "Could not delete the help article.");
       }
       throw new Error("Unknown administrator action");
     }, "Saving…");
@@ -1617,6 +1761,10 @@
     adminSubmit,
     adminProjectMaterials,
     adminAgreementContext,
+    readHandover,
+    handoverPdfUrl,
+    listHelpGuides,
+    adminHelpGuides,
     adminMilestoneMessages,
     adminInvoices,
     adminReceipts,

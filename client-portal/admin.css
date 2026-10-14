@@ -130,6 +130,9 @@ details[open] > .admin-context-summary .admin-context-chevron { margin-top: -4px
 .admin-detail-list dt { color: var(--muted); font-size: .8rem; font-weight: 700; }
 .admin-detail-list dd { margin: 0; color: var(--ink-2); font-size: .9rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
 .files-heading { margin-top: 28px; }
+.admin-share-docs { margin: 0 0 28px; padding: 18px 18px 16px; background: var(--panel-soft, #f7fbf8); border: 1px solid var(--line-soft); border-radius: 16px; }
+.admin-share-copy { margin: 0 0 14px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.admin-share-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .admin-file-row { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 14px; padding: 13px 0; border-top: 1px solid var(--line-soft); }
 .admin-file-row strong, .admin-file-row small { display: block; }
 .admin-file-row small { margin-top: 4px; color: var(--muted); font-size: .8rem; }
@@ -193,6 +196,13 @@ details[open] > .admin-context-summary .admin-context-chevron { margin-top: -4px
 .split-footer { justify-content: space-between; }
 .split-footer > div { display: flex; gap: 8px; }
 .button-danger { color: #9a2e2e; background: var(--red-50); border-color: rgba(200,59,59,.2); }
+.button-danger:hover, .button-danger:focus-visible { color: #fff; background: #b42318; border-color: #b42318; }
+.button-danger:disabled { color: #9a2e2e; background: var(--red-50); border-color: rgba(200,59,59,.2); opacity: .45; }
+.modal-lead { margin: 0 0 16px; color: var(--muted); font-size: .95rem; line-height: 1.55; }
+.danger-modal { border-color: rgba(200,59,59,.22); }
+.danger-modal .eyebrow { color: #9a2e2e; }
+.danger-modal h2 { color: #7a1f1f; }
+#delete-project-confirm { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
 @media (max-width: 1020px) {
   .admin-sidebar { width: 200px; }
@@ -240,16 +250,25 @@ details[open] > .admin-context-summary .admin-context-chevron { margin-top: -4px
 .admin-active-toggle input { width: 16px; height: 16px; margin: 0; accent-color: var(--green-700); }
 .admin-agreement-toolbar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin: 0 0 18px; }
 .admin-agreement-layout { display: grid; grid-template-columns: minmax(320px, 420px) minmax(0, 1fr); gap: 18px; align-items: start; }
-.admin-agreement-form-card { position: sticky; top: 18px; }
+.admin-agreement-form-card { position: sticky; top: 18px; max-height: calc(100vh - 120px); overflow: auto; }
 .admin-agreement-preview-wrap { min-width: 0; }
 .admin-agreement-preview-wrap .agreement-wrap { max-width: none; }
 .admin-agreement-preview-wrap .agreement-sheet { max-width: none; }
 .field label.agreement-handover-item,
 .agreement-handover-item { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 10px 12px; color: var(--ink-2); background: #fff; border: 1px solid var(--line); border-radius: 8px; font-size: .88rem; font-weight: 500; line-height: 1.4; cursor: pointer; }
 .field .agreement-handover-item input[type="checkbox"] { width: 16px; min-width: 16px; height: 16px; min-height: 16px; margin: 2px 0 0; padding: 0; border: none; box-shadow: none; background: transparent; flex: 0 0 16px; accent-color: var(--green-700); }
+.agreement-handover-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) 34px; gap: 8px; align-items: center; }
+.agreement-handover-row input[type="checkbox"] { width: 16px; min-width: 16px; height: 16px; min-height: 16px; margin: 0; padding: 0; border: none; box-shadow: none; background: transparent; accent-color: var(--green-700); }
+.agreement-handover-row input[type="text"] { min-height: 38px; margin: 0; }
+.agreement-handover-remove { width: 34px; height: 34px; color: #9a2e2e; }
+#add-handover-item,
+#add-handover-check { justify-self: start; margin-top: 4px; }
+#handover-section-fields { display: grid; gap: 14px; }
+#handover-section-fields fieldset { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+#handover-section-fields legend { padding: 0 6px; font-size: .78rem; font-weight: 700; }
 @media (max-width: 1100px) {
   .admin-agreement-layout { grid-template-columns: 1fr; }
-  .admin-agreement-form-card { position: static; }
+  .admin-agreement-form-card { position: static; max-height: none; overflow: visible; }
 }
 @media (max-width: 720px) {
   .admin-agreement-toolbar { justify-content: stretch; }

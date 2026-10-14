@@ -40,8 +40,7 @@
     return `
       <section class="agreement-facts" aria-label="Bank transfer">
         <div class="agreement-fact agreement-fact-wide"><span>Account</span><strong>
-          Pay directly from your client portal or transfer to the account<br />
-          ${escapeHtml(details)}
+          ${window.GeeslaneAPI?.paystackEnabled?.() ? "Pay in the client portal, or transfer to" : "Transfer to"} ${escapeHtml(details)}
           ${bank.bankNotes ? `<br />${escapeHtml(bank.bankNotes)}` : ""}
         </strong></div>
       </section>`;

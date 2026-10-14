@@ -107,15 +107,24 @@ begin
     coalesce(nullif(trim(p_service), ''), 'Website project'),
     p_target_date
   );
-  update public.profiles set
-    client_id = v_client_id,
+  insert into public.profiles (
+    user_id, email, name, business, phone, contact_preference, role, status, client_id
+  )
+  select
+    u.id, v_email, trim(p_name), trim(p_business), trim(coalesce(p_phone, '')),
+    v_contact, 'client', 'active', v_client_id
+  from auth.users u
+  where lower(u.email) = v_email
+  on conflict (user_id) do update set
+    email = excluded.email,
+    name = excluded.name,
+    business = excluded.business,
+    phone = excluded.phone,
+    contact_preference = excluded.contact_preference,
+    role = 'client',
     status = 'active',
-    name = trim(p_name),
-    business = trim(p_business),
-    phone = trim(coalesce(p_phone, '')),
-    contact_preference = v_contact,
-    updated_at = now()
-  where lower(email) = v_email;
+    client_id = excluded.client_id,
+    updated_at = now();
 
   select jsonb_build_object(
     'email', v_email,
@@ -134,3 +143,25 @@ $$;
 
 revoke execute on function public.admin_create_client_project(text, text, text, text, text, text, text, date) from public;
 grant execute on function public.admin_create_client_project(text, text, text, text, text, text, text, date) to authenticated;
+
+-- After a data reset, Auth users can remain while profiles were deleted.
+-- Recreate those client profiles so the admin Clients list can show them.
+insert into public.profiles (
+  user_id, email, name, business, phone, contact_preference, role, status, client_id
+)
+select
+  u.id, c.email, c.name, c.business, c.phone, c.contact_preference, 'client', 'active', c.id
+from public.clients c
+join auth.users u on lower(u.email) = lower(c.email)
+where not exists (
+  select 1 from public.profiles p where p.user_id = u.id
+)
+on conflict (user_id) do update set
+  email = excluded.email,
+  name = excluded.name,
+  business = excluded.business,
+  phone = excluded.phone,
+  contact_preference = excluded.contact_preference,
+  client_id = excluded.client_id,
+  status = 'active',
+  updated_at = now();

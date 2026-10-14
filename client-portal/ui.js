@@ -34,7 +34,9 @@
   }
 
   function rowActionButton(item, inMenu) {
-    const cls = inMenu ? "row-menu-item" : (item.primary ? "button button-primary" : "button button-secondary");
+    const cls = inMenu
+      ? `row-menu-item${item.danger ? " is-danger" : ""}`
+      : item.danger ? "button button-danger" : (item.primary ? "button button-primary" : "button button-secondary");
     return `<button class="${cls}" type="button" ${item.attrs || ""}>${escapeHtml(item.label)}</button>`;
   }
 

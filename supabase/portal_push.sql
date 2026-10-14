@@ -72,14 +72,13 @@ security definer
 set search_path = public
 as $$
 begin
-  if not exists (
-    select 1 from public.profiles
-    where (id = auth.uid() or user_id = auth.uid()) and role = 'admin' and status = 'active'
-  ) then
+  if not public.is_portal_admin() then
     raise exception 'Administrator access is required';
   end if;
   return query
-    select s.user_id, s.audience, max(s.updated_at) as updated_at
+
+
+    select s.user_id, s.audience, max(s.updated_at)
     from public.portal_push_subscriptions s
     group by s.user_id, s.audience;
 end;

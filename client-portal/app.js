@@ -10,7 +10,7 @@
   let pendingSignInEmail = "";
   let tourIndex = 0;
   let tourActive = false;
-  const pageNames = { chooser: "Your Projects", overview: "Overview", project: "My Project", brand: "Brief & Brand", agreement: "Agreement", payments: "Payments", requests: "Requests", profile: "Profile" };
+  const pageNames = { chooser: "Your Projects", overview: "Overview", project: "My Project", brand: "Brief & Brand", agreement: "Agreement", payments: "Payments", requests: "Requests", help: "Help Centre", profile: "Profile" };
   const icons = {
     request: '<svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H5V4a1 1 0 0 1 1-1Zm1 2v14h10V8h-3V5H7Z"/></svg>',
     milestone: '<svg viewBox="0 0 24 24"><path d="m9.2 16.6-4.4-4.4 1.4-1.4 3 3 8.6-8.6 1.4 1.4-10 10Z"/></svg>',
@@ -68,6 +68,7 @@
   };
 
   let state = createEmptyState();
+  let helpGuides = [];
   let currentPage = "overview";
   let currentFilter = "all";
   let requestFlow = { step: 1, type: "", values: {} };
@@ -94,7 +95,8 @@
       activity: [],
       messages: [],
       invoices: [],
-      receipts: []
+      receipts: [],
+      handover: null
     };
   }
 
@@ -306,6 +308,7 @@
 
   function saveState(remoteAction, payload) {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (isClientPreview() && remoteAction === "updateProfile") return;
     if (remoteAction && window.GeeslaneAPI?.isConnected()) {
       window.GeeslaneAPI.submit(remoteAction, { projectId: state.project.id, ...payload }).catch(() => toast("Online sync failed. Refresh before making more changes."));
     }
@@ -387,7 +390,7 @@
 
   function allowedPages(project = state.project) {
     const features = trackFeatures(project);
-    const pages = ["chooser", "overview", "project", "payments", "requests", "profile"];
+    const pages = ["chooser", "overview", "project", "payments", "requests", "help", "profile"];
     if (features.brand) pages.push("brand");
     if (features.agreement) pages.push("agreement");
     return pages;
@@ -517,6 +520,7 @@
     candidate.invoices = Array.isArray(candidate.invoices) ? candidate.invoices : [];
     candidate.receipts = Array.isArray(candidate.receipts) ? candidate.receipts : [];
     candidate.agreement = candidate.agreement && typeof candidate.agreement === "object" ? candidate.agreement : null;
+    candidate.handover = candidate.handover && typeof candidate.handover === "object" ? candidate.handover : null;
     candidate.project.progress = calculateProgress(candidate.milestones, candidate);
     candidate.project.stage = candidate.milestones.find((item) => item.status === "current" || item.status === "review" || item.status === "admin_review")?.title || candidate.project.stage || "Discovery";
     return candidate;
@@ -720,6 +724,8 @@
     renderProfile();
     renderNotifications();
     renderAgreement();
+    renderHandover();
+    renderHelp();
     renderPayments();
   }
 
@@ -890,6 +896,65 @@
     window.GeeslaneAgreement.renderInto(node, currentAgreement());
   }
 
+  function handoverIsReady(pack = state.handover) {
+    return Boolean(pack && (pack.status === "ready" || pack.status === "sent"));
+  }
+
+  function renderHandover() {
+    const panel = document.getElementById("client-handover-panel");
+    if (!panel) return;
+    const pack = state.handover;
+    const visible = handoverIsReady(pack);
+    panel.hidden = !visible;
+    if (!visible || !window.GeeslaneHandover) return;
+    const days = pack.fileRetentionDays || 30;
+    const note = document.getElementById("client-handover-note");
+    if (note) {
+      note.textContent = pack.fileDriveUrl
+        ? `Keep your own copy of the files. The drive link is in this pack. Geeslane removes our copy after ${days} days.`
+        : `Keep your own copy of these details. Geeslane removes our file copy after ${days} days.`;
+    }
+    window.GeeslaneHandover.renderInto(document.getElementById("client-handover-document"), pack, {
+      clientName: state.profile.name,
+      projectTitle: displayProjectName()
+    });
+  }
+
+  async function downloadClientHandover() {
+    const pack = state.handover;
+    if (!handoverIsReady(pack)) return;
+    if (pack.storagePath) {
+      const url = await window.GeeslaneAPI.handoverPdfUrl(pack.storagePath);
+      if (url) { window.open(url, "_blank", "noopener"); return; }
+    }
+    const ok = await window.GeeslaneHandover?.downloadPdf?.(pack, {
+      clientName: state.profile.name,
+      projectTitle: displayProjectName()
+    });
+    if (ok === false) toast("The PDF opened in print instead. Save it from there.");
+  }
+
+  function helpCategoryLabel(value) {
+    return { domain: "Domain", hosting: "Hosting", email: "Email", website: "Website", portal: "Portal", support: "Support" }[value] || value;
+  }
+
+  function renderHelp() {
+    const node = document.getElementById("help-guide-list");
+    if (!node) return;
+    const groups = {};
+    helpGuides.forEach((item) => {
+      const key = item.category || "website";
+      (groups[key] = groups[key] || []).push(item);
+    });
+    const order = ["domain", "hosting", "email", "website", "portal", "support"];
+    const keys = [...order.filter((key) => groups[key]), ...Object.keys(groups).filter((key) => !order.includes(key))];
+    node.innerHTML = keys.length
+      ? keys.map((key) => `<section class="help-group"><h2>${escapeHtml(helpCategoryLabel(key))}</h2>${groups[key].map((item) =>
+        `<details class="help-article"><summary>${escapeHtml(item.title)}</summary><div class="help-article-body"><p>${escapeHtml(item.body).replace(/\n/g, "<br />")}</p></div></details>`
+      ).join("")}</section>`).join("")
+      : '<p class="table-empty">Help articles will appear here once they are published.</p>';
+  }
+
   function currentProjectBalance() {
     return window.GeeslaneAPI.projectBalance({
       project: state.project,
@@ -978,6 +1043,8 @@
   }
 
   function unpaidInvoices() {
+    const totals = currentProjectBalance();
+    if (totals && Number(totals.paid) > 0 && Number(totals.remaining) <= 0) return [];
     return (state.invoices || []).filter((invoice) => {
       const status = String(invoice?.status || "");
       if (["Draft", "Cancelled", "Paid"].includes(status)) return false;
@@ -1185,7 +1252,7 @@
 
   function requestRows(items) {
     if (!items.length) return '<div class="request-empty">No requests match this view. Use “New Request” to add one.</div>';
-    return items.map((item) => `<div class="request-row" role="button" tabindex="0" data-request-id="${escapeHtml(item.id)}"><span class="request-kind-icon ${requestTypeClass(item.type)}">${requestIcon(item.type)}</span><span class="request-main"><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(requestSnippet(item))}</small></span><span class="request-id">${escapeHtml(item.id)}</span><span class="request-date">${formatDate(item.createdAt, true)}</span><span class="request-status ${requestStatusClass(item.status)}">${escapeHtml(requestStatusLabel(item.status))}</span></div>`).join("");
+    return items.map((item) => `<div class="request-row" role="button" tabindex="0" data-request-id="${escapeHtml(item.id)}"><span class="request-kind-icon ${requestTypeClass(item.type)}">${requestIcon(item.type)}</span><span class="request-main"><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(requestSnippet(item))}</small></span><span class="request-date">${formatDate(item.createdAt, true)}</span><span class="request-status ${requestStatusClass(item.status)}">${escapeHtml(requestStatusLabel(item.status))}</span></div>`).join("");
   }
 
   function renderRequests() {
@@ -1621,6 +1688,7 @@
 
   function saveProfile(event) {
     event.preventDefault();
+    if (blockPreviewWrite("profile")) return;
     const form = event.currentTarget;
     if (!form.checkValidity()) { form.reportValidity(); return; }
     const data = new FormData(form);
@@ -1641,6 +1709,7 @@
   }
 
   function notifyTeam(heading, intro, rows, extras = {}) {
+    if (isClientPreview()) return;
     window.GeeslaneMail?.notify({
       audience: "team",
       subject: extras.subject || `${heading} · ${extras.business || state.profile.business || displayProjectName()}`,
@@ -1716,15 +1785,17 @@
     state.project.brief = brief;
     addActivity("Project brief updated", "Goals, audience, and first-version notes changed.", "request");
     saveState("saveBrief", { brief });
-    notifyTeam("Project brief saved", `${clientFormal()} answered the Discovery questions.`, [
-      ["Goal", brief.goal],
-      ["Audience", brief.audience],
-      ["Features", brief.features],
-      ["Other features", brief.featuresOther],
-      ["Visitor details", brief.visitorDetails]
-    ]);
+    if (!isClientPreview()) {
+      notifyTeam("Project brief saved", `${clientFormal()} answered the Discovery questions.`, [
+        ["Goal", brief.goal],
+        ["Audience", brief.audience],
+        ["Features", brief.features],
+        ["Other features", brief.featuresOther],
+        ["Visitor details", brief.visitorDetails]
+      ]);
+    }
     renderAll();
-    toast("Project brief saved. Geeslane has been notified.");
+    toast(isClientPreview() ? "Project brief saved for this client." : "Project brief saved. Geeslane has been notified.");
   }
 
   function saveBrand(event) {
@@ -2004,10 +2075,47 @@
     renderTourStep();
   }
   function maybeStartTour() {
-    if (tourActive || hasSeenTour()) return;
+    if (isClientPreview() || tourActive || hasSeenTour()) return;
     if (!isNewPortalUser()) { markTourSeen(); return; }
     if (currentPage === "chooser") return;
     startTour();
+  }
+
+  function isClientPreview() {
+    try { return new URLSearchParams(location.search).get("clientView") === "1"; }
+    catch (_) { return false; }
+  }
+
+  function blockPreviewWrite(kind) {
+    if (!isClientPreview()) return false;
+    if (kind === "profile") {
+      toast("That contact profile belongs to the client account. Update it from Admin if needed.");
+      return true;
+    }
+    return false;
+  }
+
+  function previewProjectHint() {
+    try {
+      return parsePortalHash().params.get("project") || new URLSearchParams(location.search).get("project") || "";
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function showClientPreviewBanner() {
+    const banner = document.getElementById("client-preview-banner");
+    if (!banner) return;
+    const active = isClientPreview();
+    banner.hidden = !active;
+    document.body.classList.toggle("is-client-preview", active);
+    const name = document.getElementById("client-preview-name");
+    if (name) name.textContent = state.profile?.business || window.GeeslaneMail?.portalName?.(state.profile?.name) || "the client";
+    const adminLink = document.getElementById("admin-link");
+    if (adminLink && active) {
+      adminLink.hidden = false;
+      adminLink.textContent = "Return to admin";
+    }
   }
 
   function showPortal() {
@@ -2016,6 +2124,7 @@
     document.getElementById("mobile-nav").hidden = false;
     const identity = window.GeeslaneAPI.currentUser();
     document.getElementById("admin-link").hidden = identity?.role !== "admin";
+    showClientPreviewBanner();
   }
 
   function showSignedOut() {
@@ -2041,6 +2150,7 @@
     rememberOpenProject(state.project.id);
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     try { portalSettings = await window.GeeslaneAPI.readPortalSettings() || portalSettings; } catch (_) { /* bank details optional */ }
+    try { helpGuides = await window.GeeslaneAPI.listHelpGuides("client"); } catch (_) { helpGuides = []; }
     renderAll();
     return response;
   }
@@ -2048,7 +2158,7 @@
   async function completeClientSignIn() {
     const session = await window.GeeslaneAPI.getSession();
     accountProjects = Array.isArray(session.projects) ? session.projects : [];
-    const clientView = new URLSearchParams(location.search).get("clientView") === "1";
+    const clientView = isClientPreview();
     if (session.user?.role === "admin" && session.user?.status === "active" && !clientView) {
       location.replace(window.GeeslaneAPI.adminSignInRedirect());
       return false;
@@ -2060,13 +2170,14 @@
       authFeedback("We are reviewing your account. You will get an email when your portal is ready.", "notice");
       return false;
     }
-    const wanted = parsePortalHash().params.get("project") || rememberedOpenProject();
-    const openId = wanted && accountProjects.some((item) => item.id === wanted) ? wanted : "";
+    const wanted = previewProjectHint() || parsePortalHash().params.get("project") || rememberedOpenProject();
+    const openId = wanted && (clientView || accountProjects.some((item) => item.id === wanted)) ? wanted : "";
     await hydrateRemoteProject(openId);
     showPortal();
     restoreCommentRoute();
     const route = parsePortalHash();
-    const nextPage = new URLSearchParams(location.search).get("next") || "";
+    const nextPageRaw = new URLSearchParams(location.search).get("next") || "";
+    const nextPage = nextPageRaw === "payments" && !unpaidInvoices().length ? "" : nextPageRaw;
     const many = listedProjects().length > 1;
     const hashPage = pageNames[route.page] ? route.page : "";
     const knownProject = Boolean(openId);
@@ -2289,6 +2400,7 @@
     document.getElementById("brand-file-input").addEventListener("change", uploadSelectedFiles);
     window.GeeslaneAPI?.bindPhoneFields?.();
     document.getElementById("download-agreement-pdf").addEventListener("click", () => window.GeeslaneAgreement.downloadPdf(currentAgreement()));
+    document.getElementById("download-handover-pdf")?.addEventListener("click", downloadClientHandover);
     document.getElementById("back-to-signin").addEventListener("click", (event) => {
       event.preventDefault();
       showAuthPanel("signin");

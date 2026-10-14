@@ -28,9 +28,6 @@ begin
     where user_id not in (
       select user_id from public.profiles
       where lower(coalesce(role, '')) = 'admin' and user_id is not null
-      union
-      select id from public.profiles
-      where lower(coalesce(role, '')) = 'admin'
     );
   end if;
 end $$;
@@ -44,6 +41,7 @@ declare
     'project_receipts',
     'project_invoices',
     'project_agreements',
+    'project_handovers',
     'assets',
     'milestones',
     'brand_kits',
