@@ -14,7 +14,7 @@
   const LAW = "Nigerian law applies. Disputes will first be settled in writing.";
   const TIME = ["Timeline", "Work starts after the agreed payment and required materials have been received. Inactivity of more than 5 days may pause the project and reset the completion date."];
   const PAY_DEPOSIT = ["Payment", "Fees follow the invoice and payment plan above. The deposit is non-refundable once work starts. Handover follows full payment."];
-  const PAY_INVOICE = ["Payment", "Fees follow the invoice and payment plan above. Agreed materials are released after payment."];
+  const PAY_INVOICE = ["Payment", "Fees follow the invoice and payment plan above. Project handover is completed after full payment."];
   const ACCEPT = ["Acceptance", "Report any material issue within 10 working days of delivery. A material issue is a real problem with the delivered work: something broken, missing, or clearly different from what was agreed, and significant enough that the client should not have to accept the work as finished. Approval, use, or silence after that is acceptance."];
   const END = ["Ending the work", `Either party may end the work in writing. Fees remain due for work completed and costs already committed. Geeslane's liability is limited to the amount paid for this project. Project details remain confidential. ${LAW}`];
 
@@ -22,7 +22,7 @@
     website: {
       title: "Website Project Agreement",
       fileSlug: "website-project-agreement",
-      checklist: "Handover",
+      checklist: "Handover Checklist",
       lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.website,
       handover: [
@@ -31,7 +31,7 @@
         { key: "clientAccess", party: "client", label: "The Client has granted Geeslane access to domain, hosting and any required third-party accounts" },
         { key: "finalPayment", party: "client", label: "The Client has paid the project balance in full" },
         { key: "adminCredentials", party: "geeslane", label: "Geeslane has supplied website administrator credentials" },
-        { key: "clientPasswordChange", party: "client", label: "The Client has changed the passwords on all handed-over accounts" },
+        { key: "clientPasswordChange", party: "client", label: "The Client has been prompted to change the passwords on all handed-over accounts" },
         { key: "codeAccess", party: "geeslane", label: "Geeslane has supplied website code, repository or code archive access" },
         { key: "domainHosting", party: "geeslane", label: "Geeslane has confirmed domain and hosting access, including where it is managed" },
         { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party services, licences and renewal dates" },
@@ -57,7 +57,7 @@
     automation: {
       title: "Automation Project Agreement",
       fileSlug: "automation-project-agreement",
-      checklist: "Handover",
+      checklist: "Handover Checklist",
       lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.automation,
       handover: [
@@ -66,7 +66,7 @@
         { key: "finalPayment", party: "client", label: "The Client has paid the project balance in full" },
         { key: "workflowAccess", party: "geeslane", label: "Geeslane has handed over workflow and account access" },
         { key: "credentials", party: "geeslane", label: "Geeslane has supplied login details for connected tools" },
-        { key: "clientPasswordChange", party: "client", label: "The Client has changed the passwords on all handed-over accounts" },
+        { key: "clientPasswordChange", party: "client", label: "The Client has been prompted to change the passwords on all handed-over accounts" },
         { key: "runbook", party: "geeslane", label: "Geeslane has supplied operating notes for the workflow" },
         { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party tools, licences and usage costs" },
         { key: "supportWindow", party: "geeslane", label: "Geeslane has confirmed the post-delivery review start and end dates with the Client" }
@@ -79,7 +79,7 @@
             ["Client responsibilities", "The Client supplies accurate process details, sample data, access and approvals on time, and reviews automated output before it reaches customers."],
             TIME,
             PAY_DEPOSIT,
-            ["Changes", "A revision is a change to agreed work. A new workflow or change of direction is extra work and needs a new fee and timeline before it starts."],
+            ["Changes", "A revision is a change to agreed work. A new workflow or change of direction is extra work and may increase cost and project timeline. Extra costs must be agreed before it starts."],
             ["After handover", "Geeslane supports the agreed workflows for 30 days. Tool costs sit with the Client. AI output can be incomplete. After the review window, further work is billed separately."],
             ["Ownership", "After full payment, Geeslane hands over the workflows, access and operating notes. The Client owns the custom automation."],
             ACCEPT,
@@ -91,7 +91,7 @@
     consultation: {
       title: "Consultation Agreement",
       fileSlug: "consultation-agreement",
-      checklist: "Close-out",
+      checklist: "Handover Checklist",
       lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.consultation,
       handover: [
@@ -120,7 +120,7 @@
     support: {
       title: "Support Agreement",
       fileSlug: "support-agreement",
-      checklist: "Handover",
+      checklist: "Handover Checklist",
       lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.support,
       handover: [
@@ -129,7 +129,7 @@
         { key: "finalPayment", party: "client", label: "The Client has paid the agreed fee in full" },
         { key: "access", party: "geeslane", label: "Geeslane has confirmed domain, hosting or mailbox access" },
         { key: "credentials", party: "geeslane", label: "Geeslane has supplied administrator credentials" },
-        { key: "clientPasswordChange", party: "client", label: "The Client has changed the passwords on all handed-over accounts" },
+        { key: "clientPasswordChange", party: "client", label: "The Client has been prompted to change the passwords on all handed-over accounts" },
         { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party services and renewal dates" },
         { key: "monitoringDates", party: "geeslane", label: "Geeslane has confirmed post-delivery monitoring start and end dates with the Client" },
         { key: "workingState", party: "geeslane", label: "Geeslane has confirmed the working state with the Client" }
@@ -152,7 +152,7 @@
     other: {
       title: "Project Agreement",
       fileSlug: "project-agreement",
-      checklist: "Close-out",
+      checklist: "Handover Checklist",
       lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.other,
       handover: [
