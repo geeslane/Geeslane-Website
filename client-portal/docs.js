@@ -49,9 +49,9 @@
     const social = icon('<path fill="#fff" d="M9.2 8.2h5.6c.9 0 1.6.7 1.6 1.6v5.6c0 .9-.7 1.6-1.6 1.6H9.2c-.9 0-1.6-.7-1.6-1.6V9.8c0-.9.7-1.6 1.6-1.6zm2.8 1.5a2.6 2.6 0 1 0 0 5.2 2.6 2.6 0 0 0 0-5.2zm0 1.1a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm2.8-.6a.55.55 0 1 0 0 1.1.55.55 0 0 0 0-1.1z"/>');
     return `<footer class="quote-footer">
       <div class="quote-footer-links">
-        <span>${mail} hello@geeslane.com</span>
+        <span>${mail} contact@geeslane.com</span>
         <span>${web} www.geeslane.com</span>
-        <span>${social} @geeslane</span>
+        <span>${social} @gees.lane</span>
       </div>
       <p class="quote-footer-tag">Websites | AI Solutions | Digital Growth</p>
     </footer>`;
