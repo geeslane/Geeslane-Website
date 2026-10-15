@@ -19,6 +19,8 @@ Do not put API keys, SMTP passwords, or service-role keys in these files.
 | Confirm signup | `confirm-signup.html` | Confirm your Geeslane email |
 | Invite user | `invite-user.html` | Welcome to Your Geeslane portal |
 
+These templates declare light and dark colour schemes so Apple Mail, iOS Mail, and Outlook.com keep the Geeslane greens readable when a phone is in Dark Mode. Gmail still sometimes inverts mail on its own.
+
 Keep the `{{ .ConfirmationURL }}` and `{{ .Token }}` placeholders. Supabase replaces them when the email is sent.
 
 `{{ .Token }}` is the OTP from the project, not from this HTML. If the email shows 8 digits, set **Authentication → Sign In / Providers → Email → Email OTP length** to **6**, save, then send a new code. Direct link: `https://supabase.com/dashboard/project/xostzntvowmdjlwpsevq/auth/providers?provider=Email`

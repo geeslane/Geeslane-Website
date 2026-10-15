@@ -3084,11 +3084,19 @@
   }
 
   function fillWorkTypeSelect(select, selected) {
-    if (!select) return;
+    const node = typeof select === "string" ? document.getElementById(select) : select;
+    if (!node) return;
     const value = String(selected || "").trim();
-    const list = value && !workTypes.includes(value) ? [value, ...workTypes] : workTypes;
+    const list = value && !workTypes.includes(value) ? [value, ...workTypes] : workTypes.slice();
     const current = value || "Business Website";
-    select.innerHTML = list.map((item) => `<option value="${escapeHtml(item)}"${item === current ? " selected" : ""}>${escapeHtml(item)}</option>`).join("");
+    node.innerHTML = list.map((item) => `<option value="${escapeHtml(item)}"${item === current ? " selected" : ""}>${escapeHtml(item)}</option>`).join("");
+    node.value = current;
+  }
+
+  function fillWorkTypeSelects() {
+    fillWorkTypeSelect("approval-service", document.getElementById("approval-service")?.value || "Business Website");
+    fillWorkTypeSelect("new-project-service", "Business Website");
+    fillWorkTypeSelect("add-project-service", "Business Website");
   }
 
   function fillAddProjectClients(selectedId) {
@@ -3362,6 +3370,7 @@
 
   function wireEvents() {
     ui.wireRowMenus();
+    fillWorkTypeSelects();
     document.querySelectorAll("[data-admin-page]").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.adminPage)));
     document.querySelectorAll("[data-go-admin-page]").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.goAdminPage)));
     ["registration-search","client-search","project-search","admin-request-search","invoice-search","receipt-search"].forEach((id) => {
