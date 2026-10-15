@@ -769,10 +769,17 @@
     wireRegistrationButtons(document.getElementById("registrations-table"));
   }
 
+  function isPortalPerson(item) {
+    if (!item) return false;
+    if (item.role === "admin") return true;
+    if (item.clientId) return true;
+    return String(item.status || "").toLowerCase() === "active";
+  }
+
   function renderClients() {
     window.GeeslaneUI?.closeRowMenus?.();
     const query = document.getElementById("client-search").value.trim().toLowerCase();
-    const rows = data.users.filter((item) => `${item.name} ${item.business} ${item.email} ${item.role} ${item.status}`.toLowerCase().includes(query));
+    const rows = data.users.filter((item) => isPortalPerson(item) && `${item.name} ${item.business} ${item.email} ${item.role} ${item.status}`.toLowerCase().includes(query));
     const slice = pagedRows("clients", rows);
     document.getElementById("clients-table").innerHTML = slice.items.length ? slice.items.map((item) => {
       const connected = clientDeviceConnected(item);
@@ -2844,7 +2851,7 @@
 
   function refreshLocalMetrics() {
     data.metrics.pending = data.registrations.filter((item) => String(item.status || "").toLowerCase() === "pending").length;
-    data.metrics.clients = data.users.filter((item) => item.role === "client").length;
+    data.metrics.clients = data.users.filter((item) => item.role === "client" && isPortalPerson(item)).length;
     data.metrics.projects = data.projects.length;
     data.metrics.openRequests = data.requests.filter((item) => !["Completed", "Declined"].includes(item.status)).length;
   }

@@ -293,6 +293,10 @@
     return (parts.length > 1 ? parts[0][0] + parts.at(-1)[0] : parts[0]?.slice(0, 2) || "CL").toUpperCase();
   }
   function projectInitial(name) { return String(name || "P").trim().charAt(0).toUpperCase(); }
+  function handoverDate(value) {
+    const date = formatDate(value);
+    return date === "Not Set" ? date : `${date} (complete handover)`;
+  }
   function formatDate(value, short = false) {
     if (!value) return "Not Set";
     const date = new Date(value.length === 10 ? `${value}T12:00:00` : value);
@@ -706,7 +710,7 @@
       stages.innerHTML = labels.map((label) => `<span>${escapeHtml(label)}</span>`).join("");
     }
     setText("start-date", formatDate(state.project.startDate));
-    setText("target-date", formatDate(state.project.targetDate));
+    setText("target-date", handoverDate(state.project.targetDate));
     setText("current-stage", state.project.stage || "Discovery");
     setText("milestone-ratio", `${completed} of ${state.milestones.length}`);
     setText("project-page-name", displayProjectName());
@@ -878,7 +882,7 @@
       ["Project Type", displayProjectService()], ["Status", displayProjectStatus()],
       ["Workspace", isProjectActive(state.project) ? "Active" : "Paused"],
       ["Current Stage", state.project.stage || "Discovery"],
-      ["Started", formatDate(state.project.startDate)], ["Projected completion", formatDate(state.project.targetDate)]
+      ["Started", formatDate(state.project.startDate)], ["Projected completion", handoverDate(state.project.targetDate)]
     ];
     const totals = currentProjectBalance();
     if (totals && totals.showSummary) {

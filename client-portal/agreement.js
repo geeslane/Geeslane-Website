@@ -26,15 +26,11 @@
       lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.website,
       handover: [
-        { key: "clientContent", party: "client", label: "The Client has supplied final text, images, logos and remaining brand files" },
-        { key: "clientContacts", party: "client", label: "The Client has confirmed launch contact details, addresses and remaining copy" },
-        { key: "clientAccess", party: "client", label: "The Client has granted Geeslane access to domain, hosting and any required third-party accounts" },
         { key: "finalPayment", party: "client", label: "The Client has paid the project balance in full" },
         { key: "adminCredentials", party: "geeslane", label: "Geeslane has supplied website administrator credentials" },
-        { key: "clientPasswordChange", party: "client", label: "The Client has been prompted to change the passwords on all handed-over accounts" },
         { key: "codeAccess", party: "geeslane", label: "Geeslane has supplied website code, repository or code archive access" },
         { key: "domainHosting", party: "geeslane", label: "Geeslane has confirmed domain and hosting access, including where it is managed" },
-        { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party services, licences and renewal dates" },
+        { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party services, licences and renewal dates & has prompted the client to change the passwords on all handed-over accounts" },
         { key: "monitoringDates", party: "geeslane", label: "Geeslane has confirmed post-delivery monitoring start and end dates with the Client" }
       ],
       clauses: [
@@ -243,9 +239,11 @@
     }));
   }
 
+  const RETIRED_WEBSITE_KEYS = new Set(["clientContent", "clientContacts", "clientAccess", "clientPasswordChange"]);
+
   function restoreChecklistLabels(items, track) {
     const catalog = new Map(defaultHandoverList(track).map((item) => [item.key, item]));
-    return items.map((item) => {
+    return items.filter((item) => track !== "website" || !RETIRED_WEBSITE_KEYS.has(item.key)).map((item) => {
       const standard = catalog.get(item.key);
       if (!standard) return item;
       return { ...item, label: standard.label, party: standard.party || item.party };
