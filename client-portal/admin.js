@@ -27,7 +27,7 @@
   const escapeHtml = (value) => ui.escapeHtml(value);
   const rowActions = (items) => ui.rowActions(items);
   const tablePages = { registrations: 1, clients: 1, projects: 1, requests: 1, invoices: 1, receipts: 1 };
-  const workTypes = ["Business Website", "Landing Page", "Portfolio Website", "Website Revamp", "AI Automation", "Consultation", "Something Else"];
+  const workTypes = ["Business Website", "Landing Page", "Portfolio Website", "Website Revamp", "AI Automation", "Consultation", "Domain & Hosting", "Something Else"];
 
   function pagedRows(key, rows) {
     const slice = ui.pageSlice(rows, tablePages[key]);
@@ -812,7 +812,7 @@
       const subtitle = clientLabel && !String(item.name || "").toLowerCase().includes(clientLabel.toLowerCase())
         ? clientLabel
         : (client?.business && String(client.business).toLowerCase() !== String(clientLabel).toLowerCase() ? client.business : "");
-      return `<tr><td><strong>${escapeHtml(item.name)}</strong>${subtitle ? `<small>${escapeHtml(subtitle)}</small>` : ""}</td><td>${escapeHtml(item.service)}</td><td>${escapeHtml(item.stage)}</td><td class="progress-cell"><strong>${item.progress}%</strong><div class="progress-mini"><span style="width:${Math.max(0,Math.min(100,item.progress))}%"></span></div></td><td><span class="status-pill ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td><td><label class="admin-active-toggle"><input type="checkbox" data-project-active="${escapeHtml(item.id)}" ${item.isActive !== false ? "checked" : ""} /><span>${item.isActive !== false ? "Active" : "Paused"}</span></label></td><td><input class="table-date-input" type="date" data-project-start="${escapeHtml(item.id)}" value="${escapeHtml(dateInputValue(item.startDate))}" aria-label="Start date for ${escapeHtml(item.name)}" /></td><td><input class="table-date-input" type="date" data-project-target="${escapeHtml(item.id)}" min="${todayInputValue()}" value="${escapeHtml(dateInputValue(item.targetDate))}" aria-label="Projected completion for ${escapeHtml(item.name)}" /></td><td>${rowActions([{ label: "View portal", attrs: `data-view-portal="${escapeHtml(item.id)}"` }, { label: "Log item", attrs: `data-log-item="${escapeHtml(item.id)}"` }, { label: "This project", items: [{ label: "Brand & Files", attrs: `data-open-files="${escapeHtml(item.id)}"` }, { label: "Agreement", attrs: `data-open-agreement="${escapeHtml(item.id)}"` }, { label: "Handover", attrs: `data-open-handover="${escapeHtml(item.id)}"` }, { label: "Requests", attrs: `data-open-requests="${escapeHtml(item.id)}"` }, { label: "Milestones", attrs: `data-open-milestones="${escapeHtml(item.id)}"` }] }, { label: "Payments", attrs: `data-open-invoices="${escapeHtml(item.id)}"` }, { label: "Delete", danger: true, attrs: `data-delete-project="${escapeHtml(item.id)}"` }])}</td></tr>`;
+      return `<tr><td><strong>${escapeHtml(item.name)}</strong>${subtitle ? `<small>${escapeHtml(subtitle)}</small>` : ""}</td><td>${escapeHtml(item.service)}</td><td>${escapeHtml(item.stage)}</td><td class="progress-cell"><strong>${item.progress}%</strong><div class="progress-mini"><span style="width:${Math.max(0,Math.min(100,item.progress))}%"></span></div></td><td><span class="status-pill ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td><td><label class="admin-active-toggle"><input type="checkbox" data-project-active="${escapeHtml(item.id)}" ${item.isActive !== false ? "checked" : ""} /><span>${item.isActive !== false ? "Active" : "Paused"}</span></label></td><td><input class="table-date-input" type="date" data-project-start="${escapeHtml(item.id)}" value="${escapeHtml(dateInputValue(item.startDate))}" aria-label="Start date for ${escapeHtml(item.name)}" /></td><td><input class="table-date-input" type="date" data-project-target="${escapeHtml(item.id)}" min="${todayInputValue()}" value="${escapeHtml(dateInputValue(item.targetDate))}" aria-label="Projected completion for ${escapeHtml(item.name)}" /></td><td>${rowActions([{ label: "View portal", attrs: `data-view-portal="${escapeHtml(item.id)}"` }, { label: "This project", items: [{ label: "Brand & Files", attrs: `data-open-files="${escapeHtml(item.id)}"` }, { label: "Agreement", attrs: `data-open-agreement="${escapeHtml(item.id)}"` }, { label: "Handover", attrs: `data-open-handover="${escapeHtml(item.id)}"` }, { label: "Requests", attrs: `data-open-requests="${escapeHtml(item.id)}"` }, { label: "Milestones", attrs: `data-open-milestones="${escapeHtml(item.id)}"` }] }, { label: "Payments", attrs: `data-open-invoices="${escapeHtml(item.id)}"` }, { label: "Delete", danger: true, attrs: `data-delete-project="${escapeHtml(item.id)}"` }])}</td></tr>`;
     }).join("") : '<tr><td class="table-empty" colspan="9">No projects match this search.</td></tr>';
     drawPager("projects-pager", "projects", slice, renderProjects);
     const projectTable = document.getElementById("projects-table");
@@ -823,7 +823,6 @@
     projectTable.querySelectorAll("[data-open-requests]").forEach((button) => button.addEventListener("click", () => openRequests(button.dataset.openRequests)));
     projectTable.querySelectorAll("[data-open-milestones]").forEach((button) => button.addEventListener("click", () => openMilestones(button.dataset.openMilestones)));
     projectTable.querySelectorAll("[data-view-portal]").forEach((button) => button.addEventListener("click", () => openClientView(button.dataset.viewPortal)));
-    projectTable.querySelectorAll("[data-log-item]").forEach((button) => button.addEventListener("click", () => openLogItem(button.dataset.logItem)));
     projectTable.querySelectorAll("[data-delete-project]").forEach((button) => button.addEventListener("click", () => openDeleteProject(button.dataset.deleteProject)));
     document.querySelectorAll("[data-project-active]").forEach((input) => {
       input.addEventListener("change", () => setProjectActive(input.dataset.projectActive, input.checked));
@@ -2558,6 +2557,42 @@
     renderHandoverFields(draft.handover, draft.track, "approval-handover");
   }
 
+  function readApprovalDraft() {
+    const form = document.getElementById("approval-form");
+    const agreement = approvalAgreementDraft();
+    const opening = openingPaymentFrom(form);
+    return {
+      projectName: String(form?.elements?.projectName?.value || "").trim(),
+      service: String(form?.elements?.service?.value || "").trim(),
+      clientName: agreement.clientName || "",
+      deliverables: agreement.deliverables || "",
+      revisionRounds: agreement.revisionRounds || 0,
+      paymentPlan: agreement.paymentPlan || "",
+      handover: agreement.handover || {},
+      startDate: dateInputValue(form?.elements?.startDate?.value),
+      targetDate: dateInputValue(form?.elements?.targetDate?.value),
+      notes: String(form?.elements?.notes?.value || "").trim(),
+      contractAmount: opening.contractAmount,
+      invoiceAmount: opening.invoiceAmount,
+      invoiceTitle: opening.invoiceTitle
+    };
+  }
+
+  function applyApprovalDraft(form, draft) {
+    if (!form || !draft || typeof draft !== "object" || !Object.keys(draft).length) return;
+    if (draft.clientName != null && form.elements.clientName) form.elements.clientName.value = draft.clientName;
+    if (draft.deliverables != null && form.elements.deliverables) form.elements.deliverables.value = draft.deliverables;
+    if (draft.paymentPlan != null && form.elements.paymentPlan) form.elements.paymentPlan.value = draft.paymentPlan;
+    if (draft.revisionRounds != null && form.elements.revisionRounds) form.elements.revisionRounds.value = draft.revisionRounds;
+    if (draft.startDate != null && form.elements.startDate) form.elements.startDate.value = dateInputValue(draft.startDate);
+    if (draft.targetDate != null && form.elements.targetDate) form.elements.targetDate.value = dateInputValue(draft.targetDate);
+    if (draft.notes != null && form.elements.notes) form.elements.notes.value = draft.notes;
+    if (draft.contractAmount != null && form.elements.contractAmount) form.elements.contractAmount.value = draft.contractAmount;
+    if (draft.invoiceAmount != null && form.elements.invoiceAmount) form.elements.invoiceAmount.value = draft.invoiceAmount;
+    if (draft.invoiceTitle != null && form.elements.invoiceTitle) form.elements.invoiceTitle.value = draft.invoiceTitle || "Initial payment";
+    if (draft.handover) renderHandoverFields(draft.handover, approvalTrack(), "approval-handover");
+  }
+
   async function downloadApprovalTnc() {
     const draft = approvalAgreementDraft();
     await window.GeeslaneAgreement?.downloadPdf?.(draft);
@@ -2962,15 +2997,42 @@
     const item = data.registrations.find((entry) => entry.id === id);
     if (!item) return;
     const form = document.getElementById("approval-form");
+    const draft = item.reviewDraft && typeof item.reviewDraft === "object" ? item.reviewDraft : {};
     form.reset();
     form.elements.registrationId.value = item.id;
-    form.elements.projectName.value = `${item.business} — ${item.service}`;
-    fillWorkTypeSelect(form.elements.service, item.service);
-    form.elements.targetDate.value = item.targetDate || "";
-    constrainDateInput(form.elements.targetDate, item.targetDate);
+    form.elements.projectName.value = draft.projectName || `${item.business} — ${item.service}`;
+    fillWorkTypeSelect(form.elements.service, draft.service || item.service);
+    form.elements.targetDate.value = dateInputValue(draft.targetDate || item.targetDate);
+    constrainDateInput(form.elements.targetDate, draft.targetDate || item.targetDate);
     document.getElementById("approval-summary").innerHTML = `<strong>${escapeHtml(portalName(item.name, item.name))} · ${escapeHtml(item.business)}</strong>${escapeHtml(item.email)}<br>${escapeHtml(item.description)}${detailList(discoveryRows(item.discovery))}`;
     fillApprovalAgreement(item);
+    applyApprovalDraft(form, draft);
+    const invite = document.getElementById("approval-invite");
+    if (invite) invite.checked = true;
     openModal("approval-modal");
+  }
+
+  async function saveRegistrationReview() {
+    const form = document.getElementById("approval-form");
+    const id = form?.elements?.registrationId?.value;
+    if (!id) return;
+    const draft = readApprovalDraft();
+    const button = document.getElementById("save-approval");
+    window.GeeslaneAPI.setButtonBusy(button, true, "Saving…");
+    try {
+      const saved = await mutate("adminSaveRegistrationReview", { registrationId: id, draft }, "Review saved");
+      const item = data.registrations.find((entry) => entry.id === id);
+      if (item) {
+        item.reviewDraft = saved?.reviewDraft || draft;
+        item.notes = saved?.notes ?? draft.notes;
+        if (saved?.service || draft.service) item.service = saved?.service || draft.service;
+        if (saved?.targetDate || draft.targetDate) item.targetDate = saved?.targetDate || draft.targetDate;
+      }
+    } catch (error) {
+      toast(window.GeeslaneAPI.userFacingError(error, "Could not save the review. Run registration_review.sql in Supabase, then try again."));
+    } finally {
+      window.GeeslaneAPI.setButtonBusy(button, false);
+    }
   }
 
   async function mutate(action, payload, message, refresh, loaderMessage) {
@@ -2994,7 +3056,10 @@
       formData.name = registration?.name || "";
       formData.business = registration?.business || "";
       const opening = openingPaymentFrom(form);
-      const result = await mutate("adminApproveRegistration", formData, "Client created");
+      const inviteNow = Boolean(document.getElementById("approval-invite")?.checked);
+      const result = await mutate("adminApproveRegistration", formData, inviteNow
+        ? "Client created"
+        : "Client created. Download the T&C or invoice to share, then send a welcome email when you are ready.");
       addCreatedWorkspace(result);
       const email = result.user?.email || result.email;
       const projectId = result.project?.id || result.projectId || result.id;
@@ -3017,7 +3082,7 @@
         handover: agreement.handover
       });
       const user = result.user || data.users.find((item) => String(item.email || "").toLowerCase() === String(email || "").toLowerCase());
-      if (user) await inviteClient(user, null, "welcome");
+      if (inviteNow && user) await inviteClient(user, null, "welcome");
       closeModal("approval-modal");
     }
     catch (error) { toast(window.GeeslaneAPI.userFacingError(error, "Could not complete that action.")); }
@@ -3189,23 +3254,19 @@
   let pendingAdminEmail = "";
 
   function showAdminAuth(name) {
-    document.getElementById("admin-password-panel").classList.toggle("is-visible", name === "password");
-    document.getElementById("admin-email-panel").classList.toggle("is-visible", name === "email");
-    document.getElementById("admin-code-panel").classList.toggle("is-visible", name === "code");
-    const switcher = document.getElementById("admin-auth-switch");
-    switcher.hidden = false;
-    switcher.textContent = name === "password" ? "Use a 6-Digit Code Instead" : "Use Username and Password Instead";
+    const panel = name === "code" ? "code" : "email";
+    document.getElementById("admin-email-panel")?.classList.toggle("is-visible", panel === "email");
+    document.getElementById("admin-code-panel")?.classList.toggle("is-visible", panel === "code");
     const feedback = document.getElementById("admin-auth-feedback");
     if (feedback) feedback.hidden = true;
-    if (name === "code") {
+    if (panel === "code") {
       const label = document.getElementById("admin-code-email-label");
       if (label) label.textContent = pendingAdminEmail || "your email";
       window.GeeslaneAPI.clearCodeBoxes(document.getElementById("admin-code-boxes"));
     }
     setTimeout(() => {
-      if (name === "code") document.querySelector("#admin-code-boxes .code-box")?.focus();
-      else if (name === "email") document.getElementById("admin-signin-email")?.focus();
-      else document.getElementById("admin-username")?.focus();
+      if (panel === "code") document.querySelector("#admin-code-boxes .code-box")?.focus();
+      else document.getElementById("admin-signin-email")?.focus();
     }, 30);
   }
 
@@ -3223,39 +3284,6 @@
     }
     location.replace(window.GeeslaneAPI.clientSignInRedirect());
     return "client";
-  }
-
-  async function requestAdminPassword(event) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    if (!form.checkValidity()) { form.reportValidity(); return; }
-    const data = new FormData(form);
-    const button = form.querySelector("button[type=submit]");
-    window.GeeslaneAPI.setButtonBusy(button, true, "Signing in…");
-    window.GeeslaneAPI.showLoader("Signing you in…");
-    let keepLoader = false;
-    try {
-      const result = await window.GeeslaneAPI.adminPasswordLogin(String(data.get("username") || "").trim(), String(data.get("password") || ""));
-      if (result?.needsCode) {
-        window.GeeslaneAPI.setButtonBusy(button, false);
-        pendingAdminEmail = result.email;
-        const emailInput = document.getElementById("admin-signin-email");
-        if (emailInput) emailInput.value = result.email;
-        showAdminAuth("code");
-        showAuthFeedback(`Password accepted. Enter the 6-digit code emailed to ${result.email}.`, "success");
-        return;
-      }
-      document.getElementById("admin-auth").hidden = true;
-      const next = await completeAdminSession();
-      keepLoader = next === "client";
-      if (!next) document.getElementById("admin-auth").hidden = false;
-    } catch (error) {
-      document.getElementById("admin-auth").hidden = false;
-      showAuthFeedback(error.userMessage || window.GeeslaneAPI.userFacingError(error, "Invalid administrator details."));
-      window.GeeslaneAPI.setButtonBusy(button, false);
-    } finally {
-      if (!keepLoader) window.GeeslaneAPI.hideLoader();
-    }
   }
 
   async function sendAdminCode(email, button) {
@@ -3516,7 +3544,6 @@
     document.getElementById("agreement-fill-defaults").addEventListener("click", fillAgreementDefaults);
     document.getElementById("save-agreement").addEventListener("click", saveAgreement);
     document.getElementById("download-admin-agreement-pdf").addEventListener("click", () => window.GeeslaneAgreement.downloadPdf(readAgreementForm()));
-    document.getElementById("admin-password-form").addEventListener("submit", requestAdminPassword);
     document.getElementById("admin-signin-form").addEventListener("submit", requestAdminMagicLink);
     document.getElementById("admin-code-form").addEventListener("submit", submitAdminCode);
     window.GeeslaneAPI.bindCodeBoxes(document.getElementById("admin-code-boxes"), () => {
@@ -3527,10 +3554,6 @@
       sendAdminCode(pendingAdminEmail || document.getElementById("admin-signin-email")?.value || "", document.getElementById("admin-resend-code"));
     });
     document.getElementById("admin-change-email").addEventListener("click", () => showAdminAuth("email"));
-    document.getElementById("admin-auth-switch").addEventListener("click", () => {
-      const usingPassword = document.getElementById("admin-password-panel").classList.contains("is-visible");
-      showAdminAuth(usingPassword ? "email" : "password");
-    });
     document.getElementById("admin-menu-button").addEventListener("click", openAdminSidebar);
     document.getElementById("admin-sidebar-close").addEventListener("click", closeAdminSidebar);
     document.getElementById("admin-sidebar-scrim").addEventListener("click", closeAdminSidebar);
@@ -3573,6 +3596,7 @@
     document.getElementById("close-approval").addEventListener("click", () => closeModal("approval-modal"));
     document.getElementById("cancel-approval").addEventListener("click", () => closeModal("approval-modal"));
     document.getElementById("download-approval-tnc")?.addEventListener("click", downloadApprovalTnc);
+    document.getElementById("save-approval")?.addEventListener("click", saveRegistrationReview);
     document.getElementById("approve-registration").addEventListener("click", approveRegistration);
     document.getElementById("reject-registration").addEventListener("click", rejectRegistration);
     document.querySelectorAll(".modal-backdrop").forEach((modal) => modal.addEventListener("mousedown", (event) => { if (event.target === modal) closeModal(modal.id); }));
@@ -3586,9 +3610,6 @@
     rememberAdminCommentRoute();
     wireEvents();
     if (window.GEESLANE_ENV_READY) await window.GEESLANE_ENV_READY;
-    const savedUser = window.GEESLANE_CONFIG?.adminUsername || "";
-    const usernameInput = document.getElementById("admin-username");
-    if (savedUser && usernameInput && !usernameInput.value) usernameInput.value = savedUser;
     if (!window.GeeslaneAPI.backendConfigured()) {
       showAuthFeedback("Administrator sign-in is not connected on this host yet. Publish the latest client-portal/config.js, then refresh.", "notice");
       return;
@@ -3605,7 +3626,7 @@
     } catch (error) {
       document.getElementById("admin-auth").hidden = false;
       try { await window.GeeslaneAPI.logout(); } catch (_) { /* signed-out UI still continues */ }
-      showAuthFeedback(error.userMessage || window.GeeslaneAPI.userFacingError(error, "Administrator sign-in could not be completed. Enter a new 6-digit code, or use your password."));
+      showAuthFeedback(error.userMessage || window.GeeslaneAPI.userFacingError(error, "Administrator sign-in could not be completed. Enter a new 6-digit code."));
     } finally {
       window.GeeslaneAPI.hideLoader();
     }

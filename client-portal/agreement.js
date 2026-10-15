@@ -11,14 +11,19 @@
     other: "Payment is due as stated on the approved invoice."
   };
   const DEFAULT_PAYMENT = PAYMENT.website;
-  const LAW = "Nigerian law applies. If we disagree, we will first try to settle it in writing.";
+  const LAW = "Nigerian law applies. Disputes will first be settled in writing.";
+  const TIME = ["Timeline", "Work starts after the agreed payment and required materials have been received. Inactivity of more than 5 days may pause the project and reset the completion date."];
+  const PAY_DEPOSIT = ["Payment", "Fees follow the invoice and payment plan above. The deposit is non-refundable once work starts. Handover follows full payment."];
+  const PAY_INVOICE = ["Payment", "Fees follow the invoice and payment plan above. Agreed materials are released after payment."];
+  const ACCEPT = ["Acceptance", "Report any material issue within 10 working days of delivery. A material issue is a real problem with the delivered work: something broken, missing, or clearly different from what was agreed, and significant enough that the client should not have to accept the work as finished. Approval, use, or silence after that is acceptance."];
+  const END = ["Ending the work", `Either party may end the work in writing. Fees remain due for work completed and costs already committed. Geeslane's liability is limited to the amount paid for this project. Project details remain confidential. ${LAW}`];
 
   const TRACKS = {
     website: {
       title: "Website Project Agreement",
       fileSlug: "website-project-agreement",
-      checklist: "Handover checklist",
-      lead: "This covers the work, payment and handover listed above.",
+      checklist: "Handover",
+      lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.website,
       handover: [
         { key: "clientContent", party: "client", label: "The Client has supplied final text, images, logos and remaining brand files" },
@@ -34,22 +39,17 @@
       ],
       clauses: [
         {
-          heading: "The project",
+          heading: "Terms",
           items: [
-            ["What Geeslane will do.", "We will design, build, test and launch the website listed above. Extra pages, new features, big design changes or extra copywriting are quoted separately."],
-            ["What you will provide.", "Send accurate text, images, brand files, contact details, approvals and any account access we need, on time. You confirm you have the right to use everything you send, and you will check the final content before launch."],
-            ["Time and payment.", "We start after the agreed deposit and the content we need. Dates can move if we are waiting on you. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. The deposit is not refundable once work starts. The full fee must be paid before handover."]
-          ]
-        },
-        {
-          heading: "Changes, launch and aftercare",
-          items: [
-            ["Revisions and extra work.", "The included revision rounds are listed above. A revision is a change to work already agreed. A new page, feature or change of direction is extra work and needs a new cost and timeline before we start it."],
-            ["Hosting and renewals.", "Domain, hosting, email and plugins can have their own fees. First-year prices can change at renewal. We will tell you the known cost in time; you must approve and pay before the due date to keep the website online."],
-            ["Handover and ownership.", "After full payment we give you the website access, code and setup notes. You own the custom website we built for you. Plugins, fonts and stock stay under their own licences. We may show the public site in our portfolio unless you ask us not to in writing."],
-            ["After launch.", "We monitor the website for 30 days after launch, or for the start and end dates written on the handover checklist. In that time we fix faults in the agreed work. New features, content edits, attacks, hosting outages or problems from later changes are not included. After the end date, further work is a paid request."],
-            ["If something is wrong.", "Tell us within 5 working days of receiving the finished website if something important is wrong or missing. If you approve it, go live, or do not tell us in that time, the work is accepted."],
-            ["Stopping, care and law.", `Either of us can stop the project in writing. You pay for work already done and costs already committed. We take reasonable care but cannot promise rankings, sales or zero downtime. After monitoring, you look after renewals, passwords and updates. Our total responsibility for this project is limited to what you paid for it. We both keep project details private. ${LAW}`]
+            ["Scope", "Geeslane will design, build, test and launch the website listed above. Extra pages, features or copywriting are quoted separately."],
+            ["Client responsibilities", "The Client supplies accurate content, brand files, access and approvals on time, and confirms the right to use all materials provided."],
+            TIME,
+            PAY_DEPOSIT,
+            ["Revisions", "Included revision rounds are listed above. A revision is a change to agreed work. New pages, features or a change of direction are extra work and might increase cost and project timeline."],
+            ["After launch", "Geeslane monitors the agreed work for 30 days after launch. Domain, hosting and plugin renewals are paid by the Client. After monitoring, further work is billed separately."],
+            ["Ownership", "After full payment, Geeslane hands over website access, code and setup notes. The Client owns the custom website. Third-party licences remain with their owners."],
+            ACCEPT,
+            END
           ]
         }
       ]
@@ -57,8 +57,8 @@
     automation: {
       title: "Automation Project Agreement",
       fileSlug: "automation-project-agreement",
-      checklist: "Handover checklist",
-      lead: "This covers the work, payment and handover listed above.",
+      checklist: "Handover",
+      lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.automation,
       handover: [
         { key: "clientAccess", party: "client", label: "The Client has granted Geeslane access to the connected tools and accounts" },
@@ -73,21 +73,17 @@
       ],
       clauses: [
         {
-          heading: "The project",
+          heading: "Terms",
           items: [
-            ["What Geeslane will do.", "We will design, connect, test and hand over the workflows listed above. Extra systems, new channels or a change of process are quoted separately."],
-            ["What you will provide.", "Send accurate process details, sample data, account access and approvals on time. You remain responsible for checking automated messages and published content before they reach customers."],
-            ["Time and payment.", "We start after the agreed deposit and the access we need. Dates can move if we are waiting on you. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. The deposit is not refundable once work starts. The full fee must be paid before handover."]
-          ]
-        },
-        {
-          heading: "Tools, handover and aftercare",
-          items: [
-            ["Changes and extra work.", "A revision is a change to work already agreed. A new workflow or change of direction is extra work and needs a new cost and timeline before we start it."],
-            ["Tools and ownership.", "Third-party tools, API and model costs sit with you unless the proposal says otherwise. After full payment we hand over the workflows, access and operating notes. You own the custom automation we built for you. We may describe the work in our portfolio unless you ask us not to in writing."],
-            ["After handover.", "We support the agreed workflows for 30 days after handover, or for the start and end dates written on the handover checklist. In that time we fix faults in the agreed work. New workflows, tool outages, usage overages or problems from later changes are not included."],
-            ["If something is wrong.", "Tell us within 5 working days of receiving the finished workflows if something important is wrong or missing. If you approve it, go live, or do not tell us in that time, the work is accepted."],
-            ["Stopping, care and law.", `Either of us can stop the project in writing. You pay for work already done and costs already committed. We take reasonable care, but AI output can be incomplete or wrong, and we cannot promise sales or uninterrupted tools. After the review window, you look after access, data and renewals. Our total responsibility for this project is limited to what you paid for it. We both keep project details private. ${LAW}`]
+            ["Scope", "Geeslane will design, connect, test and hand over the workflows listed above. Extra systems or a change of process are quoted separately."],
+            ["Client responsibilities", "The Client supplies accurate process details, sample data, access and approvals on time, and reviews automated output before it reaches customers."],
+            TIME,
+            PAY_DEPOSIT,
+            ["Changes", "A revision is a change to agreed work. A new workflow or change of direction is extra work and needs a new fee and timeline before it starts."],
+            ["After handover", "Geeslane supports the agreed workflows for 30 days. Tool costs sit with the Client. AI output can be incomplete. After the review window, further work is billed separately."],
+            ["Ownership", "After full payment, Geeslane hands over the workflows, access and operating notes. The Client owns the custom automation."],
+            ACCEPT,
+            END
           ]
         }
       ]
@@ -95,8 +91,8 @@
     consultation: {
       title: "Consultation Agreement",
       fileSlug: "consultation-agreement",
-      checklist: "Close-out checklist",
-      lead: "This covers the work, payment and close-out listed above.",
+      checklist: "Close-out",
+      lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.consultation,
       handover: [
         { key: "clientInfo", party: "client", label: "The Client has supplied the information and people Geeslane needed to speak with" },
@@ -108,19 +104,15 @@
       ],
       clauses: [
         {
-          heading: "The engagement",
+          heading: "Terms",
           items: [
-            ["What Geeslane will do.", "We will provide the advice, recommendations and sessions listed above. Building, design, development or ongoing support is a separate project unless it is included here."],
-            ["What you will provide.", "Send accurate business information, access to the people we need to speak with, and timely feedback. Advice is based on what you give us."],
-            ["Time and payment.", "We start after the agreed payment, or as stated on the invoice. Dates can move if we are waiting on you. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. Agreed documents are released after payment."]
-          ]
-        },
-        {
-          heading: "Close-out and care",
-          items: [
-            ["Scope and documents.", "A new problem or wider brief is extra work. Advice is not a promise of rankings, sales or funding. After payment you may use the agreed documents in your business. We keep our methods and templates. We may mention the work in our portfolio unless you ask us not to in writing."],
-            ["If something is wrong.", "Tell us within 5 working days of receiving the final recommendations if something important is wrong or missing. If you approve it, use the advice, or do not tell us in that time, the work is accepted."],
-            ["Stopping, care and law.", `Either of us can stop the engagement in writing. You pay for work already done. You remain responsible for decisions you take on the advice. Our total responsibility for this project is limited to what you paid for it. We both keep shared details private. ${LAW}`]
+            ["Scope", "Geeslane will provide the advice, recommendations and sessions listed above. Design, development or ongoing support is a separate project unless included here."],
+            ["Client responsibilities", "The Client supplies accurate information, access to the people required, and timely feedback. Advice is based on the information provided."],
+            TIME,
+            PAY_INVOICE,
+            ["Advice", "Advice is not a promise of rankings, sales or funding. The Client remains responsible for decisions taken. After payment, the Client may use the agreed documents in their business. Geeslane retains its methods and templates."],
+            ACCEPT,
+            END
           ]
         }
       ]
@@ -128,8 +120,8 @@
     support: {
       title: "Support Agreement",
       fileSlug: "support-agreement",
-      checklist: "Handover checklist",
-      lead: "This covers the work, payment and coverage listed above.",
+      checklist: "Handover",
+      lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.support,
       handover: [
         { key: "clientAccess", party: "client", label: "The Client has granted authorised access to domain, hosting or mailbox accounts" },
@@ -144,20 +136,15 @@
       ],
       clauses: [
         {
-          heading: "The work",
+          heading: "Terms",
           items: [
-            ["What Geeslane will do.", "We will complete the domain, hosting, email, monitoring or support work listed above. A new website, redesign or unrelated feature is extra work."],
-            ["What you will provide.", "Give us authorised access to the relevant accounts and approve renewals and changes on time. You confirm you are allowed to grant that access."],
-            ["Time and payment.", "We start after payment and access. Dates can move if we are waiting on you or a provider. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. We may pause coverage while an invoice is overdue. Renewals must be paid before the provider deadline."]
-          ]
-        },
-        {
-          heading: "Coverage and aftercare",
-          items: [
-            ["Monitoring and coverage.", "Support runs for the services and dates listed above and on the handover checklist. The start date is when the work is live, or the written start date. The end date is the last day we monitor or support it unless a paid plan continues. Coverage does not include a redesign, new features, content updates, attacks, or problems from later changes."],
-            ["Renewals and access.", "Domain, hosting, email and similar services can have their own fees, and renewal prices can change. We will tell you the known cost in time; you must approve and pay before the due date to keep the service online. You own your accounts. After we confirm the work is complete, you look after renewals, passwords and backups, except while paid coverage is still running."],
-            ["If something is wrong.", "Tell us within 5 working days of being told the work is complete if something important is wrong or missing. If you approve it, keep using it, or do not tell us in that time, the work is accepted."],
-            ["Stopping, care and law.", `Either of us can stop the work in writing. You pay for work already done and costs already committed. We take reasonable care but cannot promise uninterrupted hosting or mail. Our total responsibility for this project is limited to what you paid for it. We both keep project details private. ${LAW}`]
+            ["Scope", "Geeslane will complete the domain, hosting, email, monitoring or support work listed above. A new website, redesign or unrelated feature is extra work."],
+            ["Client responsibilities", "The Client grants authorised access and approves renewals on time."],
+            TIME,
+            ["Payment", "Fees follow the invoice and payment plan above. Coverage may pause while an invoice is overdue. Renewals must be paid before the provider deadline."],
+            ["Coverage", "Support covers the services and dates listed above. It does not include redesigns, new features, content updates or problems from later changes. After coverage ends, the Client manages renewals, passwords and backups."],
+            ACCEPT,
+            END
           ]
         }
       ]
@@ -165,8 +152,8 @@
     other: {
       title: "Project Agreement",
       fileSlug: "project-agreement",
-      checklist: "Close-out checklist",
-      lead: "This covers the work, payment and close-out listed above.",
+      checklist: "Close-out",
+      lead: "These terms apply to the project summarised above.",
       payment: PAYMENT.other,
       handover: [
         { key: "clientInfo", party: "client", label: "The Client has supplied the information, access and approvals needed" },
@@ -177,19 +164,15 @@
       ],
       clauses: [
         {
-          heading: "The project",
+          heading: "Terms",
           items: [
-            ["What Geeslane will do.", "We will complete the work listed above. Anything not listed is quoted separately."],
-            ["What you will provide.", "Send accurate information, access and approvals on time."],
-            ["Time and payment.", "We start after the agreed payment. Dates can move if we are waiting on you. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. Agreed materials are released after payment."]
-          ]
-        },
-        {
-          heading: "Close-out and care",
-          items: [
-            ["Changes and ownership.", "A change of direction is extra work and needs a new cost and timeline before we start it. After full payment you own the custom work we created for you. Third-party tools stay under their own terms."],
-            ["If something is wrong.", "Tell us within 5 working days of receiving the finished work if something important is wrong or missing. If you approve it, start using it, or do not tell us in that time, the work is accepted."],
-            ["Stopping, care and law.", `Either of us can stop the project in writing. You pay for work already done. We take reasonable care. Our total responsibility for this project is limited to what you paid for it. We both keep project details private. ${LAW}`]
+            ["Scope", "Geeslane will complete the work listed above. Anything not listed is quoted separately."],
+            ["Client responsibilities", "The Client supplies accurate information, access and approvals on time."],
+            TIME,
+            PAY_INVOICE,
+            ["Changes", "A change of direction is extra work and needs a new fee and timeline before it starts. After full payment, the Client owns the custom work. Third-party tools remain under their own terms."],
+            ACCEPT,
+            END
           ]
         }
       ]
@@ -260,15 +243,24 @@
     }));
   }
 
+  function restoreChecklistLabels(items, track) {
+    const catalog = new Map(defaultHandoverList(track).map((item) => [item.key, item]));
+    return items.map((item) => {
+      const standard = catalog.get(item.key);
+      if (!standard) return item;
+      return { ...item, label: standard.label, party: standard.party || item.party };
+    });
+  }
+
   function handoverList(value, track) {
     if (Array.isArray(value)) {
       const items = value.map(handoverItem).filter(Boolean);
-      return items.length ? items : defaultHandoverList(track);
+      return items.length ? restoreChecklistLabels(items, track) : defaultHandoverList(track);
     }
     const source = value && typeof value === "object" ? value : {};
     if (Array.isArray(source.items)) {
       const items = source.items.map(handoverItem).filter(Boolean);
-      return items.length || Object.prototype.hasOwnProperty.call(source, "items") ? items : defaultHandoverList(track);
+      return items.length || Object.prototype.hasOwnProperty.call(source, "items") ? restoreChecklistLabels(items, track) : defaultHandoverList(track);
     }
     const defaults = defaultHandoverList(track);
     const known = new Set(defaults.map((item) => item.key));
@@ -283,7 +275,7 @@
       if (entry === true || entry === false) return { key, label: key, done: entry === true };
       return null;
     }).filter(Boolean);
-    return extras.length ? fromDefaults.concat(extras) : fromDefaults;
+    return restoreChecklistLabels(extras.length ? fromDefaults.concat(extras) : fromDefaults, track);
   }
 
   function packHandover(list) {
@@ -447,8 +439,9 @@
     }
   }
 
-  function fact(label, value) {
-    return `<div class="agreement-fact"><span>${escapeHtml(label)}</span><strong>${escapeHtml(displayOrPending(value))}</strong></div>`;
+  function fact(label, value, wide) {
+    const body = escapeHtml(displayOrPending(value)).replace(/\n/g, "<br />");
+    return `<div class="agreement-fact${wide ? " agreement-fact-wide" : ""}"><span>${escapeHtml(label)}</span><strong>${body}</strong></div>`;
   }
 
   function clausesHtml(pack) {
@@ -456,7 +449,7 @@
     return pack.clauses.map((section) => {
       const items = section.items.map(([title, body]) => {
         number += 1;
-        return `<li><strong>${number}. ${escapeHtml(title)}</strong> ${escapeHtml(body)}</li>`;
+        return `<li><strong>${number}. ${escapeHtml(title)}:</strong><span>${escapeHtml(body)}</span></li>`;
       }).join("");
       return `<section class="agreement-block"><h2>${escapeHtml(section.heading)}</h2><ol class="agreement-clauses">${items}</ol></section>`;
     }).join("");
@@ -475,7 +468,7 @@
     const geeslane = items.filter((item) => item.party === "geeslane");
     const other = items.filter((item) => item.party !== "client" && item.party !== "geeslane");
     if (!client.length && !geeslane.length) return checklistItemsHtml(items);
-    return `${client.length ? `<div class="agreement-check-group"><h3>The Client provides</h3>${checklistItemsHtml(client)}</div>` : ""}${geeslane.length ? `<div class="agreement-check-group"><h3>Geeslane provides</h3>${checklistItemsHtml(geeslane)}</div>` : ""}${other.length ? `<div class="agreement-check-group"><h3>Also required</h3>${checklistItemsHtml(other)}</div>` : ""}`;
+    return checklistItemsHtml([...client, ...geeslane, ...other]);
   }
 
   function documentHtml(data, options = {}) {
@@ -486,21 +479,24 @@
     return `
       <article class="agreement-sheet" lang="en">
         <header class="agreement-masthead">
-          <img class="agreement-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
           <div>
-            <p class="agreement-kicker">Terms &amp; Agreement</p>
+            <img class="agreement-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
+            <p class="agreement-kicker">Geeslane Technologies</p>
+          </div>
+          <div class="agreement-masthead-title">
+            <p class="agreement-doc-type">Agreement</p>
             <h1>${escapeHtml(pack.title)}</h1>
           </div>
         </header>
         <section class="agreement-facts" aria-label="Project summary">
           ${fact("Client", clientName)}
           ${fact("Project", agreement.projectTitle)}
-          ${fact("Project Fee", displayFee(agreement.fee))}
-          ${fact("Payment Plan", agreement.paymentPlan)}
-          ${hasRevisions(agreement.track) ? fact("Included Revisions", displayRevisions(agreement.revisionRounds)) : ""}
-          ${fact("Start date", formatDate(agreement.startDate))}
-          ${fact("Projected completion", formatDate(agreement.completionDate) || agreement.timeline)}
-          <div class="agreement-fact agreement-fact-wide"><span>Main Deliverables</span><strong>${escapeHtml(displayOrPending(agreement.deliverables)).replace(/\n/g, "<br />")}</strong></div>
+          ${fact("Fee", displayFee(agreement.fee))}
+          ${fact("Payment", agreement.paymentPlan)}
+          ${hasRevisions(agreement.track) ? fact("Revisions", displayRevisions(agreement.revisionRounds)) : ""}
+          ${fact("Start", formatDate(agreement.startDate))}
+          ${fact("Completion", formatDate(agreement.completionDate) || agreement.timeline)}
+          ${fact("Deliverables", agreement.deliverables, true)}
         </section>
         <p class="agreement-lead">${escapeHtml(pack.lead)}</p>
         ${clausesHtml(pack)}
@@ -509,21 +505,21 @@
           ${handoverHtml(agreement.handover, trackFrom(null, agreement))}
         </section>
         <section class="agreement-sign">
-          <h2>Signatures</h2>
-          <p class="agreement-sign-copy">By continuing with this project, both parties confirm that they understand and accept this agreement and the completed project details above.</p>
+          <h2>Acceptance</h2>
+          <p class="agreement-sign-copy">Continuing this project confirms acceptance of these terms.</p>
           <div class="agreement-sign-grid">
             <div class="agreement-sign-card">
               <span>For Geeslane</span>
-              <img class="agreement-sign-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
-              <small>Date: ${escapeHtml(dateLabel)}</small>
+              <div class="agreement-sign-line"><img class="agreement-sign-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" /></div>
+              <small>${escapeHtml(dateLabel)}</small>
             </div>
             <div class="agreement-sign-card">
               <span>For the Client</span>
-              <strong class="agreement-client-mark">${escapeHtml(clientName)}</strong>
-              <small>Date: ${escapeHtml(dateLabel)}</small>
+              <div class="agreement-sign-line"><strong class="agreement-client-mark">${escapeHtml(clientName)}</strong></div>
+              <small>${escapeHtml(dateLabel)}</small>
             </div>
           </div>
-          <p class="agreement-endorsement">This is the same terms document shown in the Geeslane client portal. Price, timeline, and deliverables follow the approved project details.</p>
+          <p class="agreement-endorsement">Geeslane Technologies · geeslane.com</p>
         </section>
       </article>
     `;
@@ -531,43 +527,51 @@
 
   function documentCss() {
     return `
-      .agreement-sheet { max-width: 820px; margin: 0 auto; padding: 42px 48px 48px; color: #17211c; background: #fff; border: 1px solid #dfe7e2; border-radius: 18px; box-shadow: 0 18px 50px rgba(8,54,37,.06); }
-      .agreement-masthead { display: flex; align-items: center; gap: 22px; padding-bottom: 28px; border-bottom: 3px solid #0b6b45; }
-      .agreement-logo { height: 46px; width: auto; }
-      .agreement-kicker { margin: 0 0 6px; color: #0b6b45; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
-      .agreement-masthead h1 { margin: 0; color: #063b29; font-size: 1.55rem; line-height: 1.25; letter-spacing: -.03em; }
-      .agreement-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 28px 0 24px; overflow: hidden; background: #dfe7e2; border: 1px solid #dfe7e2; border-radius: 14px; }
-      .agreement-fact { display: grid; gap: 5px; padding: 14px 16px; background: #f7fbf8; }
-      .agreement-fact span { color: #697870; font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
-      .agreement-fact strong { color: #17211c; font-size: .95rem; font-weight: 700; line-height: 1.45; white-space: pre-wrap; }
+      .agreement-sheet { position: relative; max-width: 820px; margin: 0 auto; padding: 42px 48px 36px 70px; color: #17211c; background: #fff; overflow: hidden; }
+      .agreement-sheet::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 16px; background: #063b29; }
+      .agreement-sheet::after { content: ""; position: absolute; left: 16px; top: 0; bottom: 0; width: 10px; background: #d8eee3; }
+      .agreement-masthead { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 8px; }
+      .agreement-logo { height: 42px; width: auto; }
+      .agreement-kicker { margin: 12px 0 0; color: #8a9690; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+      .agreement-masthead-title { text-align: right; }
+      .agreement-doc-type { margin: 0 0 6px; color: #111; font-size: 1.85rem; font-weight: 800; letter-spacing: .1em; line-height: 1; text-transform: uppercase; }
+      .agreement-masthead h1 { margin: 0; color: #063b29; font-size: 1rem; font-weight: 700; line-height: 1.35; }
+      .agreement-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 22px 0 18px; overflow: hidden; background: #dfe7e2; border: 1px solid #dfe7e2; }
+      .agreement-fact { display: grid; gap: 5px; padding: 12px 14px; background: #f7fbf8; }
+      .agreement-fact span { color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .agreement-fact strong { color: #17211c; font-size: .92rem; font-weight: 700; line-height: 1.45; white-space: pre-wrap; }
       .agreement-fact-wide { grid-column: 1 / -1; background: #eff9f4; }
-      .agreement-lead { margin: 0 0 28px; color: #2a3931; font-size: 1rem; line-height: 1.7; }
-      .agreement-block { margin: 0 0 26px; }
-      .agreement-block h2 { margin: 0 0 12px; padding-bottom: 8px; color: #063b29; border-bottom: 1px solid #edf2ef; font-size: 1.05rem; letter-spacing: -.02em; }
-      .agreement-clauses { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; }
-      .agreement-clauses li { color: #2a3931; font-size: .95rem; line-height: 1.7; }
-      .agreement-clauses strong { color: #063b29; }
-      .agreement-check-group { margin: 0 0 16px; }
+      .agreement-lead { margin: 0 0 22px; color: #697870; font-size: .9rem; line-height: 1.55; }
+      .agreement-block { margin: 0 0 24px; }
+      .agreement-block h2 { margin: 0 0 12px; padding-bottom: 8px; color: #063b29; border-bottom: 1px solid #edf2ef; font-size: .78rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+      .agreement-clauses { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
+      .agreement-clauses li { display: grid; gap: 4px; padding: 12px 0; color: #2a3931; border-bottom: 1px solid #edf2ef; font-size: .9rem; line-height: 1.55; }
+      .agreement-clauses li:last-child { border-bottom: 0; }
+      .agreement-clauses strong { color: #063b29; font-size: .92rem; }
+      .agreement-clauses span { color: #2a3931; }
+      .agreement-check-group { margin: 0 0 14px; }
       .agreement-check-group:last-child { margin-bottom: 0; }
-      .agreement-check-group h3 { margin: 0 0 8px; color: #0b6b45; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-      .agreement-checklist { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-      .agreement-checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: #f7fbf8; border: 1px solid #edf2ef; border-radius: 10px; font-size: .92rem; }
-      .agreement-check { width: 18px; height: 18px; flex: 0 0 18px; display: grid; place-items: center; margin-top: 1px; color: #fff; background: #fff; border: 1.5px solid #0b6b45; border-radius: 4px; font-size: .72rem; font-weight: 800; }
-      .agreement-checklist li.is-done { background: #eff9f4; }
+      .agreement-check-group h3 { margin: 0 0 8px; color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+      .agreement-checklist { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
+      .agreement-checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #edf2ef; font-size: .9rem; line-height: 1.45; }
+      .agreement-checklist li:last-child { border-bottom: 0; }
+      .agreement-check { width: 16px; height: 16px; flex: 0 0 16px; display: grid; place-items: center; margin-top: 2px; color: #fff; background: #fff; border: 1.5px solid #0b6b45; border-radius: 3px; font-size: .68rem; font-weight: 800; }
       .agreement-checklist li.is-done .agreement-check { background: #0b6b45; border-color: #0b6b45; }
-      .agreement-checklist-empty { margin: 0; color: #697870; font-size: .92rem; }
-      .agreement-sign-copy { margin: 0 0 18px; color: #2a3931; font-size: .95rem; line-height: 1.65; }
-      .agreement-sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-      .agreement-sign-card { display: grid; gap: 14px; min-height: 170px; padding: 20px; background: linear-gradient(180deg, #f7fbf8, #fff); border: 1px solid #dfe7e2; border-radius: 14px; }
-      .agreement-sign-card > span { color: #0b6b45; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-      .agreement-sign-logo { height: 40px; width: auto; }
-      .agreement-client-mark { color: #063b29; font-size: 1.2rem; line-height: 1.3; letter-spacing: -.02em; }
-      .agreement-sign-card small { margin-top: auto; color: #697870; font-size: .82rem; }
-      .agreement-endorsement { margin: 18px 0 0; color: #697870; font-size: .82rem; line-height: 1.55; }
+      .agreement-checklist-empty { margin: 0; color: #697870; font-size: .9rem; }
+      .agreement-sign-copy { margin: 0 0 16px; color: #2a3931; font-size: .9rem; line-height: 1.55; }
+      .agreement-sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+      .agreement-sign-card { display: grid; gap: 8px; min-height: 0; padding: 0; background: none; border: 0; }
+      .agreement-sign-card > span { color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+      .agreement-sign-line { display: flex; align-items: flex-end; min-height: 52px; padding-bottom: 8px; border-bottom: 1px solid #dfe7e2; }
+      .agreement-sign-logo { height: 32px; width: auto; }
+      .agreement-client-mark { color: #063b29; font-size: 1rem; line-height: 1.3; }
+      .agreement-sign-card small { color: #8a9690; font-size: .78rem; }
+      .agreement-endorsement { margin: 28px 0 0; color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
       @media (max-width: 720px) {
-        .agreement-sheet { padding: 24px 18px 28px; }
+        .agreement-sheet { padding: 28px 18px 28px 36px; }
         .agreement-masthead, .agreement-facts, .agreement-sign-grid { grid-template-columns: 1fr; }
         .agreement-masthead { display: grid; }
+        .agreement-masthead-title { text-align: left; }
       }
     `;
   }
@@ -590,7 +594,7 @@
         * { box-sizing: border-box; }
         body { margin: 0; padding: 24px; color: #17211c; background: #fff; font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif; }
         ${documentCss()}
-        .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; padding: 0; }
+        .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; }
         @page { margin: 16mm; }
         @media print { body { padding: 0; } }
       </style></head><body>${documentHtml(data)}</body></html>`;

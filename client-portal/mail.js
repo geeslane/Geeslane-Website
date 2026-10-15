@@ -266,7 +266,6 @@
     form.append("from_name", TEAM_NAME);
     form.append("replyto", mail.replyTo);
     form.append("message", mail.text);
-    form.append("html", mail.html);
     form.append("botcheck", "");
     if ((audience === "client" || audience === "both") && mail.clientEmail && /@/.test(mail.clientEmail)) {
       form.append("email", String(mail.clientEmail).trim());

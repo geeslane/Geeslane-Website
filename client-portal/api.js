@@ -1265,7 +1265,7 @@
         client().from("milestones").select("*").order("sort_order"),
         client().rpc("admin_list_push_devices")
       ]);
-      const registrations = (resultOrThrow(results[0]) || []).map((row) => ({ id: row.id, email: row.email, name: row.name, business: row.business, phone: row.phone, contact: row.contact_preference, service: row.requested_service, description: row.project_description, targetDate: row.target_date || "", status: row.status, notes: row.admin_notes, createdAt: row.created_at, discovery: row.discovery || {} }));
+      const registrations = (resultOrThrow(results[0]) || []).map((row) => ({ id: row.id, email: row.email, name: row.name, business: row.business, phone: row.phone, contact: row.contact_preference, service: row.requested_service, description: row.project_description, targetDate: row.target_date || "", status: row.status, notes: row.admin_notes, createdAt: row.created_at, discovery: row.discovery || {}, reviewDraft: row.review_draft || {} }));
       const users = (resultOrThrow(results[1]) || []).map(mapProfile);
       const clients = resultOrThrow(results[2]) || [];
       const projects = (resultOrThrow(results[3]) || []).map(mapProject);
@@ -1442,6 +1442,12 @@
         return result;
       }
       if (action === "adminRejectRegistration") return resultOrThrow(await client().rpc("admin_reject_registration", { p_registration_id: payload.registrationId, p_notes: payload.notes || "" }));
+      if (action === "adminSaveRegistrationReview") {
+        return resultOrThrow(await client().rpc("admin_save_registration_review", {
+          p_registration_id: payload.registrationId,
+          p_draft: payload.draft || {}
+        }), "Could not save the review. Run registration_review.sql in Supabase, then try again.");
+      }
       if (action === "adminCreateClientProject") {
         await ensurePortalAuthUser(payload.email, payload);
         result = resultOrThrow(await client().rpc("admin_create_client_project", { p_name: payload.name, p_business: payload.business, p_email: payload.email, p_phone: payload.phone || "", p_contact: payload.contact || "Email", p_project_name: payload.projectName, p_service: payload.service || "Website project", p_target_date: payload.targetDate || null }));

@@ -30,7 +30,7 @@
       copy: "This opens a separate project. The one you have now stays in your list.",
       fields: [
         { name: "projectName", label: "Project Name", type: "text", placeholder: "e.g. Product landing page", required: true },
-        { name: "projectType", label: "What do you need?", type: "select", required: true, options: ["Landing Page", "Portfolio Website", "Business Website", "Website Revamp", "AI Automation", "Consultation", "Something Else"] },
+        { name: "projectType", label: "What do you need?", type: "select", required: true, options: ["Landing Page", "Portfolio Website", "Business Website", "Website Revamp", "AI Automation", "Consultation", "Domain & Hosting", "Something Else"] },
         { name: "goal", label: "What should this help you achieve?", type: "textarea", placeholder: "Describe the main outcome...", required: true, full: true },
         { name: "audience", label: "Who is it for?", type: "text", placeholder: "Ideal customers or users", required: true, full: true },
         { name: "mustHaves", label: "What must be included?", type: "textarea", placeholder: "Pages, features, content, integrations...", required: true, full: true },

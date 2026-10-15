@@ -61,7 +61,7 @@
     const quote = /quote-sheet/.test(String(bodyHtml || ""));
     const css = `${options.css || window.GeeslaneAgreement?.documentCss?.() || ""}\n${billingCss()}`;
     const print = options.print ? `
-      .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; padding: 0; }
+      .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; }
       .quote-sheet { max-width: none; min-height: 0; }
       @page { margin: 10mm; }
       @media print { body { padding: 0; } }` : "";
@@ -167,7 +167,8 @@
         scrollX: 0,
         scrollY: 0,
         x: 0,
-        y: 0
+        y: 0,
+        windowWidth: 1024
       },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
     };
@@ -188,22 +189,22 @@
     style.setAttribute("data-pdf-style", "1");
     style.textContent = `${css}
       [data-pdf-host] { color: #17211c; font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif; }
-      [data-pdf-host] .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; margin: 0; padding: 0; background: #fff; }
+      [data-pdf-host] .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; margin: 0; padding: 28px 28px 24px 54px; background: #fff; }
       [data-pdf-host] .quote-sheet { max-width: none; margin: 0; min-height: 1040px; }
-      [data-pdf-host] .agreement-masthead { padding-bottom: 16px; gap: 16px; }
-      [data-pdf-host] .agreement-facts { margin: 16px 0 14px; }
-      [data-pdf-host] .agreement-fact { padding: 10px 12px; }
+      [data-pdf-host] .agreement-masthead { display: flex !important; align-items: flex-start; justify-content: space-between; padding-bottom: 12px; gap: 16px; }
+      [data-pdf-host] .agreement-masthead-title { text-align: right !important; }
+      [data-pdf-host] .agreement-facts { display: grid !important; grid-template-columns: 1fr 1fr !important; margin: 14px 0 12px; }
+      [data-pdf-host] .agreement-fact-wide { grid-column: 1 / -1 !important; }
+      [data-pdf-host] .agreement-sign-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
       [data-pdf-host] .agreement-lead { margin: 0 0 14px; }
-      [data-pdf-host] .agreement-sign-card { min-height: 0; padding: 14px 16px; gap: 10px; }
+      [data-pdf-host] .agreement-sign-card { min-height: 0; padding: 0; }
       [data-pdf-host] img { max-width: 100%; height: auto; display: block; }
       .html2pdf__overlay, .html2pdf__container { left: -12000px !important; top: 0 !important; right: auto !important; bottom: auto !important; }`;
     document.head.appendChild(style);
     const host = document.createElement("div");
     host.setAttribute("aria-hidden", "true");
     host.setAttribute("data-pdf-host", "1");
-    host.style.cssText = quote
-      ? "position:absolute;left:-12000px;top:0;width:794px;background:#fff;padding:0;pointer-events:none;z-index:-1;"
-      : "position:absolute;left:-12000px;top:0;width:720px;background:#fff;padding:20px 22px 24px;pointer-events:none;z-index:-1;";
+    host.style.cssText = "position:absolute;left:-12000px;top:0;width:794px;background:#fff;padding:0;pointer-events:none;z-index:-1;";
     host.innerHTML = html;
     document.body.appendChild(host);
     try {

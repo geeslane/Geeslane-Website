@@ -203,7 +203,13 @@
       base.sections[key].enabled = current.enabled !== false;
       base.sections[key].values = { ...base.sections[key].values, ...(current.values || {}) };
     });
-    if (Array.isArray(saved.checklist)) base.checklist = saved.checklist;
+    if (Array.isArray(saved.checklist)) {
+      const catalog = new Map((window.GeeslaneAgreement?.handoverList?.({}, base.track) || []).map((item) => [item.key, item.label]));
+      base.checklist = saved.checklist.map((item) => {
+        const label = catalog.get(item?.key);
+        return label ? { ...item, label } : item;
+      });
+    }
     base.notes = saved.notes || "";
     base.fileDriveUrl = saved.fileDriveUrl || saved.file_drive_url || "";
     base.fileRetentionDays = Number(saved.fileRetentionDays || saved.file_retention_days || 30);

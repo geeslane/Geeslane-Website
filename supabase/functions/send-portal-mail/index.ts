@@ -23,6 +23,30 @@ function oneLine(value: unknown, max = 240) {
   return text.slice(0, max);
 }
 
+function looksLikeHtml(value: string) {
+  return /<!doctype html/i.test(value) || /<\/?[a-z][\s\S]*>/i.test(value);
+}
+
+function htmlToText(value: string) {
+  return String(value || "")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<\/(div|tr|h[1-6]|li|table)>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, "\"")
+    .replace(/&#39;/gi, "'")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+}
+
 function smsNumber(raw: unknown, defaultCountry = "234") {
   let digits = String(raw || "").trim();
   if (!digits) return "";
@@ -190,8 +214,14 @@ Deno.serve(async (req) => {
 
     const payload = await req.json();
     const subject = String(payload.subject || "").trim().slice(0, 180);
-    const html = String(payload.html || "").trim().slice(0, 120000);
-    const text = String(payload.text || "").trim().slice(0, 40000);
+    let html = String(payload.html || "").trim().slice(0, 120000);
+    let text = String(payload.text || "").trim().slice(0, 40000);
+    if (!html && looksLikeHtml(text)) {
+      html = text.slice(0, 120000);
+      text = htmlToText(html).slice(0, 40000);
+    } else if (text && looksLikeHtml(text)) {
+      text = htmlToText(text).slice(0, 40000);
+    }
     const audience = payload.audience === "client" || payload.audience === "both" ? payload.audience : "team";
     const kind = String(payload.kind || "").trim();
     const isServiceRequest = kind === "service-request";
