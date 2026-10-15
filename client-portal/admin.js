@@ -3,7 +3,8 @@
 
   /* Admin shell: auth, lists, billing, agreement, files, milestones. Shared table UI lives in ui.js. */
 
-  const pageTitles = { overview: "Overview", registrations: "Access Requests", clients: "Clients", projects: "Projects", agreements: "Agreements", handover: "Handover", help: "Help Centre", invoices: "Payments", files: "Brand & Files", requests: "Requests & Approvals", milestones: "Milestones" };
+  const pageTitles = { overview: "Overview", registrations: "Access Requests", clients: "Clients", projects: "Projects", agreements: "Agreements", handover: "Handover", help: "Help Centre", invoices: "Payments", billing: "Payments", files: "Brand & Files", requests: "Requests & Approvals", milestones: "Milestones" };
+  const projectNestedPages = { agreements: true, handover: true, files: true, requests: true, billing: true, milestones: true };
   const requestStatuses = ["Received", "In review", "Approved", "Changes requested", "Completed", "Declined"];
   const milestoneStatuses = ["upcoming", "current", "review", "admin_review", "complete"];
   let data = { metrics: {}, registrations: [], users: [], projects: [], requests: [], milestones: [], pushDevices: {} };
@@ -26,6 +27,7 @@
   const escapeHtml = (value) => ui.escapeHtml(value);
   const rowActions = (items) => ui.rowActions(items);
   const tablePages = { registrations: 1, clients: 1, projects: 1, requests: 1, invoices: 1, receipts: 1 };
+  const workTypes = ["Business Website", "Landing Page", "Portfolio Website", "Website Revamp", "AI Automation", "Consultation", "Something Else"];
 
   function pagedRows(key, rows) {
     const slice = ui.pageSlice(rows, tablePages[key]);
@@ -171,6 +173,7 @@
     const balance = window.GeeslaneAPI.invoiceBalance(invoice) || {};
     return {
       ...invoice,
+      projectId: invoice?.projectId || contact?.project?.id || "",
       projectName: contact?.project?.name || invoice?.projectName || "",
       business: contact?.user?.business || contact?.business || invoice?.business || "",
       clientName: portalName(contact?.name || contact?.user?.name) || invoice?.clientName || "",
@@ -225,6 +228,12 @@
         startDate: extras.startDate || "",
         completionDate: extras.completionDate || extras.targetDate || ""
       };
+      if (extras.clientName != null) draft.clientName = String(extras.clientName).trim();
+      if (extras.projectTitle != null) draft.projectTitle = String(extras.projectTitle).trim();
+      if (extras.deliverables != null) draft.deliverables = String(extras.deliverables).trim();
+      if (extras.paymentPlan != null) draft.paymentPlan = String(extras.paymentPlan).trim();
+      if (extras.revisionRounds != null) draft.revisionRounds = extras.revisionRounds;
+      if (extras.handover) draft.handover = extras.handover;
       if (draft.fee) draft.fee = String(draft.fee).trim();
       if (draft.startDate) draft.startDate = dateInputValue(draft.startDate);
       if (draft.completionDate) draft.completionDate = dateInputValue(draft.completionDate);
@@ -257,11 +266,28 @@
 
   async function documentAttachment(kind, data) {
     try {
-      if (kind === "invoice") return await window.GeeslaneInvoice?.pdfAttachment?.(data) || null;
-      return await window.GeeslaneReceipt?.pdfAttachment?.(data) || null;
+      const built = kind === "invoice"
+        ? await window.GeeslaneInvoice?.pdfAttachment?.(data)
+        : await window.GeeslaneReceipt?.pdfAttachment?.(data);
+      return await readyMailAttachment(built, data?.projectId);
     } catch (_) {
       return null;
     }
+  }
+
+  async function readyMailAttachment(attachment, projectId) {
+    if (!attachment?.content && !attachment?.path) return null;
+    const filename = String(attachment.filename || "document.pdf");
+    try {
+      const blob = attachment.content ? await blobFromAttachment(attachment) : null;
+      if (blob && blob.size) {
+        const stored = await window.GeeslaneAPI.storeMailPdf(projectId, filename, blob);
+        if (stored?.url) return { filename, path: stored.url };
+      }
+    } catch (_) { /* fall back to inline content if the file is small enough */ }
+    if (attachment.path) return { filename, path: attachment.path };
+    if (attachment.content && String(attachment.content).length < 6500000) return { filename, content: attachment.content };
+    return null;
   }
 
   async function attachOpeningPayment(projectId, contact, opening) {
@@ -301,8 +327,8 @@
 
   async function notifyClient(email, heading, intro, rows, greetingName, extras = {}) {
     const phone = extras.sms === false ? "" : (extras.clientPhone || "");
-    if (!email && !phone) return;
-    await window.GeeslaneMail?.notify({
+    if (!email && !phone) return false;
+    return await window.GeeslaneMail?.notify({
       audience: "client",
       subject: heading,
       heading,
@@ -383,30 +409,36 @@
     return Boolean(record.client || record.team);
   }
 
+  async function sendInstallAppMail(contact) {
+    const email = String(contact?.email || "").trim();
+    if (!email) return false;
+    const portalUrl = window.GeeslaneMail?.portalLink("client", "", { email }) || "https://geeslane.com/client-portal/";
+    return notifyClient(
+      email,
+      "Keep Geeslane on your phone",
+      `Your portal also works as an app on your phone. Add it to your home screen so invoices, comments, and reviews reach you without hunting for the website.\n\nFollow the steps below, then allow notifications when your phone asks.`,
+      [
+        ["Sign in email", email],
+        contact.project?.name ? ["Project", contact.project.name] : null
+      ].filter(Boolean),
+      contact.name,
+      {
+        ctaUrl: portalUrl,
+        ctaLabel: "Open your portal",
+        blocks: installAppBlocks(email),
+        sms: false
+      }
+    );
+  }
+
   async function sendDeviceReminder(userId, button) {
     const user = data.users.find((item) => item.id === userId);
     if (!user?.email) { toast("This client does not have an email address yet."); return; }
     const project = data.projects.find((item) => item.clientId && item.clientId === user.clientId);
     const email = String(user.email).trim();
-    const portalUrl = window.GeeslaneMail?.portalLink("client") || "https://geeslane.com/client-portal/";
     window.GeeslaneAPI.setButtonBusy(button, true, "Sending…");
     try {
-      await notifyClient(
-        email,
-        "Keep Geeslane on your phone",
-        `Your Geeslane portal is easier to use from your home screen. Updates, invoices, and comments reach you faster, and you will not have to hunt for the website each time.\n\nOpen your portal, enter ${email}, and follow the steps below to add Geeslane to your phone. Allow notifications when your phone asks, so you do not miss a payment or a review request.`,
-        [
-          ["Sign in email", email],
-          project?.name ? ["Project", project.name] : null
-        ].filter(Boolean),
-        user.name,
-        {
-          ctaUrl: portalUrl,
-          ctaLabel: "Open your portal",
-          blocks: installAppBlocks(email),
-          sms: false
-        }
-      );
+      await sendInstallAppMail({ email, name: user.name, project });
       toast("Device reminder emailed");
     } catch (error) {
       toast(window.GeeslaneAPI.userFacingError(error, "The reminder could not be sent."));
@@ -416,14 +448,16 @@
   }
 
   async function sendBillingMails(kind, { contact, invoice, receipt, attachment }) {
-    const attachments = attachment ? [attachment] : [];
+    const ready = attachment?.path || attachment?.content ? attachment : null;
+    if (attachment && !ready) toast("The PDF could not be attached. The email will still be sent.");
+    const attachments = ready ? [ready] : [];
     const paymentsUrl = window.GeeslaneMail?.portalLink("client", "payments", { next: "payments" });
     const adminUrl = window.GeeslaneMail?.portalLink("admin", "invoices");
     const name = contact?.name || "";
     const email = contact?.email || "";
     const project = contact?.project?.name || "";
     if (kind === "invoice") {
-      await notifyClient(email, "Your invoice", invoiceClientIntro(false), [
+      await notifyClient(email, "Your invoice", invoiceClientIntro(Boolean(ready)), [
         ["Invoice", invoice?.reference],
         ["Amount due", window.GeeslaneAPI.invoiceBalance(invoice)?.remainingLabel || moneyLabel(invoice)],
         ["Due", invoice?.dueDate ? formatDate(invoice.dueDate) : ""],
@@ -432,7 +466,7 @@
         ctaUrl: paymentsUrl,
         ctaLabel: invoiceClientCta(),
         attachments,
-        attachmentNote: attachment ? "The invoice PDF is attached." : "",
+        attachmentNote: ready ? "The invoice PDF is attached." : "",
         sms: false
       });
       await notifyTeam("Invoice sent", `${name || email || "A client"} was sent invoice ${invoice?.reference || ""}.`, [
@@ -444,7 +478,9 @@
       ], { ctaUrl: adminUrl, attachments });
       return;
     }
-    await notifyClient(email, "Payment received", "Thank you. We have received your payment, and your receipt is attached.", [
+    await notifyClient(email, "Payment received", ready
+      ? "Thank you. We have received your payment, and your receipt is attached."
+      : "Thank you. We have received your payment.", [
       ["Receipt", receipt?.reference],
       ["Amount", moneyLabel(receipt)],
       ["Date", receipt?.paidOn ? formatDate(receipt.paidOn) : ""],
@@ -469,14 +505,14 @@
     const openInvoice = skipPayment ? null : invoice;
     const invoiceAttachment = openInvoice ? await documentAttachment("invoice", invoiceMailData(openInvoice, contact)) : null;
     const isProject = kind === "project";
-    const portalUrl = window.GeeslaneMail?.portalLink("client") || "https://geeslane.com/client-portal/";
     const email = String(contact.email || "").trim();
+    const portalUrl = window.GeeslaneMail?.portalLink("client", "", email ? { email } : {}) || "https://geeslane.com/client-portal/";
     if (kind === "code") {
       if (openInvoice) {
         await notifyClient(
           contact.email,
           "Your invoice",
-          invoiceClientIntro(true),
+          invoiceClientIntro(Boolean(invoiceAttachment)),
           [
             ["Project", contact.project?.name],
             ["Invoice", openInvoice.reference],
@@ -499,14 +535,10 @@
     if (!isProject) {
       await notifyClient(
         contact.email,
-        "Welcome to your Geeslane portal",
+        "Welcome to Your Geeslane portal",
         skipPayment
-          ? (email
-            ? `Your client portal is ready. Click Open your portal below.\n\nOn the sign in page, enter ${email}. We will send a 6 digit code. There is no password.\n\nYour payment is already recorded, so you can go straight to the brief and next steps.`
-            : "Your client portal is ready. Click Open your portal below.\n\nOn the sign in page, enter your email. We will send a 6 digit code. There is no password.\n\nYour payment is already recorded, so you can go straight to the brief and next steps.")
-          : (email
-            ? `Your client portal is ready. Click Open your portal below.\n\nOn the sign in page, enter ${email}. We will send a 6 digit code. There is no password.\n\nAdd Geeslane to your phone so updates stay close at hand.`
-            : "Your client portal is ready. Click Open your portal below.\n\nOn the sign in page, enter your email. We will send a 6 digit code. There is no password.\n\nAdd Geeslane to your phone so updates stay close at hand."),
+          ? `We are delighted to work with you.\n\nYour portal is ready. Tap the button below to open it. Your email will already be filled in. Tap Send Code, and we will email a 6 digit code. There is no password.\n\nYour payment is already recorded, so you can go straight to the brief and next steps.\n\nA second email has steps to add Geeslane to your phone, so you can get notifications there.`
+          : `We are delighted to work with you.\n\nYour portal is ready. Tap the button below to open it. Your email will already be filled in. Tap Send Code, and we will email a 6 digit code. There is no password.\n\nA second email has steps to add Geeslane to your phone, so you can get notifications there.`,
         [
           ["Project", contact.project?.name],
           email ? ["Sign in email", email] : null
@@ -514,23 +546,20 @@
         contact.name,
         {
           ctaUrl: portalUrl,
-          ctaLabel: "Open your portal",
-          blocks: installAppBlocks(email),
+          ctaLabel: "Sign in to your portal",
           sms: false
         }
       );
     } else {
       await notifyClient(
         contact.email,
-        "A new project is in your portal",
-        email
-          ? `We have added a new project for you. Open your portal with ${email}.${openInvoice ? " Your invoice is in a separate email." : skipPayment ? " Your payment for this work is already recorded." : ""}`
-          : `We have added a new project for you. Open your portal with the email you use to sign in.${openInvoice ? " Your invoice is in a separate email." : skipPayment ? " Your payment for this work is already recorded." : ""}`,
+        "Welcome to Your Geeslane portal",
+        `We are delighted to keep working with you.\n\nA new project is now in your portal. Tap the button below to open it.${openInvoice ? " Your invoice is in a separate email." : skipPayment ? " Your payment for this work is already recorded." : ""}`,
         [["Project", contact.project?.name], email ? ["Sign in email", email] : null].filter(Boolean),
         contact.name,
         {
           ctaUrl: portalUrl,
-          ctaLabel: "Open your portal",
+          ctaLabel: "Sign in to your portal",
           sms: false
         }
       );
@@ -539,7 +568,7 @@
       await notifyClient(
         contact.email,
         "Your invoice",
-        invoiceClientIntro(true),
+        invoiceClientIntro(Boolean(invoiceAttachment)),
         [
           ["Project", contact.project?.name],
           ["Invoice", openInvoice.reference],
@@ -566,7 +595,7 @@
     }
   }
 
-  async function inviteClient(user, button) {
+  async function inviteClient(user, button, kind) {
     if (!user?.email) { toast("This client does not have an email address yet."); return; }
     const projects = data.projects.filter((item) => item.clientId && item.clientId === user.clientId);
     let inviteInvoice = null;
@@ -588,13 +617,22 @@
     }
     if (button) window.GeeslaneAPI.setButtonBusy(button, true, "Sending…");
     try {
-      await mutate("adminSendSignIn", { userId: user.id }, paid ? "Sign-in code emailed. Payment was not mentioned because this project is already paid." : "Sign-in code emailed");
-      await sendPortalReadyMail({
+      const isNew = clientNeedsPortalInvite(user);
+      const mailKind = kind || (isNew ? "welcome" : "code");
+      const contact = {
         email: user.email,
         name: user.name,
         project: project || { name: "" },
         paid
-      }, inviteInvoice, "code");
+      };
+      if (mailKind === "code") {
+        await mutate("adminSendSignIn", { userId: user.id }, paid ? "Sign-in code emailed. Payment was not mentioned because this project is already paid." : "Sign-in code emailed");
+        await sendPortalReadyMail(contact, inviteInvoice, "code");
+        return;
+      }
+      await sendPortalReadyMail(contact, inviteInvoice, mailKind);
+      if (mailKind === "welcome") await sendInstallAppMail(contact);
+      toast(mailKind === "project" ? "Project email sent" : "Welcome email sent");
     } catch (error) {
       toast(window.GeeslaneAPI.userFacingError(error, "The invite could not be sent."));
     } finally {
@@ -671,7 +709,10 @@
   function navigate(page, options = {}) {
     if (!pageTitles[page]) return;
     document.querySelectorAll("[data-admin-view]").forEach((view) => view.classList.toggle("is-visible", view.dataset.adminView === page));
-    document.querySelectorAll("[data-admin-page]").forEach((button) => button.classList.toggle("is-active", button.dataset.adminPage === page));
+    document.querySelectorAll("[data-admin-page]").forEach((button) => {
+      const key = button.dataset.adminPage;
+      button.classList.toggle("is-active", key === page || (key === "projects" && projectNestedPages[page]));
+    });
     document.getElementById("admin-page-title").textContent = pageTitles[page];
     closeAdminSidebar();
     if (options.keepHash) writeHash(page, parseAdminHash().params);
@@ -680,8 +721,9 @@
     if (page === "agreements") loadAgreement();
     if (page === "handover") loadHandover();
     if (page === "help") loadHelpGuides();
-    if (page === "invoices") loadInvoices();
+    if (page === "billing") loadInvoices();
     if (page === "milestones") renderMilestones();
+    if (page === "requests") renderRequests();
   }
 
   function focusAdminComment() {
@@ -728,6 +770,7 @@
   }
 
   function renderClients() {
+    window.GeeslaneUI?.closeRowMenus?.();
     const query = document.getElementById("client-search").value.trim().toLowerCase();
     const rows = data.users.filter((item) => `${item.name} ${item.business} ${item.email} ${item.role} ${item.status}`.toLowerCase().includes(query));
     const slice = pagedRows("clients", rows);
@@ -736,37 +779,49 @@
       const deviceCell = connected
         ? `<span class="status-pill is-paid">Connected</span>`
         : `<span class="status-pill is-pending">Not connected</span>`;
-      const remind = !connected && item.status === "active" && item.role !== "admin"
-        ? `<button class="button button-secondary" type="button" data-remind-device="${escapeHtml(item.id)}">Send reminder</button>`
-        : "";
       const project = data.projects.find((entry) => entry.clientId && entry.clientId === item.clientId);
-      return `<tr><td><strong>${escapeHtml(portalName(item.name, "Unnamed User"))}</strong><small>${escapeHtml(item.business || "—")}</small></td><td>${escapeHtml(item.email)}<small>${escapeHtml(item.phone || "")}</small></td><td>${escapeHtml(item.role)}</td><td><span class="status-pill ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td><td>${deviceCell}</td><td>${formatDate(item.lastLoginAt)}</td><td><div class="admin-table-actions">${item.clientId ? `<button class="button button-secondary" type="button" data-add-project-client="${escapeHtml(item.clientId)}">Add Project</button>` : ""}${project ? `<button class="button button-secondary" type="button" data-view-portal="${escapeHtml(project.id)}">View portal</button>` : ""}${item.status === "active" ? `<button class="button button-secondary" type="button" data-send-invite="${escapeHtml(item.id)}">Send Code</button>` : ""}${remind}</div></td></tr>`;
+      const canDelete = item.role !== "admin" && item.id !== data.admin?.id;
+      return `<tr><td><strong>${escapeHtml(portalName(item.name, "Unnamed User"))}</strong><small>${escapeHtml(item.business || "—")}</small></td><td>${escapeHtml(item.email)}<small>${escapeHtml(item.phone || "")}</small></td><td>${escapeHtml(item.role)}</td><td><span class="status-pill ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td><td>${deviceCell}</td><td>${formatDate(item.lastLoginAt)}</td><td>${rowActions([
+        item.clientId ? { label: "Add Project", attrs: `data-add-project-client="${escapeHtml(item.clientId)}"` } : null,
+        project ? { label: "View portal", attrs: `data-view-portal="${escapeHtml(project.id)}"` } : null,
+        item.status === "active" ? { label: clientNeedsPortalInvite(item) ? "Send welcome" : "Send Code", attrs: `data-send-invite="${escapeHtml(item.id)}"` } : null,
+        !connected && item.status === "active" && item.role !== "admin" ? { label: "Send reminder", attrs: `data-remind-device="${escapeHtml(item.id)}"` } : null,
+        canDelete ? { label: "Delete", danger: true, attrs: `data-delete-client="${escapeHtml(item.id)}"` } : null
+      ])}</td></tr>`;
     }).join("") : '<tr><td class="table-empty" colspan="7">No clients match this search.</td></tr>';
     drawPager("clients-pager", "clients", slice, renderClients);
-    document.querySelectorAll("[data-send-invite]").forEach((button) => button.addEventListener("click", () => {
+    const clientTable = document.getElementById("clients-table");
+    clientTable.querySelectorAll("[data-send-invite]").forEach((button) => button.addEventListener("click", () => {
       const user = data.users.find((item) => item.id === button.dataset.sendInvite);
       inviteClient(user, button);
     }));
-    document.querySelectorAll("#clients-table [data-view-portal]").forEach((button) => button.addEventListener("click", () => openClientView(button.dataset.viewPortal)));
-    document.querySelectorAll("[data-add-project-client]").forEach((button) => button.addEventListener("click", () => openAddProject(button.dataset.addProjectClient)));
-    document.querySelectorAll("[data-remind-device]").forEach((button) => button.addEventListener("click", () => sendDeviceReminder(button.dataset.remindDevice, button)));
+    clientTable.querySelectorAll("[data-view-portal]").forEach((button) => button.addEventListener("click", () => openClientView(button.dataset.viewPortal)));
+    clientTable.querySelectorAll("[data-add-project-client]").forEach((button) => button.addEventListener("click", () => openAddProject(button.dataset.addProjectClient)));
+    clientTable.querySelectorAll("[data-remind-device]").forEach((button) => button.addEventListener("click", () => sendDeviceReminder(button.dataset.remindDevice, button)));
+    clientTable.querySelectorAll("[data-delete-client]").forEach((button) => button.addEventListener("click", () => openDeleteClient(button.dataset.deleteClient)));
   }
 
   function renderProjects() {
+    window.GeeslaneUI?.closeRowMenus?.();
     const query = document.getElementById("project-search").value.trim().toLowerCase();
     const rows = data.projects.filter((item) => `${item.name} ${item.service} ${item.stage} ${item.status}`.toLowerCase().includes(query));
     const slice = pagedRows("projects", rows);
     document.getElementById("projects-table").innerHTML = slice.items.length ? slice.items.map((item) => {
       const client = data.users.find((user) => user.clientId && user.clientId === item.clientId);
-      return `<tr><td><strong>${escapeHtml(item.name)}</strong>${client?.business ? `<small>${escapeHtml(client.business)}</small>` : ""}</td><td>${escapeHtml(item.service)}</td><td>${escapeHtml(item.stage)}</td><td class="progress-cell"><strong>${item.progress}%</strong><div class="progress-mini"><span style="width:${Math.max(0,Math.min(100,item.progress))}%"></span></div></td><td><span class="status-pill">${escapeHtml(item.status)}</span></td><td><label class="admin-active-toggle"><input type="checkbox" data-project-active="${escapeHtml(item.id)}" ${item.isActive !== false ? "checked" : ""} /><span>${item.isActive !== false ? "Active" : "Paused"}</span></label></td><td><input class="table-date-input" type="date" data-project-start="${escapeHtml(item.id)}" value="${escapeHtml(dateInputValue(item.startDate))}" aria-label="Start date for ${escapeHtml(item.name)}" /></td><td><input class="table-date-input" type="date" data-project-target="${escapeHtml(item.id)}" min="${todayInputValue()}" value="${escapeHtml(dateInputValue(item.targetDate))}" aria-label="Projected completion for ${escapeHtml(item.name)}" /></td><td>${rowActions([{ label: "View portal", primary: true, attrs: `data-view-portal="${escapeHtml(item.id)}"` }, { label: "Log item", attrs: `data-log-item="${escapeHtml(item.id)}"` }, { label: "Brand & Files", attrs: `data-open-files="${escapeHtml(item.id)}"` }, { label: "Agreement", attrs: `data-open-agreement="${escapeHtml(item.id)}"` }, { label: "Download T&C", attrs: `data-download-tnc="${escapeHtml(item.id)}"` }, { label: "Payments", attrs: `data-open-invoices="${escapeHtml(item.id)}"` }, { label: "Handover", attrs: `data-open-handover="${escapeHtml(item.id)}"` }, { label: "Delete", danger: true, attrs: `data-delete-project="${escapeHtml(item.id)}"` }])}</td></tr>`;
+      const clientLabel = portalName(client?.name, client?.business || "");
+      const subtitle = clientLabel && !String(item.name || "").toLowerCase().includes(clientLabel.toLowerCase())
+        ? clientLabel
+        : (client?.business && String(client.business).toLowerCase() !== String(clientLabel).toLowerCase() ? client.business : "");
+      return `<tr><td><strong>${escapeHtml(item.name)}</strong>${subtitle ? `<small>${escapeHtml(subtitle)}</small>` : ""}</td><td>${escapeHtml(item.service)}</td><td>${escapeHtml(item.stage)}</td><td class="progress-cell"><strong>${item.progress}%</strong><div class="progress-mini"><span style="width:${Math.max(0,Math.min(100,item.progress))}%"></span></div></td><td><span class="status-pill ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td><td><label class="admin-active-toggle"><input type="checkbox" data-project-active="${escapeHtml(item.id)}" ${item.isActive !== false ? "checked" : ""} /><span>${item.isActive !== false ? "Active" : "Paused"}</span></label></td><td><input class="table-date-input" type="date" data-project-start="${escapeHtml(item.id)}" value="${escapeHtml(dateInputValue(item.startDate))}" aria-label="Start date for ${escapeHtml(item.name)}" /></td><td><input class="table-date-input" type="date" data-project-target="${escapeHtml(item.id)}" min="${todayInputValue()}" value="${escapeHtml(dateInputValue(item.targetDate))}" aria-label="Projected completion for ${escapeHtml(item.name)}" /></td><td>${rowActions([{ label: "View portal", attrs: `data-view-portal="${escapeHtml(item.id)}"` }, { label: "Log item", attrs: `data-log-item="${escapeHtml(item.id)}"` }, { label: "This project", items: [{ label: "Brand & Files", attrs: `data-open-files="${escapeHtml(item.id)}"` }, { label: "Agreement", attrs: `data-open-agreement="${escapeHtml(item.id)}"` }, { label: "Handover", attrs: `data-open-handover="${escapeHtml(item.id)}"` }, { label: "Requests", attrs: `data-open-requests="${escapeHtml(item.id)}"` }, { label: "Milestones", attrs: `data-open-milestones="${escapeHtml(item.id)}"` }] }, { label: "Payments", attrs: `data-open-invoices="${escapeHtml(item.id)}"` }, { label: "Delete", danger: true, attrs: `data-delete-project="${escapeHtml(item.id)}"` }])}</td></tr>`;
     }).join("") : '<tr><td class="table-empty" colspan="9">No projects match this search.</td></tr>';
     drawPager("projects-pager", "projects", slice, renderProjects);
     const projectTable = document.getElementById("projects-table");
     projectTable.querySelectorAll("[data-open-files]").forEach((button) => button.addEventListener("click", () => openProjectFiles(button.dataset.openFiles)));
     projectTable.querySelectorAll("[data-open-agreement]").forEach((button) => button.addEventListener("click", () => openAgreement(button.dataset.openAgreement)));
-    projectTable.querySelectorAll("[data-download-tnc]").forEach((button) => button.addEventListener("click", () => downloadProjectAgreement(button.dataset.downloadTnc)));
     projectTable.querySelectorAll("[data-open-invoices]").forEach((button) => button.addEventListener("click", () => openInvoices(button.dataset.openInvoices)));
     projectTable.querySelectorAll("[data-open-handover]").forEach((button) => button.addEventListener("click", () => openHandover(button.dataset.openHandover)));
+    projectTable.querySelectorAll("[data-open-requests]").forEach((button) => button.addEventListener("click", () => openRequests(button.dataset.openRequests)));
+    projectTable.querySelectorAll("[data-open-milestones]").forEach((button) => button.addEventListener("click", () => openMilestones(button.dataset.openMilestones)));
     projectTable.querySelectorAll("[data-view-portal]").forEach((button) => button.addEventListener("click", () => openClientView(button.dataset.viewPortal)));
     projectTable.querySelectorAll("[data-log-item]").forEach((button) => button.addEventListener("click", () => openLogItem(button.dataset.logItem)));
     projectTable.querySelectorAll("[data-delete-project]").forEach((button) => button.addEventListener("click", () => openDeleteProject(button.dataset.deleteProject)));
@@ -788,9 +843,28 @@
     return requestStatuses.map((status) => `<option value="${escapeHtml(status)}"${status === selected ? " selected" : ""}>${escapeHtml(requestStatusLabel(status))}</option>`).join("");
   }
 
+  function renderRequestFilter() {
+    const filter = document.getElementById("request-project-filter");
+    if (!filter) return;
+    const previous = filter.value;
+    filter.innerHTML = `<option value="">All projects</option>${data.projects.map((project) => `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`).join("")}`;
+    if (!previous || previous === "" || data.projects.some((project) => project.id === previous)) filter.value = previous;
+  }
+
+  function openRequests(projectId) {
+    const filter = document.getElementById("request-project-filter");
+    if (filter) filter.value = projectId || "";
+    navigate("requests");
+  }
+
   function renderRequests() {
+    renderRequestFilter();
     const query = document.getElementById("admin-request-search").value.trim().toLowerCase();
-    const rows = data.requests.filter((item) => `${item.title} ${item.id} ${item.type} ${item.status} ${projectName(item.projectId)} ${requestSnippet(item)}`.toLowerCase().includes(query));
+    const projectId = document.getElementById("request-project-filter")?.value || "";
+    const rows = data.requests.filter((item) => {
+      if (projectId && item.projectId !== projectId) return false;
+      return `${item.title} ${item.id} ${item.type} ${item.status} ${projectName(item.projectId)} ${requestSnippet(item)}`.toLowerCase().includes(query);
+    });
     const slice = pagedRows("requests", rows);
     document.getElementById("admin-requests-table").innerHTML = slice.items.length ? slice.items.map((item) => `<tr><td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(requestSnippet(item) || visibleText(item.reference))}</small></td><td>${escapeHtml(projectName(item.projectId))}</td><td>${escapeHtml(requestKindLabel(item))}</td><td>${formatDate(item.createdAt)}</td><td><select class="table-status-select" data-request-status="${escapeHtml(item.id)}">${requestStatusOptions(item.status)}</select></td><td><div class="admin-table-actions"><button class="button button-secondary" type="button" data-download-tnc="${escapeHtml(item.projectId)}">Download T&amp;C</button><button class="button button-secondary" type="button" data-save-request="${escapeHtml(item.id)}">Save</button></div></td></tr>`).join("") : '<tr><td class="table-empty" colspan="6">No requests match this search.</td></tr>';
     drawPager("requests-pager", "requests", slice, renderRequests);
@@ -1163,7 +1237,7 @@
     if (shareNode) {
       shareNode.innerHTML = projectId
         ? `<div class="admin-section-heading"><div><p class="eyebrow">Share</p><h2>T&amp;C, Invoice &amp; Receipt</h2></div></div>
-          <p class="admin-share-copy">These are the same documents the client sees in the portal. Download them to share before you send a sign-in code.</p>
+          <p class="admin-share-copy">These are the same documents the client sees in the portal. Download them to share before you send a welcome email.</p>
           <div class="admin-share-actions">
             <button class="button button-secondary" type="button" data-share-tnc="${escapeHtml(projectId)}">Download T&amp;C</button>
             <button class="button button-secondary" type="button" data-share-invoice="${escapeHtml(projectId)}">Download Invoice</button>
@@ -1232,52 +1306,81 @@
     return window.GeeslaneAgreement.trackFrom(agreementContext.project, draft);
   }
 
-  function readHandoverList() {
-    const root = document.getElementById("agreement-handover");
+  function checklistIds(rootId = "agreement-handover") {
+    if (rootId === "approval-handover") return { rootId, addId: "add-approval-handover", legendId: "approval-checklist-legend" };
+    return { rootId: "agreement-handover", addId: "add-handover-item", legendId: "agreement-checklist-legend" };
+  }
+
+  function approvalTrack() {
+    return window.GeeslaneAgreement.trackFrom({ service: document.getElementById("approval-service")?.value || "" });
+  }
+
+  function readHandoverList(rootId = "agreement-handover") {
+    const root = document.getElementById(rootId);
     if (!root) return [];
     return [...root.querySelectorAll(".agreement-handover-row")].map((row, index) => ({
       key: row.dataset.key || `item-${index + 1}`,
       label: String(row.querySelector("[data-handover-label]")?.value || "").trim(),
+      party: row.dataset.party || "",
       done: Boolean(row.querySelector("[data-handover-done]")?.checked)
     })).filter((item) => item.label);
   }
 
-  function renderHandoverFields(handover, track) {
-    const resolved = track || agreementTrack();
-    const root = document.getElementById("agreement-handover");
-    const legend = document.getElementById("agreement-checklist-legend");
+  function handoverRowHtml(item, index) {
+    return `<div class="agreement-handover-row" data-key="${escapeHtml(item.key || `item-${index + 1}`)}" data-party="${escapeHtml(item.party || "")}">
+        <input type="checkbox" data-handover-done ${item.done ? "checked" : ""} aria-label="Mark as done" />
+        <input type="text" data-handover-label value="${escapeHtml(item.label || "")}" placeholder="Handover item" />
+        <button class="icon-button agreement-handover-remove" type="button" data-handover-remove aria-label="Remove item">×</button>
+      </div>`;
+  }
+
+  function handoverGroupHtml(title, party, items, addId) {
+    return `<div class="handover-group" data-handover-party="${escapeHtml(party)}">
+      <p class="handover-group-label">${escapeHtml(title)}</p>
+      ${items.map((item, index) => handoverRowHtml(item, index)).join("")}
+      <button class="button button-secondary" ${addId ? `id="${escapeHtml(addId)}" ` : ""}type="button" data-handover-add="${escapeHtml(party)}">Add item</button>
+    </div>`;
+  }
+
+  function renderHandoverFields(handover, track, rootId = "agreement-handover") {
+    const ids = checklistIds(rootId);
+    const resolved = track || (rootId === "approval-handover" ? approvalTrack() : agreementTrack());
+    const root = document.getElementById(ids.rootId);
+    const legend = document.getElementById(ids.legendId);
     if (legend && window.GeeslaneAgreement?.checklistTitle) legend.textContent = window.GeeslaneAgreement.checklistTitle(resolved);
     if (!root || !window.GeeslaneAgreement) return;
     const items = window.GeeslaneAgreement.handoverList(handover, resolved);
-    const rows = items.length ? items : [{ key: `item-${Date.now()}`, label: "", done: false }];
-    root.innerHTML = `${rows.map((item, index) =>
-      `<div class="agreement-handover-row" data-key="${escapeHtml(item.key || `item-${index + 1}`)}">
-        <input type="checkbox" data-handover-done ${item.done ? "checked" : ""} aria-label="Mark as done" />
-        <input type="text" data-handover-label value="${escapeHtml(item.label)}" placeholder="Handover item" />
-        <button class="icon-button agreement-handover-remove" type="button" data-handover-remove aria-label="Remove item">×</button>
-      </div>`
-    ).join("")}<button class="button button-secondary" id="add-handover-item" type="button">Add item</button>`;
+    const grouped = items.some((item) => item.party === "client" || item.party === "geeslane");
+    if (!grouped) {
+      const rows = items.length ? items : [{ key: `item-${Date.now()}`, label: "", done: false }];
+      root.innerHTML = `${rows.map((item, index) => handoverRowHtml(item, index)).join("")}<button class="button button-secondary" id="${ids.addId}" type="button" data-handover-add="geeslane">Add item</button>`;
+      return;
+    }
+    root.innerHTML = `${handoverGroupHtml("The Client provides", "client", items.filter((item) => item.party === "client"), ids.addId)}${handoverGroupHtml("Geeslane provides", "geeslane", items.filter((item) => item.party === "geeslane"))}${items.some((item) => item.party !== "client" && item.party !== "geeslane") ? handoverGroupHtml("Also required", "", items.filter((item) => item.party !== "client" && item.party !== "geeslane")) : ""}`;
   }
 
-  function addHandoverItem() {
-    const root = document.getElementById("agreement-handover");
-    const add = document.getElementById("add-handover-item");
-    if (!root || !add) return;
+  function addHandoverItem(rootId = "agreement-handover", party = "geeslane") {
+    const ids = checklistIds(rootId);
+    const root = document.getElementById(ids.rootId);
+    if (!root) return;
+    const add = root.querySelector(`[data-handover-add="${CSS.escape(party)}"]`) || root.querySelector("[data-handover-add]") || document.getElementById(ids.addId);
     const row = document.createElement("div");
     row.className = "agreement-handover-row";
     row.dataset.key = `item-${Date.now()}`;
+    row.dataset.party = party || "";
     row.innerHTML = `<input type="checkbox" data-handover-done aria-label="Mark as done" /><input type="text" data-handover-label value="" placeholder="Handover item" /><button class="icon-button agreement-handover-remove" type="button" data-handover-remove aria-label="Remove item">×</button>`;
-    root.insertBefore(row, add);
+    if (add) add.parentNode.insertBefore(row, add);
+    else root.appendChild(row);
     row.querySelector("[data-handover-label]")?.focus();
-    renderAgreementPreview();
+    if (rootId !== "approval-handover") renderAgreementPreview();
   }
 
-  function removeHandoverItem(row) {
+  function removeHandoverItem(row, rootId = "agreement-handover") {
     row?.remove();
-    if (!document.querySelector("#agreement-handover .agreement-handover-row")) {
-      renderHandoverFields({ items: [] }, agreementTrack());
+    if (!document.querySelector(`#${rootId} .agreement-handover-row`)) {
+      renderHandoverFields({ items: [] }, rootId === "approval-handover" ? approvalTrack() : agreementTrack(), rootId);
     }
-    renderAgreementPreview();
+    if (rootId !== "approval-handover") renderAgreementPreview();
   }
 
   function readAgreementForm() {
@@ -1578,22 +1681,36 @@
     const button = document.getElementById("send-handover-email");
     window.GeeslaneAPI.setButtonBusy(button, true, "Sending…");
     try {
-      const attachment = await window.GeeslaneHandover.pdfAttachment(pack, handoverOptions());
-      const blob = await blobFromAttachment(attachment);
+      const built = await window.GeeslaneHandover.pdfAttachment(pack, handoverOptions());
+      const blob = await blobFromAttachment(built);
+      if (!built?.content && !blob) {
+        toast("The handover PDF could not be built, so the email was not sent.");
+        return;
+      }
+      let attachment = built;
       if (blob) {
         const stored = await window.GeeslaneAPI.adminSubmit("adminStoreHandoverPdf", { projectId: project.id, blob });
         pack.storagePath = stored?.storagePath || pack.storagePath;
+        if (stored?.url) attachment = { filename: built?.filename || window.GeeslaneHandover.fileName({ ...pack, ...handoverOptions() }, "pdf"), path: stored.url };
       }
-      await notifyClient(contact.email, document.getElementById("handover-email-subject").value, document.getElementById("handover-email-intro").value, [
+      if (!attachment?.path && !attachment?.content) {
+        toast("The handover PDF could not be attached, so the email was not sent.");
+        return;
+      }
+      const sent = await notifyClient(contact.email, document.getElementById("handover-email-subject").value, document.getElementById("handover-email-intro").value, [
         ["Project", project.name],
         ["File copy", pack.fileDriveUrl],
         ["Our copy removed after", `${pack.fileRetentionDays} days`]
       ], contact.name, {
-        attachments: attachment ? [attachment] : [],
+        attachments: [attachment],
         attachmentNote: window.GeeslaneHandover.emailCopy(pack, handoverOptions()).attachmentNote,
         ctaPage: "client",
         ctaLabel: "Open your portal"
       });
+      if (!sent) {
+        toast("The email could not be sent with the PDF attached.");
+        return;
+      }
       pack.status = "sent";
       pack.sentTo = contact.email;
       pack.sentAt = new Date().toISOString();
@@ -1910,7 +2027,10 @@
     }));
     node.querySelectorAll("[data-view-invoice]").forEach((button) => button.addEventListener("click", () => {
       const invoice = invoices.find((item) => item.id === button.dataset.viewInvoice);
-      if (invoice) window.GeeslaneInvoice?.view(invoiceMailData(invoice, contactForProject(invoice.projectId || document.getElementById("invoice-project-filter")?.value)));
+      if (!invoice) return;
+      if (!window.GeeslaneInvoice?.view(invoiceMailData(invoice, contactForProject(invoice.projectId || document.getElementById("invoice-project-filter")?.value)))) {
+        toast("Allow pop-ups to view the invoice.");
+      }
     }));
     node.querySelectorAll("[data-pdf-invoice]").forEach((button) => button.addEventListener("click", () => {
       const invoice = invoices.find((item) => item.id === button.dataset.pdfInvoice);
@@ -1941,6 +2061,7 @@
     const contact = contactForProject(document.getElementById("invoice-project-filter")?.value || receipt?.projectId || "");
     return {
       ...receipt,
+      projectId: receipt?.projectId || contact.project?.id || "",
       projectName: contact.project?.name || "",
       business: contact.user?.business || "",
       clientName: portalName(contact.user?.name),
@@ -2026,7 +2147,8 @@
     }));
     node.querySelectorAll("[data-view-receipt]").forEach((button) => button.addEventListener("click", () => {
       const receipt = receipts.find((item) => item.id === button.dataset.viewReceipt);
-      if (receipt) window.GeeslaneReceipt?.view(receiptContext(receipt));
+      if (!receipt) return;
+      if (!window.GeeslaneReceipt?.view(receiptContext(receipt))) toast("Allow pop-ups to view the receipt.");
     }));
     node.querySelectorAll("[data-pdf-receipt]").forEach((button) => button.addEventListener("click", () => {
       const receipt = receipts.find((item) => item.id === button.dataset.pdfReceipt);
@@ -2140,7 +2262,13 @@
   function openInvoices(projectId) {
     const filter = document.getElementById("invoice-project-filter");
     if (filter) filter.value = projectId;
-    navigate("invoices");
+    navigate("billing");
+  }
+
+  function openMilestones(projectId) {
+    const filter = document.getElementById("milestone-project-filter");
+    if (filter) filter.value = projectId;
+    navigate("milestones");
   }
 
   function openClientView(projectId) {
@@ -2246,6 +2374,58 @@
     if (button) button.disabled = !project || typed !== String(project.name || "").trim();
   }
 
+  function clientConfirmName(user) {
+    return String(portalName(user?.name, "") || user?.email || "this client").trim();
+  }
+
+  function openDeleteClient(userId) {
+    const user = data.users.find((item) => item.id === userId);
+    if (!user || user.role === "admin" || user.id === data.admin?.id) {
+      toast("This account cannot be deleted.");
+      return;
+    }
+    const label = clientConfirmName(user);
+    document.getElementById("delete-client-id").value = user.id;
+    document.getElementById("delete-client-label").textContent = label;
+    const input = document.getElementById("delete-client-confirm");
+    input.value = "";
+    document.getElementById("confirm-delete-client").disabled = true;
+    openModal("delete-client-modal");
+    input.focus();
+  }
+
+  function syncDeleteClientConfirm() {
+    const user = data.users.find((item) => item.id === document.getElementById("delete-client-id")?.value);
+    const typed = String(document.getElementById("delete-client-confirm")?.value || "").trim();
+    const button = document.getElementById("confirm-delete-client");
+    if (button) button.disabled = !user || typed !== "Delete";
+  }
+
+  async function confirmDeleteClient() {
+    const userId = document.getElementById("delete-client-id")?.value || "";
+    const user = data.users.find((item) => item.id === userId);
+    if (!user) return;
+    syncDeleteClientConfirm();
+    const button = document.getElementById("confirm-delete-client");
+    if (button?.disabled) { toast("Type Delete to confirm."); return; }
+    const projectIds = data.projects.filter((item) => item.clientId && item.clientId === user.clientId).map((item) => item.id);
+    window.GeeslaneAPI.setButtonBusy(button, true, "Deleting…");
+    try {
+      await mutate("adminDeleteClient", { userId, projectIds }, "Client deleted", false, "Deleting…");
+      data.users = data.users.filter((item) => item.id !== userId);
+      data.projects = data.projects.filter((item) => !projectIds.includes(item.id));
+      data.requests = (data.requests || []).filter((item) => !projectIds.includes(item.projectId));
+      data.milestones = (data.milestones || []).filter((item) => !projectIds.includes(item.projectId));
+      closeModal("delete-client-modal");
+      refreshLocalMetrics();
+      renderAll();
+    } catch (error) {
+      toast(window.GeeslaneAPI.userFacingError(error, "Could not delete the client. Run admin_ops.sql in Supabase, then try again."));
+    } finally {
+      window.GeeslaneAPI.setButtonBusy(button, false);
+    }
+  }
+
   async function confirmDeleteProject() {
     const projectId = document.getElementById("delete-project-id")?.value || "";
     const project = data.projects.find((item) => item.id === projectId);
@@ -2255,16 +2435,13 @@
     if (button?.disabled) { toast("Type the project name to confirm."); return; }
     window.GeeslaneAPI.setButtonBusy(button, true, "Deleting…");
     try {
-      await mutate("adminDeleteProject", { projectId }, "Project deleted");
+      await mutate("adminDeleteProject", { projectId }, "Project deleted", false, "Deleting…");
       data.projects = data.projects.filter((item) => item.id !== projectId);
       data.requests = (data.requests || []).filter((item) => item.projectId !== projectId);
       data.milestones = (data.milestones || []).filter((item) => item.projectId !== projectId);
       closeModal("delete-project-modal");
       refreshLocalMetrics();
       renderAll();
-      loadInvoices();
-      loadProjectMaterials();
-      loadAgreement();
     } catch (error) {
       toast(window.GeeslaneAPI.userFacingError(error, "Could not delete the project. Run admin_ops.sql in Supabase, then try again."));
     } finally {
@@ -2345,10 +2522,40 @@
       targetDate: dateInputValue(form?.elements?.targetDate?.value)
     };
     const profile = { name: registration?.name || "", business: registration?.business || "" };
+    const track = window.GeeslaneAgreement.trackFrom(project);
     return window.GeeslaneAgreement.merge(
       window.GeeslaneAgreement.defaultsFrom(project, profile, registration?.discovery),
-      { fee: String(form?.elements?.contractAmount?.value || "").trim() }
+      {
+        clientName: String(form?.elements?.clientName?.value || "").trim(),
+        projectTitle: project.name,
+        deliverables: String(form?.elements?.deliverables?.value || "").trim(),
+        fee: String(form?.elements?.contractAmount?.value || "").trim(),
+        paymentPlan: String(form?.elements?.paymentPlan?.value || "").trim(),
+        revisionRounds: window.GeeslaneAgreement.hasRevisions(track)
+          ? window.GeeslaneAgreement.clampRevisions(form?.elements?.revisionRounds?.value)
+          : 0,
+        startDate: project.startDate,
+        completionDate: project.targetDate,
+        handover: window.GeeslaneAgreement.packHandover(readHandoverList("approval-handover"))
+      }
     );
+  }
+
+  function fillApprovalAgreement(item) {
+    const form = document.getElementById("approval-form");
+    if (!form || !item || !window.GeeslaneAgreement) return;
+    const project = {
+      name: String(form.elements.projectName?.value || `${item.business} — ${item.service}`).trim(),
+      service: String(form.elements.service?.value || item.service || "").trim()
+    };
+    const draft = window.GeeslaneAgreement.defaultsFrom(project, { name: item.name, business: item.business }, item.discovery);
+    if (form.elements.clientName) form.elements.clientName.value = draft.clientName || "";
+    if (form.elements.deliverables) form.elements.deliverables.value = draft.deliverables || "";
+    if (form.elements.paymentPlan) form.elements.paymentPlan.value = draft.paymentPlan || "";
+    if (form.elements.revisionRounds) form.elements.revisionRounds.value = draft.revisionRounds || 5;
+    const revisionsField = document.getElementById("approval-revisions-field");
+    if (revisionsField) revisionsField.hidden = !window.GeeslaneAgreement.hasRevisions(draft.track);
+    renderHandoverFields(draft.handover, draft.track, "approval-handover");
   }
 
   async function downloadApprovalTnc() {
@@ -2598,7 +2805,7 @@
     }
   }
 
-  function renderAll() { renderMetrics(); renderOverview(); renderRegistrations(); renderClients(); renderProjects(); renderRequests(); renderMilestones(); renderFilesFilter(); renderAgreementFilter(); renderHandoverFilter(); renderInvoiceFilter(); }
+  function renderAll() { renderMetrics(); renderOverview(); renderRegistrations(); renderClients(); renderProjects(); renderRequests(); renderMilestones(); renderFilesFilter(); renderAgreementFilter(); renderHandoverFilter(); renderInvoiceFilter(); renderRequestFilter(); }
 
   function refreshLocalMetrics() {
     data.metrics.pending = data.registrations.filter((item) => String(item.status || "").toLowerCase() === "pending").length;
@@ -2758,15 +2965,16 @@
     form.reset();
     form.elements.registrationId.value = item.id;
     form.elements.projectName.value = `${item.business} — ${item.service}`;
-    form.elements.service.value = item.service;
+    fillWorkTypeSelect(form.elements.service, item.service);
     form.elements.targetDate.value = item.targetDate || "";
     constrainDateInput(form.elements.targetDate, item.targetDate);
     document.getElementById("approval-summary").innerHTML = `<strong>${escapeHtml(portalName(item.name, item.name))} · ${escapeHtml(item.business)}</strong>${escapeHtml(item.email)}<br>${escapeHtml(item.description)}${detailList(discoveryRows(item.discovery))}`;
+    fillApprovalAgreement(item);
     openModal("approval-modal");
   }
 
-  async function mutate(action, payload, message, refresh) {
-    const result = await window.GeeslaneAPI.adminSubmit(action, payload);
+  async function mutate(action, payload, message, refresh, loaderMessage) {
+    const result = await window.GeeslaneAPI.adminSubmit(action, payload, loaderMessage);
     toast(message);
     if (refresh) await loadDashboard();
     return result;
@@ -2786,7 +2994,7 @@
       formData.name = registration?.name || "";
       formData.business = registration?.business || "";
       const opening = openingPaymentFrom(form);
-      const result = await mutate("adminApproveRegistration", formData, "Client created. Download the T&C or invoice to share, then send a sign-in code when you are ready.");
+      const result = await mutate("adminApproveRegistration", formData, "Client created");
       addCreatedWorkspace(result);
       const email = result.user?.email || result.email;
       const projectId = result.project?.id || result.projectId || result.id;
@@ -2796,11 +3004,20 @@
         name: result.user?.name,
         project: result.project
       }, opening);
+      const agreement = approvalAgreementDraft();
       await seedProjectAgreement(projectId, {
         fee: opening.contractAmount,
         startDate: formData.startDate,
-        targetDate: formData.targetDate
+        targetDate: formData.targetDate,
+        clientName: agreement.clientName,
+        projectTitle: agreement.projectTitle,
+        deliverables: agreement.deliverables,
+        paymentPlan: agreement.paymentPlan,
+        revisionRounds: agreement.revisionRounds,
+        handover: agreement.handover
       });
+      const user = result.user || data.users.find((item) => String(item.email || "").toLowerCase() === String(email || "").toLowerCase());
+      if (user) await inviteClient(user, null, "welcome");
       closeModal("approval-modal");
     }
     catch (error) { toast(window.GeeslaneAPI.userFacingError(error, "Could not complete that action.")); }
@@ -2838,7 +3055,10 @@
       const formData = Object.fromEntries(new FormData(form));
       formData.name = window.GeeslaneMail?.composePersonName(formData.title, formData.name) || formData.name;
       const opening = openingPaymentFrom(form);
-      const result = await mutate("adminCreateClientProject", formData, "Client created. Download the T&C or invoice to share, then send a sign-in code when you are ready.");
+      const inviteNow = Boolean(document.getElementById("create-client-invite")?.checked);
+      const result = await mutate("adminCreateClientProject", formData, inviteNow
+        ? "Client created"
+        : "Client created. Download the T&C or invoice to share, then send a welcome email when you are ready.");
       addCreatedWorkspace(result);
       const projectId = result.project?.id || result.projectId || result.id;
       await applyCreatedDates(projectId, formData.startDate, formData.targetDate, result.project);
@@ -2852,11 +3072,23 @@
         startDate: formData.startDate,
         targetDate: formData.targetDate
       });
+      if (inviteNow) {
+        const user = result.user || data.users.find((item) => String(item.email || "").toLowerCase() === String(formData.email || "").toLowerCase());
+        if (user) await inviteClient(user, null, "welcome");
+      }
       closeModal("create-client-modal");
       form.reset();
     }
     catch (error) { toast(window.GeeslaneAPI.userFacingError(error, "Could not complete that action.")); }
     finally { window.GeeslaneAPI.setButtonBusy(button, false); }
+  }
+
+  function fillWorkTypeSelect(select, selected) {
+    if (!select) return;
+    const value = String(selected || "").trim();
+    const list = value && !workTypes.includes(value) ? [value, ...workTypes] : workTypes;
+    const current = value || "Business Website";
+    select.innerHTML = list.map((item) => `<option value="${escapeHtml(item)}"${item === current ? " selected" : ""}>${escapeHtml(item)}</option>`).join("");
   }
 
   function fillAddProjectClients(selectedId) {
@@ -2867,12 +3099,37 @@
       ? clients.map((item) => `<option value="${escapeHtml(item.clientId)}">${escapeHtml(portalName(item.name, item.email))} · ${escapeHtml(item.business || "Client")}</option>`).join("")
       : '<option value="">No clients yet</option>';
     if (selectedId && clients.some((item) => item.clientId === selectedId)) select.value = selectedId;
+    syncAddProjectInvite();
+  }
+
+  function clientUserByClientId(clientId) {
+    return data.users.find((item) => item.role === "client" && item.clientId && item.clientId === clientId) || null;
+  }
+
+  function clientNeedsPortalInvite(user) {
+    return Boolean(user && user.role !== "admin" && !user.lastLoginAt);
+  }
+
+  function syncAddProjectInvite() {
+    const clientId = document.getElementById("add-project-client")?.value || "";
+    const user = clientUserByClientId(clientId);
+    const box = document.getElementById("add-project-invite");
+    const hint = document.getElementById("add-project-invite-hint");
+    const needs = clientNeedsPortalInvite(user);
+    if (box) box.checked = needs;
+    if (hint) {
+      hint.textContent = !user
+        ? "Choose a client first."
+        : needs
+          ? "This client has not signed into the portal yet. Send a welcome email with a sign-in link."
+          : "This client already uses the portal. Leave this on to email them about the new project.";
+    }
   }
 
   function openAddProject(clientId) {
     const form = document.getElementById("add-project-form");
     form.reset();
-    form.elements.service.value = "Business Website";
+    fillWorkTypeSelect(form.elements.service, "Business Website");
     document.getElementById("add-project-active").checked = true;
     fillAddProjectClients(clientId);
     constrainDateInput(document.getElementById("add-project-target"));
@@ -2908,6 +3165,10 @@
         startDate: form.elements.startDate?.value,
         targetDate: target
       });
+      if (document.getElementById("add-project-invite")?.checked) {
+        const user = clientUserByClientId(clientId);
+        if (user) await inviteClient(user, null, clientNeedsPortalInvite(user) ? "welcome" : "project");
+      }
       closeModal("add-project-modal");
       form.reset();
     } catch (error) {
@@ -2953,7 +3214,7 @@
       return false;
     }
     location.replace(window.GeeslaneAPI.clientSignInRedirect());
-    return false;
+    return "client";
   }
 
   async function requestAdminPassword(event) {
@@ -2963,6 +3224,8 @@
     const data = new FormData(form);
     const button = form.querySelector("button[type=submit]");
     window.GeeslaneAPI.setButtonBusy(button, true, "Signing in…");
+    window.GeeslaneAPI.showLoader("Signing you in…");
+    let keepLoader = false;
     try {
       const result = await window.GeeslaneAPI.adminPasswordLogin(String(data.get("username") || "").trim(), String(data.get("password") || ""));
       if (result?.needsCode) {
@@ -2974,10 +3237,16 @@
         showAuthFeedback(`Password accepted. Enter the 6-digit code emailed to ${result.email}.`, "success");
         return;
       }
-      await completeAdminSession();
+      document.getElementById("admin-auth").hidden = true;
+      const next = await completeAdminSession();
+      keepLoader = next === "client";
+      if (!next) document.getElementById("admin-auth").hidden = false;
     } catch (error) {
+      document.getElementById("admin-auth").hidden = false;
       showAuthFeedback(error.userMessage || window.GeeslaneAPI.userFacingError(error, "Invalid administrator details."));
       window.GeeslaneAPI.setButtonBusy(button, false);
+    } finally {
+      if (!keepLoader) window.GeeslaneAPI.hideLoader();
     }
   }
 
@@ -3016,13 +3285,21 @@
     const button = event.currentTarget.querySelector("button[type=submit]");
     if (!/^\d{6}$/.test(code)) { showAuthFeedback("Enter the 6-digit code from your email."); return; }
     window.GeeslaneAPI.setButtonBusy(button, true, "Opening admin portal…");
+    window.GeeslaneAPI.showLoader("Opening admin portal…");
+    let keepLoader = false;
     try {
       await window.GeeslaneAPI.verifySignInCode(email, code);
-      await completeAdminSession();
+      document.getElementById("admin-auth").hidden = true;
+      const next = await completeAdminSession();
+      keepLoader = next === "client";
+      if (!next) document.getElementById("admin-auth").hidden = false;
     } catch (error) {
+      document.getElementById("admin-auth").hidden = false;
       showAuthFeedback(error.userMessage || window.GeeslaneAPI.userFacingError(error, "That code could not be verified. Try again, or send a new one."));
       window.GeeslaneAPI.setButtonBusy(button, false);
       document.querySelector("#admin-code-boxes .code-box")?.focus();
+    } finally {
+      if (!keepLoader) window.GeeslaneAPI.hideLoader();
     }
   }
 
@@ -3112,6 +3389,7 @@
     constrainDateInput(document.getElementById("new-project-target"));
     constrainDateInput(document.getElementById("invoice-due"));
     document.getElementById("files-project-filter").addEventListener("change", loadProjectMaterials);
+    document.getElementById("request-project-filter")?.addEventListener("change", () => { tablePages.requests = 1; renderRequests(); });
     document.getElementById("save-admin-brief")?.addEventListener("click", saveAdminBrief);
     document.getElementById("export-brand-content").addEventListener("click", exportBrandAndContent);
     document.getElementById("download-all-files").addEventListener("click", downloadAllFiles);
@@ -3189,9 +3467,10 @@
       renderAgreementPreview();
     });
     document.getElementById("agreement-handover")?.addEventListener("click", (event) => {
-      if (event.target.closest("#add-handover-item")) {
+      const add = event.target.closest("[data-handover-add]");
+      if (add) {
         event.preventDefault();
-        addHandoverItem();
+        addHandoverItem("agreement-handover", add.dataset.handoverAdd || "geeslane");
         return;
       }
       const remove = event.target.closest("[data-handover-remove]");
@@ -3199,6 +3478,31 @@
         event.preventDefault();
         removeHandoverItem(remove.closest(".agreement-handover-row"));
       }
+    });
+    document.getElementById("approval-handover")?.addEventListener("click", (event) => {
+      const add = event.target.closest("[data-handover-add]");
+      if (add) {
+        event.preventDefault();
+        addHandoverItem("approval-handover", add.dataset.handoverAdd || "geeslane");
+        return;
+      }
+      const remove = event.target.closest("[data-handover-remove]");
+      if (remove) {
+        event.preventDefault();
+        removeHandoverItem(remove.closest(".agreement-handover-row"), "approval-handover");
+      }
+    });
+    document.getElementById("approval-service")?.addEventListener("change", () => {
+      const form = document.getElementById("approval-form");
+      const item = data.registrations.find((entry) => entry.id === form?.elements?.registrationId?.value);
+      if (!item) return;
+      const track = approvalTrack();
+      const revisionsField = document.getElementById("approval-revisions-field");
+      if (revisionsField) revisionsField.hidden = !window.GeeslaneAgreement.hasRevisions(track);
+      if (form.elements.revisionRounds && window.GeeslaneAgreement.hasRevisions(track)) {
+        form.elements.revisionRounds.value = window.GeeslaneAgreement.clampRevisions(form.elements.revisionRounds.value);
+      }
+      renderHandoverFields({}, track, "approval-handover");
     });
     document.getElementById("agreement-fill-defaults").addEventListener("click", fillAgreementDefaults);
     document.getElementById("save-agreement").addEventListener("click", saveAgreement);
@@ -3224,6 +3528,9 @@
     document.getElementById("admin-signout").addEventListener("click", async () => { await window.GeeslaneAPI.logout(); location.replace("./admin.html"); });
     document.getElementById("open-create-client").addEventListener("click", () => {
       constrainDateInput(document.getElementById("new-project-target"));
+      fillWorkTypeSelect(document.getElementById("new-project-service"), "Business Website");
+      const invite = document.getElementById("create-client-invite");
+      if (invite) invite.checked = true;
       openModal("create-client-modal");
     });
     document.getElementById("close-create-client").addEventListener("click", () => closeModal("create-client-modal"));
@@ -3233,6 +3540,7 @@
     document.getElementById("close-add-project").addEventListener("click", () => closeModal("add-project-modal"));
     document.getElementById("cancel-add-project").addEventListener("click", () => closeModal("add-project-modal"));
     document.getElementById("save-add-project").addEventListener("click", addProject);
+    document.getElementById("add-project-client")?.addEventListener("change", syncAddProjectInvite);
     document.getElementById("open-log-item")?.addEventListener("click", () => openLogItem());
     document.getElementById("close-log-item")?.addEventListener("click", () => closeModal("log-item-modal"));
     document.getElementById("cancel-log-item")?.addEventListener("click", () => closeModal("log-item-modal"));
@@ -3244,6 +3552,14 @@
     document.getElementById("delete-project-form")?.addEventListener("submit", (event) => {
       event.preventDefault();
       confirmDeleteProject();
+    });
+    document.getElementById("close-delete-client")?.addEventListener("click", () => closeModal("delete-client-modal"));
+    document.getElementById("cancel-delete-client")?.addEventListener("click", () => closeModal("delete-client-modal"));
+    document.getElementById("confirm-delete-client")?.addEventListener("click", confirmDeleteClient);
+    document.getElementById("delete-client-confirm")?.addEventListener("input", syncDeleteClientConfirm);
+    document.getElementById("delete-client-form")?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      confirmDeleteClient();
     });
     document.getElementById("close-approval").addEventListener("click", () => closeModal("approval-modal"));
     document.getElementById("cancel-approval").addEventListener("click", () => closeModal("approval-modal"));
@@ -3273,12 +3589,16 @@
     try {
       const authSession = await window.GeeslaneAPI.consumeMagicLink();
       if (!authSession) return;
-      await completeAdminSession();
+      if (!signingIn) window.GeeslaneAPI.showLoader("Opening admin portal…");
+      document.getElementById("admin-auth").hidden = true;
+      const next = await completeAdminSession();
+      if (!next) document.getElementById("admin-auth").hidden = false;
     } catch (error) {
+      document.getElementById("admin-auth").hidden = false;
       try { await window.GeeslaneAPI.logout(); } catch (_) { /* signed-out UI still continues */ }
       showAuthFeedback(error.userMessage || window.GeeslaneAPI.userFacingError(error, "Administrator sign-in could not be completed. Enter a new 6-digit code, or use your password."));
     } finally {
-      if (signingIn) window.GeeslaneAPI.hideLoader();
+      window.GeeslaneAPI.hideLoader();
     }
   }
 

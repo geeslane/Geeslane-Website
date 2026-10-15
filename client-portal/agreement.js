@@ -11,50 +11,44 @@
     other: "Payment is due as stated on the approved invoice."
   };
   const DEFAULT_PAYMENT = PAYMENT.website;
-  const CANCELLATION = ["Cancellation.", "Either party may end the project in writing. The Client will pay for work completed and third-party costs already committed up to the cancellation date. Geeslane will provide paid-for completed work in its current condition where reasonably practical."];
-  const LAW = "This agreement is governed by Nigerian law, and both parties will first try to resolve any disagreement through a good-faith written discussion.";
+  const LAW = "Nigerian law applies. If we disagree, we will first try to settle it in writing.";
 
   const TRACKS = {
     website: {
       title: "Website Project Agreement",
       fileSlug: "website-project-agreement",
       checklist: "Handover checklist",
-      lead: "The approved proposal, invoices, and written change requests form part of this agreement.",
+      lead: "This covers the work, payment and handover listed above.",
       payment: PAYMENT.website,
       handover: [
-        { key: "finalPayment", label: "Final payment received" },
-        { key: "codeAccess", label: "Website code or repository access supplied" },
-        { key: "domainHosting", label: "Domain and hosting access confirmed" },
-        { key: "adminCredentials", label: "Website administrator credentials supplied" },
-        { key: "thirdParty", label: "Third-party services and renewal dates listed" },
-        { key: "monitoringDates", label: "Monitoring start and end dates confirmed" }
+        { key: "clientContent", party: "client", label: "The Client has supplied final text, images, logos and remaining brand files" },
+        { key: "clientContacts", party: "client", label: "The Client has confirmed launch contact details, addresses and remaining copy" },
+        { key: "clientAccess", party: "client", label: "The Client has granted Geeslane access to domain, hosting and any required third-party accounts" },
+        { key: "finalPayment", party: "client", label: "The Client has paid the project balance in full" },
+        { key: "adminCredentials", party: "geeslane", label: "Geeslane has supplied website administrator credentials" },
+        { key: "codeAccess", party: "geeslane", label: "Geeslane has supplied website code, repository or code archive access" },
+        { key: "domainHosting", party: "geeslane", label: "Geeslane has confirmed domain and hosting access, including where it is managed" },
+        { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party services, licences and renewal dates" },
+        { key: "monitoringDates", party: "geeslane", label: "Geeslane has confirmed post-delivery monitoring start and end dates with the Client" }
       ],
       clauses: [
         {
-          heading: "Our Agreement",
+          heading: "The project",
           items: [
-            ["What Geeslane will deliver.", "Geeslane will design, develop, test and launch the website described above and in the approved proposal. Anything not listed in the agreed scope, including extra pages, new features, major design changes, copywriting or ongoing content updates, will be quoted separately."],
-            ["What the Client will provide.", "The Client will provide accurate text, images, brand materials, contact details, approvals and any required account access on time. The Client confirms that it has permission to use every item supplied and will check all final content before launch."],
-            ["Timeline.", "Work begins after the agreed deposit has been received and the required content has been supplied. The timeline may move if feedback, content, approval or third-party access is delayed. If the Client is inactive for more than fourteen days, Geeslane may pause the project and provide a new completion date."],
-            ["Payment.", "Payments are due according to the approved proposal or invoice. The deposit becomes non-refundable once work begins. Geeslane may pause the project or delay launch and handover while an invoice is overdue. All project fees and approved additional charges must be paid before final handover."]
+            ["What Geeslane will do.", "We will design, build, test and launch the website listed above. Extra pages, new features, big design changes or extra copywriting are quoted separately."],
+            ["What you will provide.", "Send accurate text, images, brand files, contact details, approvals and any account access we need, on time. You confirm you have the right to use everything you send, and you will check the final content before launch."],
+            ["Time and payment.", "We start after the agreed deposit and the content we need. Dates can move if we are waiting on you. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. The deposit is not refundable once work starts. The full fee must be paid before handover."]
           ]
         },
         {
-          heading: "Revisions, Hosting and Handover",
+          heading: "Changes, launch and aftercare",
           items: [
-            ["Revisions and additional requests.", "The project includes the revision rounds stated above. A revision adjusts work already agreed. A new page, feature, integration or major change of direction is additional work and will require approval of its cost and timeline before work begins."],
-            ["Domain, hosting and other services.", "Domain registration, hosting, business email, plugins and other third-party services may have separate charges. First-year or promotional prices do not guarantee future renewal prices. Renewal costs may rise because of provider prices, exchange rates, taxes, traffic, storage or a required plan upgrade. Geeslane will communicate the known cost before renewal, but the Client must approve and pay it before the provider deadline to keep the website online."],
-            ["Code, credentials and ownership.", "After full payment, Geeslane will hand over the applicable website code, repository or code archive, website administrator access, domain and hosting access, and relevant setup information. The Client will own the final custom website work created specifically for the project. Third-party software, fonts, stock assets, plugins and open-source components remain subject to their own licences. Geeslane may show the public website in its portfolio unless the Client requests confidentiality in writing."],
-            ["Thirty-day monitoring.", "Geeslane will monitor the website for thirty calendar days after launch and correct reproducible errors in the agreed work. This does not include new features, design changes, content updates, third-party outages, attacks, traffic-related upgrades or problems caused by later changes. After thirty days, maintenance and updates will require a separate paid request or maintenance plan."]
-          ]
-        },
-        {
-          heading: "Cancellation, Responsibility and Approval",
-          items: [
-            CANCELLATION,
-            ["Website operation and liability.", "Geeslane will use reasonable skill and care but cannot guarantee uninterrupted hosting, search ranking, sales, revenue or protection from every cyber incident. After handover and the monitoring period, the Client is responsible for renewals, passwords, backups, content, account access and future changes. To the extent permitted by law, Geeslane’s total project liability will not exceed the amount paid for the affected project."],
-            ["Confidentiality and personal information.", "Both parties will protect non-public project information and access credentials. The Client is responsible for deciding what visitor information the website collects and for supplying any privacy wording or consent requirements needed for its business."],
-            ["Approval and applicable law.", `The Client will report any material issue within five business days of receiving the final website for review. Approval, launch, public use or no material issue within that period will count as acceptance. ${LAW}`]
+            ["Revisions and extra work.", "The included revision rounds are listed above. A revision is a change to work already agreed. A new page, feature or change of direction is extra work and needs a new cost and timeline before we start it."],
+            ["Hosting and renewals.", "Domain, hosting, email and plugins can have their own fees. First-year prices can change at renewal. We will tell you the known cost in time; you must approve and pay before the due date to keep the website online."],
+            ["Handover and ownership.", "After full payment we give you the website access, code and setup notes. You own the custom website we built for you. Plugins, fonts and stock stay under their own licences. We may show the public site in our portfolio unless you ask us not to in writing."],
+            ["After launch.", "We monitor the website for 30 days after launch, or for the start and end dates written on the handover checklist. In that time we fix faults in the agreed work. New features, content edits, attacks, hosting outages or problems from later changes are not included. After the end date, further work is a paid request."],
+            ["If something is wrong.", "Tell us within 5 working days of receiving the finished website if something important is wrong or missing. If you approve it, go live, or do not tell us in that time, the work is accepted."],
+            ["Stopping, care and law.", `Either of us can stop the project in writing. You pay for work already done and costs already committed. We take reasonable care but cannot promise rankings, sales or zero downtime. After monitoring, you look after renewals, passwords and updates. Our total responsibility for this project is limited to what you paid for it. We both keep project details private. ${LAW}`]
           ]
         }
       ]
@@ -63,42 +57,35 @@
       title: "Automation Project Agreement",
       fileSlug: "automation-project-agreement",
       checklist: "Handover checklist",
-      lead: "The approved proposal, invoices, and written change requests form part of this agreement.",
+      lead: "This covers the work, payment and handover listed above.",
       payment: PAYMENT.automation,
       handover: [
-        { key: "finalPayment", label: "Final payment received" },
-        { key: "workflowAccess", label: "Workflow and account access handed over" },
-        { key: "credentials", label: "Login details for connected tools supplied" },
-        { key: "runbook", label: "How to operate the workflow supplied" },
-        { key: "thirdParty", label: "Third-party tools, licences and usage costs listed" },
-        { key: "supportWindow", label: "Review window confirmed" }
+        { key: "clientAccess", party: "client", label: "The Client has granted Geeslane access to the connected tools and accounts" },
+        { key: "clientProcess", party: "client", label: "The Client has supplied sample data, process notes and approval contacts" },
+        { key: "finalPayment", party: "client", label: "The Client has paid the project balance in full" },
+        { key: "workflowAccess", party: "geeslane", label: "Geeslane has handed over workflow and account access" },
+        { key: "credentials", party: "geeslane", label: "Geeslane has supplied login details for connected tools" },
+        { key: "runbook", party: "geeslane", label: "Geeslane has supplied operating notes for the workflow" },
+        { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party tools, licences and usage costs" },
+        { key: "supportWindow", party: "geeslane", label: "Geeslane has confirmed the post-delivery review start and end dates with the Client" }
       ],
       clauses: [
         {
-          heading: "Our Agreement",
+          heading: "The project",
           items: [
-            ["What Geeslane will deliver.", "Geeslane will design, connect, test and hand over the workflows listed above and in the approved proposal. Extra systems, new channels, or a material change of process will be quoted separately."],
-            ["What the Client will provide.", "The Client will provide accurate process details, sample data, account access and approvals on time. The Client remains responsible for reviewing automated messages, decisions and published content before they reach customers."],
-            ["Timeline.", "Work begins after the agreed deposit has been received and the required access has been supplied. The timeline may move if feedback, data, approval or third-party access is delayed. If the Client is inactive for more than fourteen days, Geeslane may pause the project and provide a new completion date."],
-            ["Payment.", "Payments are due according to the approved proposal or invoice. The deposit becomes non-refundable once work begins. Geeslane may pause the project or delay handover while an invoice is overdue. All project fees and approved additional charges must be paid before final handover."]
+            ["What Geeslane will do.", "We will design, connect, test and hand over the workflows listed above. Extra systems, new channels or a change of process are quoted separately."],
+            ["What you will provide.", "Send accurate process details, sample data, account access and approvals on time. You remain responsible for checking automated messages and published content before they reach customers."],
+            ["Time and payment.", "We start after the agreed deposit and the access we need. Dates can move if we are waiting on you. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. The deposit is not refundable once work starts. The full fee must be paid before handover."]
           ]
         },
         {
-          heading: "Revisions, Tools and Handover",
+          heading: "Tools, handover and aftercare",
           items: [
-            ["Revisions and additional requests.", "A revision adjusts work already agreed. A new workflow, integration or major change of direction is additional work and will require approval of its cost and timeline before work begins."],
-            ["Tools, licences and usage.", "Third-party tools, API usage and model costs sit with the Client unless the proposal says otherwise. Results depend on the quality of the Client’s data, the tools in use, and how the Client’s team operates the system."],
-            ["Access, credentials and ownership.", "After full payment, Geeslane will hand over the applicable workflows, account access and operating notes. The Client will own the custom automation work created specifically for the project. Third-party platforms remain subject to their own terms. Geeslane may describe the work in its portfolio unless the Client requests confidentiality in writing."],
-            ["Thirty-day review.", "Geeslane will support the agreed workflows for thirty calendar days after handover and correct reproducible errors in the agreed work. This does not include new workflows, changes of process, third-party outages, usage overages or problems caused by later changes. After thirty days, further work will require a separate paid request or support plan."]
-          ]
-        },
-        {
-          heading: "Cancellation, Responsibility and Approval",
-          items: [
-            CANCELLATION,
-            ["Operation and liability.", "Geeslane will use reasonable skill and care but cannot guarantee uninterrupted tools, sales, revenue or protection from every incident. AI output can be incomplete or wrong. After handover and the review window, the Client is responsible for account access, data, tool renewals and future changes. To the extent permitted by law, Geeslane’s total project liability will not exceed the amount paid for the affected project."],
-            ["Confidentiality and personal information.", "Both parties will protect non-public project information, credentials and data. The Client is responsible for the lawful use of personal information processed through the workflows."],
-            ["Approval and applicable law.", `The Client will report any material issue within five business days of receiving the final workflows for review. Approval, live use or no material issue within that period will count as acceptance. ${LAW}`]
+            ["Changes and extra work.", "A revision is a change to work already agreed. A new workflow or change of direction is extra work and needs a new cost and timeline before we start it."],
+            ["Tools and ownership.", "Third-party tools, API and model costs sit with you unless the proposal says otherwise. After full payment we hand over the workflows, access and operating notes. You own the custom automation we built for you. We may describe the work in our portfolio unless you ask us not to in writing."],
+            ["After handover.", "We support the agreed workflows for 30 days after handover, or for the start and end dates written on the handover checklist. In that time we fix faults in the agreed work. New workflows, tool outages, usage overages or problems from later changes are not included."],
+            ["If something is wrong.", "Tell us within 5 working days of receiving the finished workflows if something important is wrong or missing. If you approve it, go live, or do not tell us in that time, the work is accepted."],
+            ["Stopping, care and law.", `Either of us can stop the project in writing. You pay for work already done and costs already committed. We take reasonable care, but AI output can be incomplete or wrong, and we cannot promise sales or uninterrupted tools. After the review window, you look after access, data and renewals. Our total responsibility for this project is limited to what you paid for it. We both keep project details private. ${LAW}`]
           ]
         }
       ]
@@ -107,41 +94,31 @@
       title: "Consultation Agreement",
       fileSlug: "consultation-agreement",
       checklist: "Close-out checklist",
-      lead: "The approved proposal, invoices, and written change requests form part of this agreement.",
+      lead: "This covers the work, payment and close-out listed above.",
       payment: PAYMENT.consultation,
       handover: [
-        { key: "finalPayment", label: "Final payment received" },
-        { key: "report", label: "Recommendation or strategy document delivered" },
-        { key: "session", label: "Review session completed" },
-        { key: "nextSteps", label: "Agreed next steps recorded" },
-        { key: "materials", label: "Reference materials supplied" }
+        { key: "clientInfo", party: "client", label: "The Client has supplied the information and people Geeslane needed to speak with" },
+        { key: "finalPayment", party: "client", label: "The Client has paid the agreed fee in full" },
+        { key: "report", party: "geeslane", label: "Geeslane has delivered the recommendation or strategy document" },
+        { key: "session", party: "geeslane", label: "Geeslane has completed the review session" },
+        { key: "nextSteps", party: "geeslane", label: "Geeslane has recorded the agreed next steps" },
+        { key: "materials", party: "geeslane", label: "Geeslane has supplied the reference materials" }
       ],
       clauses: [
         {
-          heading: "Our Agreement",
+          heading: "The engagement",
           items: [
-            ["What Geeslane will deliver.", "Geeslane will provide the advice, recommendations and sessions listed above and in the approved proposal. Implementation, design, development or ongoing support is a separate project unless included in the same proposal."],
-            ["What the Client will provide.", "The Client will provide accurate business information, access to the people Geeslane needs to speak with, and timely feedback. Advice is based on the information supplied."],
-            ["Timeline.", "Work begins after the agreed payment has been received, or as stated on the invoice. The timeline may move if information, attendance or approval is delayed. If the Client is inactive for more than fourteen days, Geeslane may pause the engagement and provide a new completion date."],
-            ["Payment.", "Payments are due according to the approved proposal or invoice. The deposit, if any, becomes non-refundable once work begins. Geeslane may pause the engagement while an invoice is overdue. Agreed materials are released after payment of the fees due."]
+            ["What Geeslane will do.", "We will provide the advice, recommendations and sessions listed above. Building, design, development or ongoing support is a separate project unless it is included here."],
+            ["What you will provide.", "Send accurate business information, access to the people we need to speak with, and timely feedback. Advice is based on what you give us."],
+            ["Time and payment.", "We start after the agreed payment, or as stated on the invoice. Dates can move if we are waiting on you. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. Agreed documents are released after payment."]
           ]
         },
         {
-          heading: "Scope and Close-out",
+          heading: "Close-out and care",
           items: [
-            ["Changes of scope.", "A new problem, market or scope of advice is additional work and will require approval of its cost and timeline before work begins."],
-            ["Outcomes.", "Advice is not a guarantee of search ranking, sales, funding or any particular business result."],
-            ["Materials and ownership.", "After full payment, Geeslane will supply the agreed documents. The Client may use them for its business. Geeslane retains its methods, templates and unused materials. Geeslane may mention the engagement in its portfolio unless the Client requests confidentiality in writing."],
-            ["Close-out.", "The engagement ends when the agreed advice has been delivered and the close-out items above are complete. Further work will require a new proposal."]
-          ]
-        },
-        {
-          heading: "Cancellation, Responsibility and Approval",
-          items: [
-            CANCELLATION,
-            ["Responsibility and liability.", "Geeslane will use reasonable skill and care. The Client remains responsible for decisions it takes on the advice. To the extent permitted by law, Geeslane’s total project liability will not exceed the amount paid for the affected project."],
-            ["Confidentiality.", "Both parties will protect non-public information shared for this engagement."],
-            ["Approval and applicable law.", `The Client will report any material issue within five business days of receiving the final recommendations. Approval, use of the advice or no material issue within that period will count as acceptance. ${LAW}`]
+            ["Scope and documents.", "A new problem or wider brief is extra work. Advice is not a promise of rankings, sales or funding. After payment you may use the agreed documents in your business. We keep our methods and templates. We may mention the work in our portfolio unless you ask us not to in writing."],
+            ["If something is wrong.", "Tell us within 5 working days of receiving the final recommendations if something important is wrong or missing. If you approve it, use the advice, or do not tell us in that time, the work is accepted."],
+            ["Stopping, care and law.", `Either of us can stop the engagement in writing. You pay for work already done. You remain responsible for decisions you take on the advice. Our total responsibility for this project is limited to what you paid for it. We both keep shared details private. ${LAW}`]
           ]
         }
       ]
@@ -150,42 +127,34 @@
       title: "Support Agreement",
       fileSlug: "support-agreement",
       checklist: "Handover checklist",
-      lead: "The approved proposal, invoices, and written change requests form part of this agreement.",
+      lead: "This covers the work, payment and coverage listed above.",
       payment: PAYMENT.support,
       handover: [
-        { key: "finalPayment", label: "Final payment received" },
-        { key: "access", label: "Domain, hosting or mailbox access confirmed" },
-        { key: "credentials", label: "Administrator credentials supplied" },
-        { key: "thirdParty", label: "Third-party services and renewal dates listed" },
-        { key: "monitoringDates", label: "Coverage start and end dates confirmed" },
-        { key: "workingState", label: "Working state confirmed with the Client" }
+        { key: "clientAccess", party: "client", label: "The Client has granted authorised access to domain, hosting or mailbox accounts" },
+        { key: "clientRenewals", party: "client", label: "The Client has approved and paid any renewal or coverage charges due" },
+        { key: "finalPayment", party: "client", label: "The Client has paid the agreed fee in full" },
+        { key: "access", party: "geeslane", label: "Geeslane has confirmed domain, hosting or mailbox access" },
+        { key: "credentials", party: "geeslane", label: "Geeslane has supplied administrator credentials" },
+        { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party services and renewal dates" },
+        { key: "monitoringDates", party: "geeslane", label: "Geeslane has confirmed post-delivery monitoring start and end dates with the Client" },
+        { key: "workingState", party: "geeslane", label: "Geeslane has confirmed the working state with the Client" }
       ],
       clauses: [
         {
-          heading: "Our Agreement",
+          heading: "The work",
           items: [
-            ["What Geeslane will deliver.", "Geeslane will complete the domain, hosting, email, monitoring or support work listed above and in the approved proposal. A new website, redesign or unrelated feature is additional work."],
-            ["What the Client will provide.", "The Client will provide authorised access to the relevant accounts and timely approval of renewals and changes. The Client confirms it is entitled to grant that access."],
-            ["Timeline.", "Work begins after the agreed payment has been received and access has been supplied. The timeline may move if access, approval or a third-party provider is delayed. If the Client is inactive for more than fourteen days, Geeslane may pause the work and provide a new completion date."],
-            ["Payment.", "Payments are due according to the approved proposal or invoice. Geeslane may pause coverage while an invoice is overdue. Renewals must be paid before the provider deadline."]
+            ["What Geeslane will do.", "We will complete the domain, hosting, email, monitoring or support work listed above. A new website, redesign or unrelated feature is extra work."],
+            ["What you will provide.", "Give us authorised access to the relevant accounts and approve renewals and changes on time. You confirm you are allowed to grant that access."],
+            ["Time and payment.", "We start after payment and access. Dates can move if we are waiting on you or a provider. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. We may pause coverage while an invoice is overdue. Renewals must be paid before the provider deadline."]
           ]
         },
         {
-          heading: "Coverage, Renewals and Handover",
+          heading: "Coverage and aftercare",
           items: [
-            ["Coverage.", "Support is limited to the services and period stated above. It does not include a redesign, new features, content updates, attacks, or problems caused by later changes the Client or another vendor make."],
-            ["Domain, hosting and other services.", "Domain registration, hosting, business email, SSL, plugins and other third-party services may have separate charges. First-year or promotional prices do not guarantee future renewal prices. Renewal costs may rise because of provider prices, exchange rates, taxes, traffic, storage or a required plan upgrade. Geeslane will communicate the known cost before renewal. The Client must approve and pay it before the provider deadline to keep the service online."],
-            ["Credentials and ownership.", "After payment, Geeslane will confirm access and relevant setup information. The Client owns its accounts. Third-party services remain subject to their own terms."],
-            ["Working state.", "Geeslane will confirm the agreed work is complete. After that confirmation, the Client is responsible for renewals, passwords, backups and future changes, except where a paid coverage period is still running."]
-          ]
-        },
-        {
-          heading: "Cancellation, Responsibility and Approval",
-          items: [
-            CANCELLATION,
-            ["Operation and liability.", "Geeslane will use reasonable skill and care but cannot guarantee uninterrupted hosting, mail delivery or protection from every cyber incident. To the extent permitted by law, Geeslane’s total project liability will not exceed the amount paid for the affected project."],
-            ["Confidentiality.", "Both parties will protect non-public project information and access credentials."],
-            ["Approval and applicable law.", `The Client will report any material issue within five business days of being told the work is complete. Approval, continued use or no material issue within that period will count as acceptance. ${LAW}`]
+            ["Monitoring and coverage.", "Support runs for the services and dates listed above and on the handover checklist. The start date is when the work is live, or the written start date. The end date is the last day we monitor or support it unless a paid plan continues. Coverage does not include a redesign, new features, content updates, attacks, or problems from later changes."],
+            ["Renewals and access.", "Domain, hosting, email and similar services can have their own fees, and renewal prices can change. We will tell you the known cost in time; you must approve and pay before the due date to keep the service online. You own your accounts. After we confirm the work is complete, you look after renewals, passwords and backups, except while paid coverage is still running."],
+            ["If something is wrong.", "Tell us within 5 working days of being told the work is complete if something important is wrong or missing. If you approve it, keep using it, or do not tell us in that time, the work is accepted."],
+            ["Stopping, care and law.", `Either of us can stop the work in writing. You pay for work already done and costs already committed. We take reasonable care but cannot promise uninterrupted hosting or mail. Our total responsibility for this project is limited to what you paid for it. We both keep project details private. ${LAW}`]
           ]
         }
       ]
@@ -194,39 +163,30 @@
       title: "Project Agreement",
       fileSlug: "project-agreement",
       checklist: "Close-out checklist",
-      lead: "The approved proposal, invoices, and written change requests form part of this agreement.",
+      lead: "This covers the work, payment and close-out listed above.",
       payment: PAYMENT.other,
       handover: [
-        { key: "finalPayment", label: "Final payment received" },
-        { key: "deliverables", label: "Agreed deliverables supplied" },
-        { key: "access", label: "Access and materials handed over" },
-        { key: "closeout", label: "Work confirmed with the Client" }
+        { key: "clientInfo", party: "client", label: "The Client has supplied the information, access and approvals needed" },
+        { key: "finalPayment", party: "client", label: "The Client has paid the agreed fee in full" },
+        { key: "deliverables", party: "geeslane", label: "Geeslane has supplied the agreed deliverables" },
+        { key: "access", party: "geeslane", label: "Geeslane has handed over access and materials" },
+        { key: "closeout", party: "geeslane", label: "Geeslane has confirmed the work with the Client" }
       ],
       clauses: [
         {
-          heading: "Our Agreement",
+          heading: "The project",
           items: [
-            ["What Geeslane will deliver.", "Geeslane will complete the work listed above and in the approved proposal. Anything not listed will be quoted separately."],
-            ["What the Client will provide.", "The Client will provide accurate information, access and approvals on time."],
-            ["Timeline.", "Work begins after the agreed payment has been received. The timeline may move if information, access or approval is delayed. If the Client is inactive for more than fourteen days, Geeslane may pause the project and provide a new completion date."],
-            ["Payment.", "Payments are due according to the approved proposal or invoice. Geeslane may pause the work while an invoice is overdue. Agreed materials are released after payment of the fees due."]
+            ["What Geeslane will do.", "We will complete the work listed above. Anything not listed is quoted separately."],
+            ["What you will provide.", "Send accurate information, access and approvals on time."],
+            ["Time and payment.", "We start after the agreed payment. Dates can move if we are waiting on you. If the Client is inactive for more than 5 days, Geeslane may pause the project and give a new completion date. Pay as shown on the invoice. Agreed materials are released after payment."]
           ]
         },
         {
-          heading: "Scope and Close-out",
+          heading: "Close-out and care",
           items: [
-            ["Changes of scope.", "A material change of direction is additional work and will require approval of its cost and timeline before work begins."],
-            ["Materials and ownership.", "After full payment, Geeslane will supply the agreed work. The Client will own the custom work created specifically for the project. Third-party tools and licences remain subject to their own terms."],
-            ["Close-out.", "The project ends when the agreed work has been delivered and the close-out items above are complete. Further work will require a new proposal."]
-          ]
-        },
-        {
-          heading: "Cancellation, Responsibility and Approval",
-          items: [
-            CANCELLATION,
-            ["Responsibility and liability.", "Geeslane will use reasonable skill and care. To the extent permitted by law, Geeslane’s total project liability will not exceed the amount paid for the affected project."],
-            ["Confidentiality.", "Both parties will protect non-public project information."],
-            ["Approval and applicable law.", `The Client will report any material issue within five business days of receiving the completed work. Approval, use of the work or no material issue within that period will count as acceptance. ${LAW}`]
+            ["Changes and ownership.", "A change of direction is extra work and needs a new cost and timeline before we start it. After full payment you own the custom work we created for you. Third-party tools stay under their own terms."],
+            ["If something is wrong.", "Tell us within 5 working days of receiving the finished work if something important is wrong or missing. If you approve it, start using it, or do not tell us in that time, the work is accepted."],
+            ["Stopping, care and law.", `Either of us can stop the project in writing. You pay for work already done. We take reasonable care. Our total responsibility for this project is limited to what you paid for it. We both keep project details private. ${LAW}`]
           ]
         }
       ]
@@ -263,20 +223,38 @@
     return (TRACKS[track] || TRACKS.website).handover.slice();
   }
 
+  function partyFromLabel(label) {
+    const value = String(label || "").trim().toLowerCase();
+    if (/^the client\b|^client\b/.test(value)) return "client";
+    if (/^geeslane\b/.test(value)) return "geeslane";
+    return "";
+  }
+
+  function handoverParty(entry) {
+    const explicit = String(entry?.party || "").toLowerCase();
+    if (explicit === "client" || explicit === "geeslane") return explicit;
+    return partyFromLabel(entry?.label || entry?.title || entry?.text);
+  }
+
   function handoverItem(entry, index) {
     if (typeof entry === "string") {
       const label = entry.trim();
-      return label ? { key: `item-${index + 1}`, label, done: false } : null;
+      return label ? { key: `item-${index + 1}`, label, party: partyFromLabel(label), done: false } : null;
     }
     if (!entry || typeof entry !== "object") return null;
     const label = String(entry.label || entry.title || entry.text || "").trim();
     if (!label) return null;
     const key = String(entry.key || `item-${index + 1}`).trim() || `item-${index + 1}`;
-    return { key, label, done: entry.done === true || entry.checked === true };
+    return { key, label, party: handoverParty({ ...entry, label }), done: entry.done === true || entry.checked === true };
   }
 
   function defaultHandoverList(track) {
-    return handoverItems(track).map((item) => ({ key: item.key, label: item.label, done: false }));
+    return handoverItems(track).map((item) => ({
+      key: item.key,
+      label: item.label,
+      party: item.party || partyFromLabel(item.label),
+      done: false
+    }));
   }
 
   function handoverList(value, track) {
@@ -481,12 +459,20 @@
     }).join("");
   }
 
-  function handoverHtml(handover, track) {
-    const items = handoverList(handover, track);
-    if (!items.length) return '<p class="agreement-checklist-empty">No handover items listed.</p>';
+  function checklistItemsHtml(items) {
     return `<ul class="agreement-checklist">${items.map((item) => {
       return `<li class="${item.done ? "is-done" : ""}"><span class="agreement-check" aria-hidden="true">${item.done ? "✓" : ""}</span><span>${escapeHtml(item.label)}</span></li>`;
     }).join("")}</ul>`;
+  }
+
+  function handoverHtml(handover, track) {
+    const items = handoverList(handover, track);
+    if (!items.length) return '<p class="agreement-checklist-empty">No handover items listed.</p>';
+    const client = items.filter((item) => item.party === "client");
+    const geeslane = items.filter((item) => item.party === "geeslane");
+    const other = items.filter((item) => item.party !== "client" && item.party !== "geeslane");
+    if (!client.length && !geeslane.length) return checklistItemsHtml(items);
+    return `${client.length ? `<div class="agreement-check-group"><h3>The Client provides</h3>${checklistItemsHtml(client)}</div>` : ""}${geeslane.length ? `<div class="agreement-check-group"><h3>Geeslane provides</h3>${checklistItemsHtml(geeslane)}</div>` : ""}${other.length ? `<div class="agreement-check-group"><h3>Also required</h3>${checklistItemsHtml(other)}</div>` : ""}`;
   }
 
   function documentHtml(data, options = {}) {
@@ -558,6 +544,9 @@
       .agreement-clauses { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; }
       .agreement-clauses li { color: #2a3931; font-size: .95rem; line-height: 1.7; }
       .agreement-clauses strong { color: #063b29; }
+      .agreement-check-group { margin: 0 0 16px; }
+      .agreement-check-group:last-child { margin-bottom: 0; }
+      .agreement-check-group h3 { margin: 0 0 8px; color: #0b6b45; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
       .agreement-checklist { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
       .agreement-checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: #f7fbf8; border: 1px solid #edf2ef; border-radius: 10px; font-size: .92rem; }
       .agreement-check { width: 18px; height: 18px; flex: 0 0 18px; display: grid; place-items: center; margin-top: 1px; color: #fff; background: #fff; border: 1.5px solid #0b6b45; border-radius: 4px; font-size: .72rem; font-weight: 800; }

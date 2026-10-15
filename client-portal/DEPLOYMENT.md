@@ -92,7 +92,7 @@ The portal builds `emailRedirectTo` from the current origin and path:
 
 1. Serve the site over HTTP (not `file://`). Example from the website root: `python -m http.server 4173`.
 2. Open the client sign-in page, enter an approved email, and send a code. Confirm the button shows a sending state, then the 6-digit code screen.
-3. Open the email from `Geeslane Client Portal <no-reply@auth.geeslane.com>`. Enter the code on the page you left open (or use the backup button).
+3. Open the email from `Geeslane Client Portal <no-reply@auth.geeslane.com>`. Type the 6 digit code on the page you left open. If that page is closed, tap **Sign in to your portal** — that link signs you in without the code.
 4. Confirm the browser opens the client portal and stays signed in after a refresh or new tab.
 5. Open `/admin.html`. Sign in with username and password, or send a 6-digit code. Confirm a refresh keeps the admin session.
 6. Confirm only a profile with `role = "admin"` and `status = "active"` can open the admin dashboard. Other signed-in users are sent to the client portal.

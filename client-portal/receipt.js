@@ -2,14 +2,14 @@
   "use strict";
 
   function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
+    return window.GeeslaneDocs?.escapeHtml ? window.GeeslaneDocs.escapeHtml(value) : String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
   }
 
   function formatDate(value) {
     if (!value) return "";
     const date = new Date(String(value).length <= 10 ? `${value}T12:00:00` : value);
     if (Number.isNaN(date.getTime())) return String(value);
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }).toUpperCase();
   }
 
   function logoUrl() {
@@ -17,68 +17,61 @@
     catch (_) { return "https://geeslane.com/images/logo.png"; }
   }
 
+  function displayMoney(value) {
+    const amount = String(value || "").trim();
+    if (!amount) return "";
+    if (/[₦N]|NGN/i.test(amount) && /[0-9]/.test(amount) && /[.,\s]/.test(amount)) return amount.replace(/^NGN\s*/i, "₦");
+    const number = Number(String(amount).replace(/[^\d.-]/g, ""));
+    if (!Number.isFinite(number)) return amount;
+    const formatted = Number.isInteger(number) ? number.toLocaleString("en-NG") : number.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return `₦${formatted}`;
+  }
+
   function moneyLabel(data) {
-    const amount = String(data?.amount || "").trim();
-    const currency = String(data?.currency || "NGN").trim();
-    if (!amount) return "Amount recorded";
-    return `${currency} ${amount}`.trim();
+    return displayMoney(data?.amount) || "Amount recorded";
   }
 
   function partyName(value, fallback = "Client") {
     return window.GeeslaneMail?.portalName?.(value) || String(value || "").trim() || fallback;
   }
 
-  function fact(label, value) {
-    if (!value) return "";
-    return `<div class="agreement-fact"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
-  }
-
   function documentHtml(data, options = {}) {
     const receipt = data || {};
     const paid = formatDate(receipt.paidOn) || formatDate(receipt.createdAt) || formatDate(new Date().toISOString());
     const client = partyName(receipt.clientName, receipt.business || "Client");
+    const title = receipt.title || receipt.projectName || "Payment received";
+    const description = receipt.description && receipt.description !== title ? receipt.description : "";
+    const total = moneyLabel(receipt);
+    const meta = [receipt.reference, receipt.projectName ? `Project: ${receipt.projectName}` : ""].filter(Boolean).join(" · ");
     return `
-      <article class="agreement-sheet receipt-sheet" lang="en">
-        <header class="agreement-masthead">
-          <img class="agreement-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
+      <article class="quote-sheet" lang="en">
+        <header class="quote-top">
           <div>
-            <p class="agreement-kicker">Payment Receipt</p>
-            <h1>${escapeHtml(receipt.reference || "Receipt")}</h1>
+            <img class="quote-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
+            <p class="quote-date">${escapeHtml(paid)}</p>
           </div>
+          <h1 class="quote-title">RECEIPT</h1>
         </header>
-        <p class="agreement-lead">Geeslane confirms receipt of the payment below. Keep this copy with your project records.</p>
-        <section class="agreement-facts" aria-label="Receipt details">
-          ${fact("Received from", client)}
-          ${fact("Business", receipt.business)}
-          ${fact("Project", receipt.projectName)}
-          ${fact("Amount received", moneyLabel(receipt))}
-          ${fact("Date received", paid)}
-          ${fact("Payment method", receipt.method)}
-          ${fact("Related invoice", receipt.invoiceReference)}
-          ${fact("Status", receipt.status || "Issued")}
-          ${receipt.title || receipt.description ? `<div class="agreement-fact agreement-fact-wide"><span>${escapeHtml(receipt.title || "Details")}</span><strong>${escapeHtml(receipt.description || receipt.title || "").replace(/\n/g, "<br />")}</strong></div>` : ""}
-          ${receipt.notes ? `<div class="agreement-fact agreement-fact-wide"><span>Notes</span><strong>${escapeHtml(receipt.notes).replace(/\n/g, "<br />")}</strong></div>` : ""}
-        </section>
-        <section class="agreement-sign">
-          <div class="agreement-sign-grid">
-            <div class="agreement-sign-card">
-              <span>Issued by</span>
-              <img class="agreement-sign-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
-              <small>Date: ${escapeHtml(paid)}</small>
-            </div>
-            <div class="agreement-sign-card">
-              <span>Received from</span>
-              <strong class="agreement-client-mark">${escapeHtml(client)}</strong>
-              <small>${escapeHtml(receipt.business || "")}</small>
-            </div>
-          </div>
-        </section>
+        <p class="quote-to-label">TO</p>
+        <p class="quote-to-name">${escapeHtml(client)}</p>
+        <p class="quote-meta">${escapeHtml(meta)}</p>
+        <table class="quote-table">
+          <thead><tr><th>Description</th><th>Amount</th></tr></thead>
+          <tbody>
+            <tr><td>${escapeHtml(title)}${description ? `<small>${escapeHtml(description).replace(/\n/g, "<br />")}</small>` : ""}</td><td>${escapeHtml(total)}</td></tr>
+            ${receipt.notes ? `<tr><td colspan="2"><small>${escapeHtml(receipt.notes).replace(/\n/g, "<br />")}</small></td></tr>` : ""}
+          </tbody>
+        </table>
+        <div class="quote-total"><div><span>TOTAL</span><strong>${escapeHtml(total)}</strong></div></div>
+        ${receipt.method ? `<p class="quote-method"><span>Payment method</span><strong>${escapeHtml(receipt.method)}</strong></p>` : ""}
+        <p class="quote-thanks-copy">Thank you for your payment.</p>
+        <p class="quote-regards">Kind regards,</p>
+        <p class="quote-sign">Lois</p>
+        <p class="quote-sign-name">Lois Adegbohungbe</p>
+        <p class="quote-sign-role">Founder, Geeslane</p>
+        ${window.GeeslaneDocs?.billingFooter?.() || ""}
       </article>
     `;
-  }
-
-  function documentCss() {
-    return window.GeeslaneAgreement?.documentCss ? window.GeeslaneAgreement.documentCss() : "";
   }
 
   function view(data, options) {
@@ -90,29 +83,6 @@
       window.GeeslaneDocs.printHtml(data?.reference || "Receipt", documentHtml(data, options));
       return;
     }
-    const html = `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><title>${escapeHtml(data?.reference || "Receipt")}</title>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-      <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; padding: 24px; color: #17211c; background: #fff; font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif; }
-        ${documentCss()}
-        .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; padding: 0; }
-        @page { margin: 16mm; }
-        @media print { body { padding: 0; } }
-      </style></head><body>${documentHtml(data)}</body></html>`;
-    const frame = document.createElement("iframe");
-    frame.setAttribute("aria-hidden", "true");
-    frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
-    document.body.appendChild(frame);
-    const doc = frame.contentDocument;
-    doc.open();
-    doc.write(html);
-    doc.close();
-    setTimeout(() => {
-      try { frame.contentWindow.focus(); frame.contentWindow.print(); } catch (_) {}
-      setTimeout(() => frame.remove(), 1000);
-    }, 350);
   }
 
   async function pdfAttachment(data, options) {

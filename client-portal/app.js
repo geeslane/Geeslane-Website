@@ -7,6 +7,7 @@
   const LAST_EMAIL_KEY = "geeslane-portal-email";
   const LAST_PROJECT_KEY = "geeslane-open-project-id";
   const TOUR_KEY = "geeslane-portal-tour";
+  const INSTALL_BANNER_KEY = "geeslane-install-banner";
   let pendingSignInEmail = "";
   let tourIndex = 0;
   let tourActive = false;
@@ -2118,6 +2119,46 @@
     }
   }
 
+  function installBannerStorageKey() {
+    return `${INSTALL_BANNER_KEY}:${String(state.profile?.email || "").trim().toLowerCase()}`;
+  }
+  function hasDismissedInstallBanner() {
+    try { return localStorage.getItem(installBannerStorageKey()) === "1"; }
+    catch (_) { return true; }
+  }
+  function markInstallBannerDismissed() {
+    try { localStorage.setItem(installBannerStorageKey(), "1"); }
+    catch (_) { /* private mode */ }
+  }
+  function hideInstallBanner() {
+    const banner = document.getElementById("app-install-banner");
+    if (banner) banner.hidden = true;
+  }
+  function showInstallBanner() {
+    const banner = document.getElementById("app-install-banner");
+    const copy = document.getElementById("app-install-text");
+    if (!banner) return;
+    const onWeb = !window.GeeslanePWA?.isStandalone?.();
+    const show = onWeb && !isClientPreview() && !hasDismissedInstallBanner();
+    banner.hidden = !show;
+    if (!show || !copy) return;
+    copy.textContent = window.GeeslanePWA?.isLikelyMobile?.()
+      ? "Add Geeslane to your home screen so invoices, comments, and reviews can reach you as notifications."
+      : "Use Geeslane on your phone to stay up to date. Add it to your home screen and allow notifications so you do not miss invoices, comments, or reviews.";
+  }
+  async function handleInstallAppCta() {
+    if (window.GeeslanePWA?.isLikelyMobile?.() && window.GeeslanePWA?.canInstall?.()) {
+      const installed = await window.GeeslanePWA.promptInstall();
+      if (installed) {
+        markInstallBannerDismissed();
+        hideInstallBanner();
+        toast("Geeslane is on this device");
+        return;
+      }
+    }
+    openModal("install-app");
+  }
+
   function showPortal() {
     document.getElementById("auth-screen").hidden = true;
     document.getElementById("portal-app").hidden = false;
@@ -2125,6 +2166,7 @@
     const identity = window.GeeslaneAPI.currentUser();
     document.getElementById("admin-link").hidden = identity?.role !== "admin";
     showClientPreviewBanner();
+    showInstallBanner();
   }
 
   function showSignedOut() {
@@ -2161,7 +2203,7 @@
     const clientView = isClientPreview();
     if (session.user?.role === "admin" && session.user?.status === "active" && !clientView) {
       location.replace(window.GeeslaneAPI.adminSignInRedirect());
-      return false;
+      return "admin";
     }
     if (session.user?.role !== "admin" && !accountProjects.length) {
       await window.GeeslaneAPI.logout();
@@ -2235,13 +2277,22 @@
     const button = form.querySelector("button[type=submit]");
     if (!/^\d{6}$/.test(code)) { authFeedback("Enter the 6-digit code from your email.", "error"); return; }
     window.GeeslaneAPI.setButtonBusy(button, true, "Opening your portal…");
+    window.GeeslaneAPI.showLoader("Opening your portal…");
+    let keepLoader = false;
     try {
       await window.GeeslaneAPI.verifySignInCode(email, code);
-      await completeClientSignIn();
+      document.getElementById("auth-screen").hidden = true;
+      const result = await completeClientSignIn();
+      keepLoader = result === "admin";
+      if (!result) window.GeeslaneAPI.setButtonBusy(button, false);
     } catch (error) {
+      showSignedOut();
+      showAuthPanel("code", { updateUrl: false });
       authFeedback(error.userMessage || window.GeeslaneAPI.userFacingError(error, "That code could not be verified. Try again, or send a new one."), "error");
       window.GeeslaneAPI.setButtonBusy(button, false);
       document.querySelector("#signin-code-boxes .code-box")?.focus();
+    } finally {
+      if (!keepLoader) window.GeeslaneAPI.hideLoader();
     }
   }
 
@@ -2334,6 +2385,16 @@
     ui.wireRowMenus();
     document.getElementById("tour-skip")?.addEventListener("click", stopTour);
     document.getElementById("tour-next")?.addEventListener("click", advanceTour);
+    document.getElementById("app-install-how")?.addEventListener("click", handleInstallAppCta);
+    document.getElementById("app-install-dismiss")?.addEventListener("click", () => {
+      markInstallBannerDismissed();
+      hideInstallBanner();
+    });
+    window.addEventListener("geeslane-install-available", showInstallBanner);
+    window.addEventListener("geeslane-app-installed", () => {
+      markInstallBannerDismissed();
+      hideInstallBanner();
+    });
     addEventListener("resize", () => {
       if (!tourActive) return;
       if (usesOverlayNav()) closeSidebar();
@@ -2446,8 +2507,9 @@
       const printBtn = event.target.closest("[data-print-invoice]");
       const invoice = (state.invoices || []).find((item) => item.id === (viewBtn?.dataset.viewInvoice || printBtn?.dataset.printInvoice));
       if (!invoice) return;
-      if (viewBtn) window.GeeslaneInvoice?.view(invoiceForDownload(invoice));
-      else window.GeeslaneInvoice?.downloadPdf(invoiceForDownload(invoice));
+      if (viewBtn) {
+        if (!window.GeeslaneInvoice?.view(invoiceForDownload(invoice))) toast("Allow pop-ups to view the invoice.");
+      } else window.GeeslaneInvoice?.downloadPdf(invoiceForDownload(invoice));
     });
     document.getElementById("payment-summary")?.addEventListener("click", (event) => {
       const payBtn = event.target.closest("[data-pay-invoice]");
@@ -2461,8 +2523,9 @@
       const id = printBtn?.dataset.printReceipt || viewBtn?.dataset.viewReceipt;
       const receipt = (state.receipts || []).find((item) => item.id === id);
       if (!receipt) return;
-      if (viewBtn) window.GeeslaneReceipt?.view(receiptForDownload(receipt));
-      else window.GeeslaneReceipt?.downloadPdf(receiptForDownload(receipt));
+      if (viewBtn) {
+        if (!window.GeeslaneReceipt?.view(receiptForDownload(receipt))) toast("Allow pop-ups to view the receipt.");
+      } else window.GeeslaneReceipt?.downloadPdf(receiptForDownload(receipt));
     });
     window.addEventListener("hashchange", () => {
       const route = parsePortalHash();
@@ -2487,11 +2550,18 @@
       window.location.replace("./request.html");
       return;
     }
-    const savedEmail = rememberedEmail();
+    const inviteEmail = String(new URLSearchParams(location.search).get("email") || "").trim();
+    const savedEmail = inviteEmail || rememberedEmail();
     if (savedEmail) {
       pendingSignInEmail = savedEmail.toLowerCase();
       const emailInput = document.getElementById("signin-email");
       if (emailInput) emailInput.value = savedEmail;
+    }
+    if (inviteEmail) {
+      const url = new URL(location.href);
+      url.searchParams.delete("email");
+      history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      document.getElementById("signin-form")?.querySelector("button[type=submit]")?.focus();
     }
     showAuthPanel("signin", { updateUrl: false });
     if (window.GEESLANE_ENV_READY) await window.GEESLANE_ENV_READY;
@@ -2503,13 +2573,19 @@
     if (signingIn) window.GeeslaneAPI.showLoader("Signing you in…");
     try {
       const authSession = await window.GeeslaneAPI.consumeMagicLink();
-      if (authSession) await completeClientSignIn();
+      if (authSession) {
+        if (!signingIn) window.GeeslaneAPI.showLoader("Opening your portal…");
+        document.getElementById("auth-screen").hidden = true;
+        await completeClientSignIn();
+      }
     } catch (error) {
       const arriving = window.GeeslaneAPI.hasIncomingMagicLink();
       if (!arriving) {
         try {
           const existing = await window.GeeslaneAPI.getSession();
           if (existing?.user) {
+            window.GeeslaneAPI.showLoader("Opening your portal…");
+            document.getElementById("auth-screen").hidden = true;
             await completeClientSignIn();
             return;
           }
@@ -2521,7 +2597,7 @@
       showAuthPanel("signin", { updateUrl: false });
       authFeedback(error.userMessage || window.GeeslaneAPI.userFacingError(error, "Sign-in could not be completed. Enter a new code from your email."), "error");
     } finally {
-      if (signingIn) window.GeeslaneAPI.hideLoader();
+      window.GeeslaneAPI.hideLoader();
     }
   }
 

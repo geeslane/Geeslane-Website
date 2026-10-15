@@ -5,30 +5,89 @@
     return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
   }
 
+  function billingCss() {
+    return `
+      .quote-sheet { position: relative; min-height: 980px; max-width: 820px; margin: 0 auto; padding: 42px 48px 32px 70px; color: #17211c; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+      .quote-sheet::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 16px; background: #063b29; }
+      .quote-sheet::after { content: ""; position: absolute; left: 16px; top: 0; bottom: 0; width: 10px; background: #d8eee3; }
+      .quote-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 8px; }
+      .quote-logo { height: 42px; width: auto; }
+      .quote-date { margin: 14px 0 0; color: #8a9690; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+      .quote-title { margin: 0; color: #111; font-size: 2.35rem; font-weight: 800; letter-spacing: .08em; line-height: 1; }
+      .quote-to-label { margin: 22px 0 0; color: #8a9690; text-align: right; font-size: .7rem; font-weight: 800; letter-spacing: .16em; }
+      .quote-to-name { margin: 4px 0 0; color: #17211c; text-align: right; font-size: 1.05rem; font-weight: 700; }
+      .quote-meta { margin: 6px 0 22px; color: #697870; text-align: right; font-size: .82rem; line-height: 1.5; }
+      .quote-table { width: 100%; border-collapse: collapse; margin: 8px 0 0; }
+      .quote-table th { padding: 12px 16px; color: #fff; background: #0b6b45; font-size: .78rem; font-weight: 800; letter-spacing: .04em; text-align: left; }
+      .quote-table th:last-child, .quote-table td:last-child { text-align: right; white-space: nowrap; }
+      .quote-table td { padding: 16px; color: #2a3931; border-bottom: 1px solid #e6eee9; font-size: .95rem; vertical-align: top; }
+      .quote-table td small { display: block; margin-top: 4px; color: #697870; font-size: .8rem; line-height: 1.45; }
+      .quote-total { display: flex; justify-content: flex-end; margin: 18px 0 8px; }
+      .quote-total div { display: flex; align-items: center; justify-content: space-between; gap: 48px; min-width: 240px; padding: 14px 22px; color: #063b29; background: #eef7f2; font-weight: 800; letter-spacing: .08em; }
+      .quote-total strong { font-size: 1.05rem; }
+      .quote-bank { margin: 18px 0 8px; padding: 14px 16px; color: #2a3931; background: #f7fbf8; border-radius: 10px; font-size: .88rem; line-height: 1.55; }
+      .quote-bank strong { display: block; margin-bottom: 4px; color: #063b29; }
+      .quote-method { display: flex; justify-content: flex-end; align-items: baseline; gap: 18px; margin: 0 0 22px; color: #2a3931; font-size: .9rem; }
+      .quote-method span { color: #697870; font-weight: 650; }
+      .quote-thanks-copy { margin: 28px 0 18px; max-width: 520px; color: #4b5c54; font-size: .92rem; line-height: 1.65; }
+      .quote-regards { margin: 28px 0 2px; color: #2a3931; font-size: .92rem; }
+      .quote-sign { margin: 0; color: #0b6b45; font-family: "Great Vibes", "Segoe Script", cursive; font-size: 2.1rem; line-height: 1.2; }
+      .quote-sign-name { margin: 6px 0 0; padding-top: 8px; border-top: 1px solid #dfe7e2; width: max-content; color: #17211c; font-size: .92rem; font-weight: 700; }
+      .quote-sign-role { margin: 2px 0 0; color: #697870; font-size: .82rem; }
+      .quote-footer { margin-top: auto; padding-top: 40px; }
+      .quote-footer-links { display: flex; flex-wrap: wrap; gap: 18px 22px; color: #0b6b45; font-size: .78rem; font-weight: 650; }
+      .quote-footer-links span { display: inline-flex; align-items: center; gap: 8px; }
+      .quote-footer-links svg { width: 22px; height: 22px; flex: 0 0 22px; }
+      .quote-footer-tag { margin: 14px 0 0; color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    `;
+  }
+
+  function billingFooter() {
+    const icon = (inner) => `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#0b6b45"/>${inner}</svg>`;
+    const mail = icon('<path fill="#fff" d="M6.2 8h11.6v8H6.2V8zm1.1.9 4.7 3.1 4.7-3.1V8.6L12 11.6 7.3 8.6v.3z"/>');
+    const web = icon('<path fill="none" stroke="#fff" stroke-width="1.5" d="M12 6.6a5.4 5.4 0 1 0 0 10.8 5.4 5.4 0 0 0 0-10.8Z"/><path fill="none" stroke="#fff" stroke-width="1.4" d="M6.6 12h10.8M12 6.6c1.5 1.5 2.3 3.3 2.3 5.4s-.8 3.9-2.3 5.4c-1.5-1.5-2.3-3.3-2.3-5.4s.8-3.9 2.3-5.4Z"/>');
+    const social = icon('<path fill="#fff" d="M9.2 8.2h5.6c.9 0 1.6.7 1.6 1.6v5.6c0 .9-.7 1.6-1.6 1.6H9.2c-.9 0-1.6-.7-1.6-1.6V9.8c0-.9.7-1.6 1.6-1.6zm2.8 1.5a2.6 2.6 0 1 0 0 5.2 2.6 2.6 0 0 0 0-5.2zm0 1.1a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm2.8-.6a.55.55 0 1 0 0 1.1.55.55 0 0 0 0-1.1z"/>');
+    return `<footer class="quote-footer">
+      <div class="quote-footer-links">
+        <span>${mail} hello@geeslane.com</span>
+        <span>${web} www.geeslane.com</span>
+        <span>${social} @geeslane</span>
+      </div>
+      <p class="quote-footer-tag">Websites | AI Solutions | Digital Growth</p>
+    </footer>`;
+  }
+
   function fullHtml(title, bodyHtml, options = {}) {
-    const css = options.css || window.GeeslaneAgreement?.documentCss?.() || "";
+    const quote = /quote-sheet/.test(String(bodyHtml || ""));
+    const css = `${options.css || window.GeeslaneAgreement?.documentCss?.() || ""}\n${billingCss()}`;
     const print = options.print ? `
       .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; padding: 0; }
-      @page { margin: 16mm; }
+      .quote-sheet { max-width: none; min-height: 0; }
+      @page { margin: 10mm; }
       @media print { body { padding: 0; } }` : "";
     return `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
       <title>${escapeHtml(title || "Geeslane")}</title>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet" />
       <style>
         * { box-sizing: border-box; }
-        body { margin: 0; padding: ${options.print ? "24px" : "28px 16px 48px"}; color: #17211c; background: ${options.print ? "#fff" : "#f5f8f6"}; font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif; }
+        body { margin: 0; padding: ${options.print || quote ? "24px" : "28px 16px 48px"}; color: #17211c; background: ${options.print ? "#fff" : "#f5f8f6"}; font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif; }
         ${css}
         ${print}
       </style></head><body>${bodyHtml}</body></html>`;
   }
 
   function viewHtml(title, bodyHtml) {
-    const page = window.open("", "_blank", "noopener,noreferrer");
-    if (!page) return false;
-    page.document.open();
-    page.document.write(fullHtml(title, bodyHtml));
-    page.document.close();
+    const html = fullHtml(title, bodyHtml);
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const page = window.open(url, "_blank");
+    if (!page) {
+      URL.revokeObjectURL(url);
+      return false;
+    }
+    try { page.opener = null; } catch (_) { /* older browsers */ }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
     return true;
   }
 
@@ -115,13 +174,22 @@
   }
 
   async function withPdfHost(bodyHtml, fn) {
-    const css = window.GeeslaneAgreement?.documentCss?.() || "";
+    const quote = /quote-sheet/.test(String(bodyHtml || ""));
+    const css = `${window.GeeslaneAgreement?.documentCss?.() || ""}\n${billingCss()}`;
+    if (!document.querySelector("link[data-pdf-fonts]")) {
+      const fontLink = document.createElement("link");
+      fontLink.rel = "stylesheet";
+      fontLink.setAttribute("data-pdf-fonts", "1");
+      fontLink.href = "https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap";
+      document.head.appendChild(fontLink);
+    }
     const html = await inlineImages(bodyHtml);
     const style = document.createElement("style");
     style.setAttribute("data-pdf-style", "1");
     style.textContent = `${css}
       [data-pdf-host] { color: #17211c; font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif; }
       [data-pdf-host] .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; margin: 0; padding: 0; background: #fff; }
+      [data-pdf-host] .quote-sheet { max-width: none; margin: 0; min-height: 1040px; }
       [data-pdf-host] .agreement-masthead { padding-bottom: 16px; gap: 16px; }
       [data-pdf-host] .agreement-facts { margin: 16px 0 14px; }
       [data-pdf-host] .agreement-fact { padding: 10px 12px; }
@@ -133,11 +201,20 @@
     const host = document.createElement("div");
     host.setAttribute("aria-hidden", "true");
     host.setAttribute("data-pdf-host", "1");
-    host.style.cssText = "position:absolute;left:-12000px;top:0;width:720px;background:#fff;padding:20px 22px 24px;pointer-events:none;z-index:-1;";
+    host.style.cssText = quote
+      ? "position:absolute;left:-12000px;top:0;width:794px;background:#fff;padding:0;pointer-events:none;z-index:-1;"
+      : "position:absolute;left:-12000px;top:0;width:720px;background:#fff;padding:20px 22px 24px;pointer-events:none;z-index:-1;";
     host.innerHTML = html;
     document.body.appendChild(host);
     try {
-      if (document.fonts?.ready) await document.fonts.ready.catch(() => {});
+      if (document.fonts?.load) {
+        await Promise.all([
+          document.fonts.load('400 42px "Great Vibes"').catch(() => {}),
+          document.fonts.ready.catch(() => {})
+        ]);
+      } else if (document.fonts?.ready) {
+        await document.fonts.ready.catch(() => {});
+      }
       await waitForImages(host);
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       return await fn(host);
@@ -201,17 +278,29 @@
     return pdf;
   }
 
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(dataUrlToBase64(String(reader.result || "")));
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
   async function pdfAttachment(title, bodyHtml, filename) {
     if (typeof window.html2pdf !== "function") return null;
     const name = filename || `${String(title || "document").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`;
     try {
       const dataUrl = await withPdfHost(bodyHtml, async (host) => (await pdfFromHost(host, name)).output("datauristring"));
       const content = dataUrlToBase64(dataUrl);
-      if (!content) return null;
-      return { filename: name, content };
-    } catch (_) {
-      return null;
-    }
+      if (content) return { filename: name, content };
+    } catch (_) { /* try blob output next */ }
+    try {
+      const blob = await withPdfHost(bodyHtml, async (host) => (await pdfFromHost(host, name)).output("blob"));
+      const content = blob ? await blobToBase64(blob) : "";
+      if (content) return { filename: name, content };
+    } catch (_) { /* caller decides how to warn */ }
+    return null;
   }
 
   async function downloadPdf(title, bodyHtml, filename) {
@@ -230,6 +319,6 @@
   }
 
   window.GeeslaneDocs = Object.freeze({
-    escapeHtml, fullHtml, viewHtml, printHtml, pdfAttachment, downloadPdf
+    escapeHtml, billingCss, billingFooter, fullHtml, viewHtml, printHtml, pdfAttachment, downloadPdf
   });
 })();

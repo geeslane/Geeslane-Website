@@ -303,7 +303,7 @@
     loaderCount += 1;
     const el = ensureLoader();
     const copy = el.querySelector(".page-loader-copy");
-    if (copy && message) copy.textContent = message;
+    if (copy) copy.textContent = message || "Loading…";
     el.hidden = false;
     document.body.classList.add("is-page-loading");
   }
@@ -312,7 +312,11 @@
     loaderCount = Math.max(0, loaderCount - 1);
     if (loaderCount > 0) return;
     const el = document.getElementById("page-loader");
-    if (el) el.hidden = true;
+    if (el) {
+      el.hidden = true;
+      const copy = el.querySelector(".page-loader-copy");
+      if (copy) copy.textContent = "Loading…";
+    }
     document.body.classList.remove("is-page-loading");
   }
 
@@ -1391,14 +1395,24 @@
     }
   }
 
-  async function handoverPdfUrl(path) {
+  async function handoverPdfUrl(path, seconds = 3600) {
     if (!path) return "";
     try {
-      const signed = resultOrThrow(await client().storage.from("project-files").createSignedUrl(path, 3600));
+      const signed = resultOrThrow(await client().storage.from("project-files").createSignedUrl(path, Number(seconds) > 0 ? Number(seconds) : 3600));
       return signed?.signedUrl || "";
     } catch (_) {
       return "";
     }
+  }
+
+  async function storeMailPdf(projectId, filename, blob) {
+    if (!blob) return null;
+    const folder = String(projectId || "").trim() || "mail";
+    const safe = String(filename || "document.pdf").replace(/[^\w.\-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "document.pdf";
+    const path = `${folder}/mail-${Date.now()}-${safe}`;
+    const uploaded = await client().storage.from("project-files").upload(path, blob, { upsert: true, contentType: "application/pdf" });
+    resultOrThrow(uploaded, "Could not store the PDF for email.");
+    return { storagePath: path, url: await handoverPdfUrl(path, 60 * 60 * 24) };
   }
 
   async function listHelpGuides(audience) {
@@ -1418,7 +1432,7 @@
     return (resultOrThrow(await client().from("help_guides").select("*").order("sort_order")) || []).map(mapHelpGuide).filter(Boolean);
   }
 
-  async function adminSubmit(action, payload) {
+  async function adminSubmit(action, payload, loaderMessage) {
     return withLoader(async () => {
       let result;
       if (action === "adminApproveRegistration") {
@@ -1495,6 +1509,21 @@
         return resultOrThrow(await client().rpc("admin_delete_project", {
           p_project_id: payload.projectId
         }), "Could not delete the project. Run admin_ops.sql in Supabase, then try again.");
+      }
+      if (action === "adminDeleteClient") {
+        const projectIds = Array.isArray(payload.projectIds) ? payload.projectIds : [];
+        for (const projectId of projectIds) {
+          try {
+            const listed = await client().storage.from("project-files").list(projectId, { limit: 1000 });
+            const files = listed?.data || [];
+            if (files.length) {
+              await client().storage.from("project-files").remove(files.map((file) => `${projectId}/${file.name}`));
+            }
+          } catch (_) { /* database delete still proceeds */ }
+        }
+        return resultOrThrow(await client().rpc("admin_delete_client", {
+          p_user_id: payload.userId
+        }), "Could not delete the client. Run admin_ops.sql in Supabase, then try again.");
       }
       if (action === "adminLogClientItem") {
         const file = payload.file;
@@ -1574,7 +1603,7 @@
           const uploaded = await client().storage.from("project-files").upload(path, blob, { upsert: true, contentType: "application/pdf" });
           resultOrThrow(uploaded, "Could not store the handover PDF.");
         }
-        return { storagePath: path, url: await handoverPdfUrl(path) };
+        return { storagePath: path, url: await handoverPdfUrl(path, 60 * 60 * 24) };
       }
       if (action === "adminSaveHelpGuide") {
         return mapHelpGuide(resultOrThrow(await client().rpc("admin_save_help_guide", {
@@ -1587,7 +1616,7 @@
         }), "Could not delete the help article.");
       }
       throw new Error("Unknown administrator action");
-    }, "Saving…");
+    }, loaderMessage || "Saving…");
   }
 
   async function adminMilestoneMessages(projectId) {
@@ -1763,6 +1792,7 @@
     adminAgreementContext,
     readHandover,
     handoverPdfUrl,
+    storeMailPdf,
     listHelpGuides,
     adminHelpGuides,
     adminMilestoneMessages,

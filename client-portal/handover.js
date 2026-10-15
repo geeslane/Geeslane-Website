@@ -2,7 +2,7 @@
   "use strict";
 
   const TRACKS = ["website", "automation", "consultation", "support", "other"];
-  const ARCHIVE_NOTE = "Keep your own copy of these files. Geeslane will remove this copy from our drive after the days stated here (30 to 60 days).";
+  const ARCHIVE_NOTE = "Keep your own copy of these files. Geeslane will remove this copy from our drive after the days stated here.";
 
   const FIELD = {
     text: (key, label, placeholder) => ({ key, label, placeholder: placeholder || "", type: "text" }),
@@ -268,13 +268,13 @@
   }
 
   function emailCopy(data, options = {}) {
-    const clientName = window.GeeslaneMail?.givenName?.(options.clientName) || "there";
     const days = data?.fileRetentionDays || 30;
+    const project = options.projectTitle || "project";
     return {
-      subject: `Your ${options.projectTitle || "project"} handover pack`,
+      subject: `Thank you — your ${project} handover pack`,
       heading: "Your handover pack is ready",
-      intro: `Hi ${clientName},\n\nYour project handover pack is attached. It has the service details, logins, and file notes for this work. Download the PDF and keep your own copy of any files. We remove our drive copy after ${days} days.`,
-      attachmentNote: "The branded handover PDF is attached. You can also download it again from your portal."
+      intro: `Thank you for choosing Geeslane. It has been a pleasure to work with you, and we are grateful for your trust.\n\nYour handover pack is attached. It includes the service details, logins, and file notes for this project. Please download the PDF and keep your own copy of any files. We remove our drive copy after ${days} days.\n\nIf anything is missing, reply to this email and we will take care of it promptly.`,
+      attachmentNote: "The handover PDF is attached. You can also download it again from your portal."
     };
   }
 

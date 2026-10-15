@@ -160,6 +160,13 @@
           <p>You are viewing this portal as <strong id="client-preview-name">the client</strong>. You can add the brief and project details from here.</p>
           <a class="button button-secondary" id="client-preview-return" href="./admin.html">Return to admin</a>
         </div>
+        <div class="app-install-banner" id="app-install-banner" hidden>
+          <p id="app-install-text">Use Geeslane on your phone to stay up to date. Add it to your home screen and allow notifications so you do not miss invoices, comments, or reviews.</p>
+          <div class="app-install-actions">
+            <button class="button button-primary" id="app-install-how" type="button">Add to phone</button>
+            <button class="button button-ghost" id="app-install-dismiss" type="button">Not now</button>
+          </div>
+        </div>
 
         <div class="content-wrap">
           <section class="page" id="page-chooser" data-page-view="chooser">
@@ -476,6 +483,39 @@
     <div class="modal-backdrop" id="project-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="project-edit-title"><header class="modal-header"><div><p class="eyebrow">Project Settings</p><h2 id="project-edit-title">Edit Project Details</h2></div><button class="icon-button modal-close" type="button" data-close-modal="project" aria-label="Close"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header><form id="project-form" class="modal-body" novalidate><div class="form-grid one-column"><div class="field"><label for="project-edit-name">Project Name <span>*</span></label><input id="project-edit-name" name="name" required /></div><div class="field"><label for="project-edit-service">Project Type</label><input id="project-edit-service" name="service" /></div><div class="field"><label for="project-edit-stage">Current Stage</label><select id="project-edit-stage" name="stage" disabled><option>Discovery</option><option>Brand Assets &amp; Content</option><option>Wireframe</option><option>Visual Design</option><option>Development</option><option>QA &amp; Testing</option><option>Launch &amp; Handover</option></select></div><div class="field"><label for="project-edit-progress">Overall Progress</label><input id="project-edit-progress" name="progress" type="range" min="0" max="100" step="1" disabled /><output id="project-progress-output">0%</output></div></div></form><footer class="modal-footer"><button class="button button-secondary" type="button" data-close-modal="project">Cancel</button><button class="button button-primary" id="save-project-button" type="button">Save Project</button></footer></section></div>
 
     <div class="modal-backdrop" id="detail-modal" hidden><section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="detail-title"><header class="modal-header"><div><p class="eyebrow" id="detail-kicker">Request Details</p><h2 id="detail-title">Request</h2></div><button class="icon-button modal-close" type="button" data-close-modal="detail" aria-label="Close"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button></header><div class="modal-body"><div class="detail-status-row"><span class="request-status" id="detail-status">Received</span><span id="detail-date"></span></div><dl class="detail-list" id="detail-list"></dl></div><footer class="modal-footer"><button class="button button-secondary" type="button" data-close-modal="detail">Close</button></footer></section></div>
+
+    <div class="modal-backdrop" id="install-app-modal" hidden>
+      <section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="install-app-title">
+        <header class="modal-header">
+          <div><p class="eyebrow">On your phone</p><h2 id="install-app-title">Add Geeslane to your home screen</h2></div>
+          <button class="icon-button modal-close" type="button" data-close-modal="install-app" aria-label="Close"><svg viewBox="0 0 24 24"><path d="m6.7 5.3 12 12-1.4 1.4-12-12 1.4-1.4Zm10.6 0 1.4 1.4-12 12-1.4-1.4 12-12Z"/></svg></button>
+        </header>
+        <div class="modal-body">
+          <p class="modal-lead">Use it like an app so invoices, comments, and reviews can reach you as notifications.</p>
+          <div class="install-app-steps">
+            <article>
+              <h3>iPhone</h3>
+              <ol>
+                <li>Open this portal in Safari. Other iPhone browsers cannot add it to the home screen.</li>
+                <li>Tap the Share button (the square with an arrow pointing up).</li>
+                <li>Scroll the list and tap Add to Home Screen, then tap Add.</li>
+                <li>Open Geeslane from your home screen and allow notifications when your phone asks.</li>
+              </ol>
+            </article>
+            <article>
+              <h3>Android</h3>
+              <ol>
+                <li>Open this portal in Chrome.</li>
+                <li>Tap the menu (three dots) at the top right.</li>
+                <li>Tap Install app or Add to Home screen, then tap Install.</li>
+                <li>Open Geeslane from your apps and allow notifications when your phone asks.</li>
+              </ol>
+            </article>
+          </div>
+        </div>
+        <footer class="modal-footer"><button class="button button-primary" type="button" data-close-modal="install-app">Got it</button></footer>
+      </section>
+    </div>
 
     <div class="page-loader" id="page-loader" hidden>
       <div class="page-loader-card" role="status" aria-live="polite" aria-busy="true">

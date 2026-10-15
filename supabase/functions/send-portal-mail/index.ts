@@ -288,9 +288,11 @@ Deno.serve(async (req) => {
         .slice(0, 3)
         .map((item) => {
           const filename = String(item?.filename || "document.pdf").replace(/[^\w.\- ]+/g, "").slice(0, 80) || "document.pdf";
+          const path = String(item?.path || item?.url || "").trim();
+          if (/^https:\/\//i.test(path)) return { filename, path };
           const content = String(item?.content || "").replace(/\s+/g, "");
           if (!content || content.length > 7000000) return null;
-          return { filename, content, content_type: "application/pdf" };
+          return { filename, content };
         })
         .filter(Boolean);
       const response = await fetch("https://api.resend.com/emails", {
@@ -310,6 +312,10 @@ Deno.serve(async (req) => {
         })
       });
       emailed = response.ok;
+      if (!emailed) {
+        const errText = await response.text().catch(() => "");
+        console.error("resend-fail", JSON.stringify({ status: response.status, error: oneLine(errText, 400), attached: attachments.length }));
+      }
     }
 
     let sms = false;

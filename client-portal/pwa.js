@@ -1,11 +1,31 @@
 (function () {
   "use strict";
-  if (!("serviceWorker" in navigator)) return;
-  const host = location.hostname;
-  const secure = location.protocol === "https:" || host === "localhost" || host === "127.0.0.1";
-  if (!secure) return;
-
   const ASKED_KEY = "geeslane-push-asked";
+  let deferredPrompt = null;
+
+  function isStandalone() {
+    return window.matchMedia("(display-mode: standalone)").matches
+      || window.matchMedia("(display-mode: fullscreen)").matches
+      || window.navigator.standalone === true;
+  }
+
+  function isLikelyMobile() {
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "")
+      || window.matchMedia("(max-width: 820px)").matches;
+  }
+
+  function canInstall() {
+    return Boolean(deferredPrompt);
+  }
+
+  async function promptInstall() {
+    if (!deferredPrompt) return false;
+    const promptEvent = deferredPrompt;
+    deferredPrompt = null;
+    promptEvent.prompt();
+    const choice = await promptEvent.userChoice.catch(() => ({ outcome: "dismissed" }));
+    return choice?.outcome === "accepted";
+  }
 
   function vapidKey() {
     return String(window.GEESLANE_CONFIG?.vapidPublicKey || "").trim();
@@ -20,12 +40,8 @@
     return output;
   }
 
-  function registerWorker() {
-    return navigator.serviceWorker.register("./sw.js", { scope: "./" });
-  }
-
   async function enableNotifications(audience = "client") {
-    if (!("Notification" in window) || !("PushManager" in window)) return false;
+    if (!("serviceWorker" in navigator) || !("Notification" in window) || !("PushManager" in window)) return false;
     const publicKey = vapidKey();
     if (!publicKey || !window.GeeslaneAPI?.savePushSubscription) return false;
     if (Notification.permission === "denied") return false;
@@ -52,9 +68,28 @@
     });
   }
 
-  window.addEventListener("load", () => {
-    registerWorker().catch(() => {});
-  });
+  const host = location.hostname;
+  const secure = location.protocol === "https:" || host === "localhost" || host === "127.0.0.1";
+  if ("serviceWorker" in navigator && secure) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
+    });
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      deferredPrompt = event;
+      window.dispatchEvent(new Event("geeslane-install-available"));
+    });
+    window.addEventListener("appinstalled", () => {
+      deferredPrompt = null;
+      window.dispatchEvent(new Event("geeslane-app-installed"));
+    });
+  }
 
-  window.GeeslanePWA = Object.freeze({ enableNotifications });
+  window.GeeslanePWA = Object.freeze({
+    enableNotifications,
+    isStandalone,
+    isLikelyMobile,
+    canInstall,
+    promptInstall
+  });
 })();

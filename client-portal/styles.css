@@ -210,6 +210,14 @@ body.is-choosing-project { padding-bottom: 0; }
 .row-menu-item:hover { background: var(--green-50); }
 .row-menu-item.is-danger { color: #9a2e2e; }
 .row-menu-item.is-danger:hover { background: var(--red-50); }
+.row-menu-divider { height: 1px; margin: 6px 6px; background: var(--line-soft); }
+.row-submenu-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.row-submenu-toggle.is-open { background: var(--green-50); }
+.row-submenu-caret { color: var(--muted-2); font-size: 1.1rem; line-height: 1; }
+.row-submenu-toggle.is-open .row-submenu-caret { color: var(--green-700); }
+.row-submenu-list { position: fixed; z-index: 50; min-width: 188px; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 14px 36px rgba(8, 54, 37, .14); display: grid; }
+.row-submenu-list[hidden] { display: none !important; }
+.row-submenu-list .row-menu-item { min-height: 36px; color: var(--ink-2); font-weight: 650; }
 .billing-table .row-menu-item, .admin-table .row-menu-item { min-height: 38px; padding: 0 12px; font-size: .88rem; }
 .table-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; margin-top: 12px; color: var(--muted); font-size: .85rem; }
 .table-pager:empty { display: none; }
@@ -239,12 +247,15 @@ body.is-choosing-project { padding-bottom: 0; }
   .billing-strip-aside { justify-items: start; margin-left: 0; }
 }
 @media (max-width: 640px) { .invoice-balance, .bank-facts, .billing-strip-stats { grid-template-columns: 1fr; } }
-.admin-page[data-admin-view="invoices"] .section-tabs { margin: 0 0 18px; }
+.admin-page[data-admin-view="invoices"] .section-tabs,
+.admin-page[data-admin-view="billing"] .section-tabs { margin: 0 0 18px; }
 #admin-billing-card { margin-bottom: 18px; }
 #admin-billing-card .form-grid { margin-top: 14px; }
 #admin-billing-card .admin-agreement-toolbar { margin-top: 14px; }
 #admin-bank-card { margin-bottom: 18px; }
+#admin-bank-card .form-grid { margin-top: 14px; }
 #admin-bank-card .admin-agreement-toolbar { margin-top: 14px; }
+.admin-page[data-admin-view="invoices"] .modal-lead { margin: 0 0 18px; }
 .admin-billing-form-card { margin-top: 16px; }
 .admin-billing-form-card .admin-agreement-toolbar { margin: 16px 0 0; }
 #admin-billing-remaining { font-size: 1.25rem; letter-spacing: -.02em; }
@@ -268,9 +279,21 @@ body.is-choosing-project { padding-bottom: 0; }
 
 .main-area { min-height: 100vh; margin-left: var(--sidebar-width); }
 .topbar { position: sticky; top: 0; z-index: 20; height: var(--topbar-height); display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(24px, 4vw, 50px); background: rgba(255,255,255,.95); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
-.preview-banner:not([hidden]) { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px clamp(24px, 4vw, 50px); color: #6b4b12; background: #fff7e8; border-bottom: 1px solid #f0d9a8; }
+.preview-banner { display: none; align-items: center; justify-content: space-between; gap: 16px; width: 100%; box-sizing: border-box; padding: 14px clamp(24px, 4vw, 50px) 14px clamp(32px, 5vw, 64px); color: #5c4310; background: #fff3d4; border-bottom: 1px solid #e8c882; box-shadow: inset 6px 0 0 #c79212; }
+.preview-banner:not([hidden]) { display: flex; }
+body.is-client-preview .preview-banner:not([hidden]) { display: flex; }
 .preview-banner p { margin: 0; font-size: .92rem; line-height: 1.5; }
 .preview-banner .button { flex-shrink: 0; }
+.app-install-banner { display: none; align-items: center; justify-content: space-between; gap: 16px; width: 100%; box-sizing: border-box; padding: 14px clamp(24px, 4vw, 50px) 14px clamp(32px, 5vw, 64px); color: #063b29; background: #eef6f1; border-bottom: 1px solid #d7ebe0; box-shadow: inset 6px 0 0 #0b6b45; }
+.app-install-banner:not([hidden]) { display: flex; }
+.app-install-banner p { margin: 0; font-size: .92rem; line-height: 1.5; max-width: 52rem; }
+.app-install-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.modal-lead { margin: 0 0 16px; color: var(--muted); font-size: .95rem; line-height: 1.55; }
+.install-app-steps { display: grid; gap: 14px; }
+.install-app-steps article { padding: 14px 16px; background: var(--green-50); border: 1px solid #d7ebe0; border-radius: 12px; }
+.install-app-steps h3 { margin: 0 0 8px; font-size: .95rem; color: #063b29; }
+.install-app-steps ol { margin: 0; padding-left: 1.15rem; color: var(--ink-2); font-size: .9rem; line-height: 1.55; }
+.install-app-steps li + li { margin-top: 6px; }
 .topbar-left, .topbar-actions { display: flex; align-items: center; gap: 13px; }
 .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: .9rem; }
 .breadcrumb span { color: var(--muted-2); }
@@ -332,7 +355,7 @@ body.is-choosing-project { padding-bottom: 0; }
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(245, 248, 246, .78);
+  background: rgba(245, 248, 246, .96);
   backdrop-filter: blur(5px);
 }
 .page-loader-card {
@@ -729,7 +752,8 @@ body.is-page-loading { overflow: hidden; }
   .sidebar-scrim.is-visible { opacity: 1; pointer-events: auto; }
   .main-area { margin-left: 0; }
   .topbar { height: var(--topbar-height); padding: 0 16px; }
-  .preview-banner:not([hidden]) { flex-direction: column; align-items: flex-start; padding: 12px 16px; }
+  .preview-banner:not([hidden]), .app-install-banner:not([hidden]) { flex-direction: column; align-items: flex-start; padding: 14px 16px 14px 22px; }
+  .app-install-actions { width: 100%; }
   .menu-button { display: grid; }
   .breadcrumb span, .breadcrumb b { display: none; }
   .top-new-request { display: none; }
@@ -910,7 +934,7 @@ body.is-touring .sidebar { z-index: 81; }
 
 @media print {
   body { background: #fff; }
-  .sidebar, .sidebar-scrim, .topbar, .mobile-nav, .toast, .page-loader, .notification-popover, .admin-sidebar, .admin-topbar, .agreement-actions, .admin-agreement-toolbar, .admin-agreement-form-card, .admin-heading-actions, .page-heading, .auth-screen, .admin-page-heading, .portal-tour, .preview-banner { display: none !important; }
+  .sidebar, .sidebar-scrim, .topbar, .mobile-nav, .toast, .page-loader, .notification-popover, .admin-sidebar, .admin-topbar, .agreement-actions, .admin-agreement-toolbar, .admin-agreement-form-card, .admin-heading-actions, .page-heading, .auth-screen, .admin-page-heading, .portal-tour, .preview-banner, .app-install-banner { display: none !important; }
   .app-shell, .admin-shell, .admin-main, .main-area, .content-wrap, .admin-content, .admin-agreement-layout, .admin-agreement-preview-wrap { display: block !important; margin: 0; width: 100%; max-width: none; padding: 0; }
   .page, .admin-page { display: none !important; }
   .page.is-visible, .admin-page.is-visible { display: block !important; }

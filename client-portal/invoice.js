@@ -9,7 +9,7 @@
     if (!value) return "";
     const date = new Date(String(value).length <= 10 ? `${value}T12:00:00` : value);
     if (Number.isNaN(date.getTime())) return String(value);
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }).toUpperCase();
   }
 
   function logoUrl() {
@@ -17,77 +17,70 @@
     catch (_) { return "https://geeslane.com/images/logo.png"; }
   }
 
+  function displayMoney(value, currency) {
+    const amount = String(value || "").trim();
+    if (!amount) return "";
+    if (/[₦N]|NGN/i.test(amount) && /[0-9]/.test(amount) && /[.,\s]/.test(amount)) return amount.replace(/^NGN\s*/i, "₦");
+    const number = Number(String(amount).replace(/[^\d.-]/g, ""));
+    if (!Number.isFinite(number)) return amount;
+    const formatted = Number.isInteger(number) ? number.toLocaleString("en-NG") : number.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return `₦${formatted}`;
+  }
+
   function moneyLabel(data) {
-    const amount = String(data?.amount || data?.totalLabel || "").trim();
-    const currency = String(data?.currency || "NGN").trim();
-    if (!amount) return "Amount to follow";
-    if (/[A-Z]{3}\s/.test(amount)) return amount;
-    return `${currency} ${amount}`.trim();
+    return displayMoney(data?.amount || data?.totalLabel, data?.currency) || "Amount to follow";
   }
 
   function partyName(value, fallback = "Client") {
     return window.GeeslaneMail?.portalName?.(value) || String(value || "").trim() || fallback;
   }
 
-  function fact(label, value) {
-    if (!value) return "";
-    return `<div class="agreement-fact"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
-  }
-
   function bankBlock(bank) {
     if (!bank?.accountNumber && !bank?.accountName && !bank?.bankName) return "";
     const details = [bank.bankName, bank.accountName, bank.accountNumber].filter(Boolean).join(" · ");
-    return `
-      <section class="agreement-facts" aria-label="Bank transfer">
-        <div class="agreement-fact agreement-fact-wide"><span>Account</span><strong>
-          ${window.GeeslaneAPI?.paystackEnabled?.() ? "Pay in the client portal, or transfer to" : "Transfer to"} ${escapeHtml(details)}
-          ${bank.bankNotes ? `<br />${escapeHtml(bank.bankNotes)}` : ""}
-        </strong></div>
-      </section>`;
+    return `<div class="quote-bank"><strong>Pay by transfer</strong>${escapeHtml(details)}${bank.bankNotes ? `<br />${escapeHtml(bank.bankNotes)}` : ""}</div>`;
   }
 
   function documentHtml(data, options = {}) {
     const invoice = data || {};
     const issued = formatDate(invoice.sentAt || invoice.createdAt) || formatDate(new Date().toISOString());
-    const remaining = invoice.remainingLabel || "";
+    const remaining = displayMoney(invoice.remainingLabel, invoice.currency);
+    const paid = displayMoney(invoice.paidLabel, invoice.currency);
+    const total = moneyLabel(invoice);
     const client = partyName(invoice.clientName, invoice.business || "Client");
+    const title = invoice.title || invoice.projectName || "Project invoice";
+    const description = invoice.description && invoice.description !== title ? invoice.description : "";
+    const due = formatDate(invoice.dueDate);
+    const meta = [invoice.reference, invoice.projectName ? `Project: ${invoice.projectName}` : "", due ? `Due ${due}` : ""].filter(Boolean).join(" · ");
+    const dueTotal = remaining && remaining !== total ? remaining : total;
+    const totalLabel = remaining && remaining !== total ? "AMOUNT DUE" : "TOTAL";
     return `
-      <article class="agreement-sheet receipt-sheet" lang="en">
-        <header class="agreement-masthead">
-          <img class="agreement-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
+      <article class="quote-sheet" lang="en">
+        <header class="quote-top">
           <div>
-            <p class="agreement-kicker">Invoice</p>
-            <h1>${escapeHtml(invoice.reference || "Invoice")}</h1>
+            <img class="quote-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
+            <p class="quote-date">${escapeHtml(issued)}</p>
           </div>
+          <h1 class="quote-title">INVOICE</h1>
         </header>
-        <section class="agreement-facts" aria-label="Invoice details">
-          ${fact("Bill to", client)}
-          ${fact("Business", invoice.business)}
-          ${fact("Project", invoice.projectName)}
-          ${fact("Amount due", remaining || moneyLabel(invoice))}
-          ${fact("Invoice total", moneyLabel(invoice))}
-          ${fact("Paid so far", invoice.paidLabel)}
-          ${fact("Date issued", issued)}
-          ${fact("Due date", formatDate(invoice.dueDate))}
-          ${fact("Status", invoice.status || "Sent")}
-          ${invoice.title || invoice.description ? `<div class="agreement-fact agreement-fact-wide"><span>${escapeHtml(invoice.title || "Details")}</span><strong>${escapeHtml(invoice.description || invoice.title || "").replace(/\n/g, "<br />")}</strong></div>` : ""}
-          ${invoice.notes ? `<div class="agreement-fact agreement-fact-wide"><span>Notes</span><strong>${escapeHtml(invoice.notes).replace(/\n/g, "<br />")}</strong></div>` : ""}
-        </section>
+        <p class="quote-to-label">TO</p>
+        <p class="quote-to-name">${escapeHtml(client)}</p>
+        <p class="quote-meta">${escapeHtml(meta)}</p>
+        <table class="quote-table">
+          <thead><tr><th>Description</th><th>Price</th></tr></thead>
+          <tbody>
+            <tr><td>${escapeHtml(title)}${description ? `<small>${escapeHtml(description).replace(/\n/g, "<br />")}</small>` : ""}</td><td>${escapeHtml(total)}</td></tr>
+            ${paid && remaining && remaining !== total ? `<tr><td>Paid so far</td><td>${escapeHtml(paid)}</td></tr>` : ""}
+            ${invoice.notes ? `<tr><td colspan="2"><small>${escapeHtml(invoice.notes).replace(/\n/g, "<br />")}</small></td></tr>` : ""}
+          </tbody>
+        </table>
+        <div class="quote-total"><div><span>${totalLabel}</span><strong>${escapeHtml(dueTotal)}</strong></div></div>
         ${bankBlock(invoice.bank || options.bank)}
-        <section class="agreement-sign">
-          <div class="agreement-sign-grid">
-            <div class="agreement-sign-card">
-              <span>Issued by</span>
-              <img class="agreement-sign-logo" src="${escapeHtml(options.logoUrl || logoUrl())}" alt="Geeslane Technologies" />
-              <small>Date: ${escapeHtml(issued)}</small>
-            </div>
-            <div class="agreement-sign-card">
-              <span>Bill to</span>
-              <strong class="agreement-client-mark">${escapeHtml(client)}</strong>
-              <small>${escapeHtml(invoice.business || "")}</small>
-            </div>
-          </div>
-        </section>
+        <p class="quote-regards">Kind regards,</p>
+        <p class="quote-sign">Lois</p>
+        <p class="quote-sign-name">Lois Adegbohungbe</p>
+        <p class="quote-sign-role">Founder, Geeslane</p>
+        ${window.GeeslaneDocs?.billingFooter?.() || ""}
       </article>
     `;
   }

@@ -206,13 +206,14 @@
       clientPhone: options.clientPhone || "",
       ctaUrl,
       replyTo: options.replyTo || supportEmail(),
-      attachments: Array.isArray(options.attachments) ? options.attachments.filter((item) => item?.filename && item?.content) : []
+      attachments: Array.isArray(options.attachments) ? options.attachments.filter((item) => item?.filename && (item?.content || item?.path)) : []
     };
     if (window.GeeslaneAPI?.sendPortalMail) {
       try {
         if (await window.GeeslaneAPI.sendPortalMail(mail)) return true;
-      } catch (_) { /* fall back */ }
+      } catch (_) { /* fall back only when no file must go with the mail */ }
     }
+    if (mail.attachments.length) return false;
     const accessKey = config().web3formsAccessKey;
     if (!accessKey) return false;
     const form = new FormData();
