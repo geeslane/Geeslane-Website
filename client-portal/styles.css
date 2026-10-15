@@ -951,6 +951,10 @@ body.is-touring .sidebar { z-index: 81; }
   .page, .admin-page { display: none !important; }
   .page.is-visible, .admin-page.is-visible { display: block !important; }
   .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; }
+  .agreement-sheet { overflow: visible; break-before: avoid; page-break-before: avoid; }
+  .agreement-sheet::before, .agreement-sheet::after { position: fixed; bottom: auto; height: 100%; }
+  .agreement-facts, .agreement-sign-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+  .agreement-fact-wide { grid-column: 1 / -1 !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -95,7 +95,7 @@
     const html = fullHtml(title, bodyHtml, { print: true });
     const frame = document.createElement("iframe");
     frame.setAttribute("aria-hidden", "true");
-    frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+    frame.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;height:200px;border:0;";
     document.body.appendChild(frame);
     const doc = frame.contentDocument;
     doc.open();
@@ -225,56 +225,57 @@
     }
   }
 
-  async function pdfFromHost(host, filename) {
-    const canvas = await window.html2pdf().set(pdfOptions(filename)).from(host).toCanvas();
-    const seed = document.createElement("div");
-    seed.style.cssText = "position:absolute;left:-12000px;top:0;width:8px;height:8px;background:#fff;";
-    seed.textContent = ".";
-    document.body.appendChild(seed);
-    let pdf;
-    try {
-      pdf = await window.html2pdf().set({
-        margin: 0,
-        filename,
-        html2canvas: { scale: 1, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-      }).from(seed).toPdf().get("pdf");
-    } finally {
-      seed.remove();
+  function blankPdf() {
+    if (window.jspdf?.jsPDF) return new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    return null;
+  }
+
+  async function captureHost(host, filename) {
+    if (typeof window.html2canvas === "function") {
+      return window.html2canvas(host, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        width: host.scrollWidth,
+        height: host.scrollHeight,
+        windowWidth: Math.max(host.scrollWidth, 794),
+        windowHeight: host.scrollHeight
+      });
     }
+    return window.html2pdf().set(pdfOptions(filename)).from(host).toCanvas();
+  }
+
+  async function pdfFromHost(host, filename) {
+    const canvas = await captureHost(host, filename);
+    const pdf = blankPdf() || await window.html2pdf().set({
+      margin: 0,
+      filename,
+      html2canvas: { scale: 1, backgroundColor: "#ffffff" },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+    }).from(host).toPdf().get("pdf");
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
     const margin = 12;
     const maxW = pageW - margin * 2;
     const maxH = pageH - margin * 2;
-    const ratio = canvas.width / Math.max(canvas.height, 1);
-    const width = maxW;
-    const height = width / ratio;
-    const image = canvas.toDataURL("image/jpeg", 0.98);
-    const pages = pdf.internal.getNumberOfPages();
-    for (let page = pages; page > 1; page -= 1) pdf.deletePage(page);
-    pdf.setPage(1);
-    pdf.setFillColor(255, 255, 255);
-    pdf.rect(0, 0, pageW, pageH, "F");
-    if (height <= maxH * 1.04) {
-      let drawW = width;
-      let drawH = height;
-      if (drawH > maxH) {
-        drawH = maxH;
-        drawW = drawH * ratio;
-      }
-      pdf.addImage(image, "JPEG", margin, margin, drawW, drawH, "", "FAST");
-    } else {
-      pdf.addImage(image, "JPEG", margin, margin, width, height, "", "FAST");
-      let remaining = height - maxH;
-      while (remaining > 4) {
-        pdf.addPage();
-        const offset = margin - (height - remaining);
-        pdf.setFillColor(255, 255, 255);
-        pdf.rect(0, 0, pageW, pageH, "F");
-        pdf.addImage(image, "JPEG", margin, offset, width, height, "", "FAST");
-        remaining -= maxH;
-      }
+    const sliceHeight = Math.max(1, Math.floor(canvas.width * (maxH / maxW)));
+    let offsetY = 0;
+    let pageIndex = 0;
+    while (offsetY < canvas.height - 2) {
+      const sliceH = Math.min(sliceHeight, canvas.height - offsetY);
+      const slice = document.createElement("canvas");
+      slice.width = canvas.width;
+      slice.height = sliceH;
+      const context = slice.getContext("2d");
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, slice.width, slice.height);
+      context.drawImage(canvas, 0, offsetY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+      if (pageIndex > 0) pdf.addPage();
+      pdf.setPage(pageIndex + 1);
+      pdf.addImage(slice.toDataURL("image/jpeg", 0.98), "JPEG", margin, margin, maxW, sliceH * (maxW / canvas.width), "", "FAST");
+      offsetY += sliceH;
+      pageIndex += 1;
     }
     return pdf;
   }

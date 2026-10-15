@@ -37,7 +37,7 @@
         {
           heading: "Terms",
           items: [
-            ["Scope", "Geeslane will design, build, test and launch the website listed above. Extra pages, features or copywriting are quoted separately."],
+            ["Scope", "Geeslane will design, build, test and launch the website listed above. Extra pages or features are quoted separately."],
             ["Client responsibilities", "The Client supplies accurate content, brand files, access and approvals on time, and confirms the right to use all materials provided."],
             TIME,
             PAY_DEPOSIT,
@@ -571,6 +571,15 @@
         .agreement-masthead { display: grid; }
         .agreement-masthead-title { text-align: left; }
       }
+      @media print {
+        html, body { height: auto; overflow: visible; }
+        .agreement-sheet { overflow: visible; break-before: avoid; page-break-before: avoid; }
+        .agreement-sheet::before, .agreement-sheet::after { position: fixed; bottom: auto; height: 100%; }
+        .agreement-facts, .agreement-sign-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+        .agreement-fact-wide { grid-column: 1 / -1 !important; }
+        .agreement-masthead { display: flex !important; }
+        .agreement-masthead-title { text-align: right !important; }
+      }
     `;
   }
 
@@ -598,7 +607,7 @@
       </style></head><body>${documentHtml(data)}</body></html>`;
     const frame = document.createElement("iframe");
     frame.setAttribute("aria-hidden", "true");
-    frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+    frame.style.cssText = "position:fixed;left:-10000px;top:0;width:794px;height:200px;border:0;";
     document.body.appendChild(frame);
     const doc = frame.contentDocument;
     doc.open();
