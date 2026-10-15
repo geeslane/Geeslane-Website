@@ -2550,6 +2550,7 @@
       window.location.replace("./request.html");
       return;
     }
+    const signingIn = window.GeeslaneAPI.hasIncomingMagicLink();
     const inviteEmail = String(new URLSearchParams(location.search).get("email") || "").trim();
     const savedEmail = inviteEmail || rememberedEmail();
     if (savedEmail) {
@@ -2557,19 +2558,18 @@
       const emailInput = document.getElementById("signin-email");
       if (emailInput) emailInput.value = savedEmail;
     }
-    if (inviteEmail) {
+    if (inviteEmail && !signingIn) {
       const url = new URL(location.href);
       url.searchParams.delete("email");
       history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
       document.getElementById("signin-form")?.querySelector("button[type=submit]")?.focus();
     }
-    showAuthPanel("signin", { updateUrl: false });
+    if (!signingIn) showAuthPanel("signin", { updateUrl: false });
     if (window.GEESLANE_ENV_READY) await window.GEESLANE_ENV_READY;
     if (!window.GeeslaneAPI.backendConfigured()) {
       authFeedback("Portal sign-in is not connected on this host yet. Publish the latest client-portal/config.js, then refresh.", "notice");
       return;
     }
-    const signingIn = window.GeeslaneAPI.hasIncomingMagicLink();
     if (signingIn) window.GeeslaneAPI.showLoader("Signing you in…");
     try {
       const authSession = await window.GeeslaneAPI.consumeMagicLink();
@@ -2577,6 +2577,8 @@
         if (!signingIn) window.GeeslaneAPI.showLoader("Opening your portal…");
         document.getElementById("auth-screen").hidden = true;
         await completeClientSignIn();
+      } else if (signingIn) {
+        showAuthPanel("signin", { updateUrl: false });
       }
     } catch (error) {
       const arriving = window.GeeslaneAPI.hasIncomingMagicLink();

@@ -26,6 +26,7 @@
         { key: "clientAccess", party: "client", label: "The Client has granted Geeslane access to domain, hosting and any required third-party accounts" },
         { key: "finalPayment", party: "client", label: "The Client has paid the project balance in full" },
         { key: "adminCredentials", party: "geeslane", label: "Geeslane has supplied website administrator credentials" },
+        { key: "clientPasswordChange", party: "client", label: "The Client has changed the passwords on all handed-over accounts" },
         { key: "codeAccess", party: "geeslane", label: "Geeslane has supplied website code, repository or code archive access" },
         { key: "domainHosting", party: "geeslane", label: "Geeslane has confirmed domain and hosting access, including where it is managed" },
         { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party services, licences and renewal dates" },
@@ -65,6 +66,7 @@
         { key: "finalPayment", party: "client", label: "The Client has paid the project balance in full" },
         { key: "workflowAccess", party: "geeslane", label: "Geeslane has handed over workflow and account access" },
         { key: "credentials", party: "geeslane", label: "Geeslane has supplied login details for connected tools" },
+        { key: "clientPasswordChange", party: "client", label: "The Client has changed the passwords on all handed-over accounts" },
         { key: "runbook", party: "geeslane", label: "Geeslane has supplied operating notes for the workflow" },
         { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party tools, licences and usage costs" },
         { key: "supportWindow", party: "geeslane", label: "Geeslane has confirmed the post-delivery review start and end dates with the Client" }
@@ -135,6 +137,7 @@
         { key: "finalPayment", party: "client", label: "The Client has paid the agreed fee in full" },
         { key: "access", party: "geeslane", label: "Geeslane has confirmed domain, hosting or mailbox access" },
         { key: "credentials", party: "geeslane", label: "Geeslane has supplied administrator credentials" },
+        { key: "clientPasswordChange", party: "client", label: "The Client has changed the passwords on all handed-over accounts" },
         { key: "thirdParty", party: "geeslane", label: "Geeslane has listed third-party services and renewal dates" },
         { key: "monitoringDates", party: "geeslane", label: "Geeslane has confirmed post-delivery monitoring start and end dates with the Client" },
         { key: "workingState", party: "geeslane", label: "Geeslane has confirmed the working state with the Client" }

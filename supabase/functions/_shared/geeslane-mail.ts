@@ -23,48 +23,83 @@ export function brandedHtml(options: {
   signoff?: string;
 }) {
   const hello = options.greeting
-    ? `<p style="margin:0 0 6px;font-size:14px;color:#0b6b45;font-weight:600;text-align:center;">${escapeHtml(options.greeting)}</p>`
+    ? `<p class="email-hello" style="margin:0 0 6px;font-size:14px;color:#0b6b45;font-weight:600;text-align:center;">${escapeHtml(options.greeting)}</p>`
     : "";
   const note = options.attachmentNote
-    ? `<p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#697870;text-align:center;">${escapeHtml(options.attachmentNote)}</p>`
+    ? `<p class="email-muted" style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#697870;text-align:center;">${escapeHtml(options.attachmentNote)}</p>`
     : "";
   const filled = (options.rows || []).filter((row) => row && String(row[1] || "").trim());
   const rows = filled.length
     ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 22px;">${filled.map(([label, value]) => `
       <tr>
-        <td valign="top" style="padding:10px 12px 10px 0;border-bottom:1px solid #edf2ef;font-size:12px;color:#697870;width:34%;">${escapeHtml(label)}</td>
-        <td valign="top" style="padding:10px 0;border-bottom:1px solid #edf2ef;font-size:14px;line-height:1.55;color:#17211c;">${cellText(value)}</td>
+        <td class="email-row-label" valign="top" style="padding:10px 12px 10px 0;border-bottom:1px solid #edf2ef;font-size:12px;color:#697870;width:34%;">${escapeHtml(label)}</td>
+        <td class="email-row-value" valign="top" style="padding:10px 0;border-bottom:1px solid #edf2ef;font-size:14px;line-height:1.55;color:#17211c;">${cellText(value)}</td>
       </tr>`).join("")}</table>`
     : "";
   const button = options.ctaLabel && options.ctaUrl ? `
       <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:8px auto 0;">
         <tr>
-          <td align="center" style="border-radius:999px;background:#0b6b45;">
+          <td class="email-btn" align="center" style="border-radius:999px;background:#0b6b45;">
             <a href="${escapeHtml(options.ctaUrl)}" style="display:inline-block;padding:12px 22px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">${escapeHtml(options.ctaLabel)}</a>
           </td>
         </tr>
       </table>` : "";
+  const darkCss = `:root{color-scheme:light dark;}
+@media (prefers-color-scheme:dark){
+.email-bg{background:#102018!important;color:#e8f2ec!important;}
+.email-card{background:#173028!important;border-color:#2c4a3e!important;}
+.email-header{background:#063b29!important;}
+.email-hello,.email-accent{color:#8ad4ad!important;}
+.email-title{color:#d8f3e6!important;}
+.email-copy{color:#d5e6dc!important;}
+.email-muted{color:#9bb5a8!important;}
+.email-brand{color:#c8ead8!important;}
+.email-btn{background:#1ea36a!important;}
+.email-btn a{color:#ffffff!important;}
+.email-logo{background:#ffffff!important;}
+.email-row-label{color:#9bb5a8!important;border-color:#2c4a3e!important;}
+.email-row-value{color:#e8f2ec!important;border-color:#2c4a3e!important;}
+}
+[data-ogsc] .email-bg{background:#102018!important;color:#e8f2ec!important;}
+[data-ogsc] .email-card{background:#173028!important;border-color:#2c4a3e!important;}
+[data-ogsc] .email-hello{color:#8ad4ad!important;}
+[data-ogsc] .email-title{color:#d8f3e6!important;}
+[data-ogsc] .email-copy{color:#d5e6dc!important;}
+[data-ogsc] .email-muted{color:#9bb5a8!important;}
+[data-ogsc] .email-brand{color:#c8ead8!important;}
+[data-ogsc] .email-btn{background:#1ea36a!important;}
+[data-ogsc] .email-btn a{color:#ffffff!important;}
+[data-ogsc] .email-logo{background:#ffffff!important;}
+[data-ogsc] .email-row-label{color:#9bb5a8!important;border-color:#2c4a3e!important;}
+[data-ogsc] .email-row-value{color:#e8f2ec!important;border-color:#2c4a3e!important;}`;
   return `<!doctype html>
 <html lang="en">
-  <body style="margin:0;padding:0;background:#eef6f1;font-family:'DM Sans',Arial,sans-serif;color:#17211c;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#eef6f1;padding:32px 16px;">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <style type="text/css">${darkCss}</style>
+  </head>
+  <body class="email-bg" style="margin:0;padding:0;background:#eef6f1;font-family:'DM Sans',Arial,sans-serif;color:#17211c;">
+    <table class="email-bg" role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#eef6f1;padding:32px 16px;">
       <tr>
         <td align="center">
-          <table role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid #d7ebe0;border-radius:20px;overflow:hidden;">
+          <table class="email-card" role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid #d7ebe0;border-radius:20px;overflow:hidden;">
             <tr>
-              <td align="center" style="padding:22px 36px 10px;background:#063b29;">
-                <img src="${LOGO_URL}" alt="Geeslane" width="132" style="display:block;margin:0 auto;border:0;height:auto;max-width:132px;background:#ffffff;padding:10px 14px;border-radius:12px;" />
+              <td class="email-header" align="center" style="padding:22px 36px 10px;background:#063b29;">
+                <img class="email-logo" src="${LOGO_URL}" alt="Geeslane" width="132" style="display:block;margin:0 auto;border:0;height:auto;max-width:132px;background:#ffffff;padding:10px 14px;border-radius:12px;" />
               </td>
             </tr>
             <tr>
               <td align="center" style="padding:24px 36px 36px;">
                 ${hello}
-                <h1 style="margin:0 0 12px;font-size:24px;line-height:1.3;letter-spacing:-.02em;color:#063b29;text-align:center;">${escapeHtml(options.heading)}</h1>
-                <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#2a3931;text-align:center;">${escapeHtml(options.intro)}</p>
+                <h1 class="email-title" style="margin:0 0 12px;font-size:24px;line-height:1.3;letter-spacing:-.02em;color:#063b29;text-align:center;">${escapeHtml(options.heading)}</h1>
+                <p class="email-copy" style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#2a3931;text-align:center;">${escapeHtml(options.intro)}</p>
                 ${note}
                 ${rows}
                 ${button}
-                <p style="margin:22px 0 0;font-size:14px;line-height:1.6;color:#2a3931;text-align:center;">${escapeHtml(options.signoff || "Kind regards,")}<br><strong style="color:#063b29;">Geeslane</strong></p>
+                <p class="email-copy" style="margin:22px 0 0;font-size:14px;line-height:1.6;color:#2a3931;text-align:center;">${escapeHtml(options.signoff || "Kind regards,")}<br><strong class="email-brand" style="color:#063b29;">Geeslane</strong></p>
               </td>
             </tr>
           </table>

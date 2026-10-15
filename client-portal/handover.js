@@ -3,6 +3,7 @@
 
   const TRACKS = ["website", "automation", "consultation", "support", "other"];
   const ARCHIVE_NOTE = "Keep your own copy of these files. Geeslane will remove this copy from our drive after the days stated here.";
+  const PASSWORD_NOTE = "The logins in this pack are so you can take over. Sign in, then change every password on those platforms. Keep the new passwords private. Do not send them back to Geeslane.";
 
   const FIELD = {
     text: (key, label, placeholder) => ({ key, label, placeholder: placeholder || "", type: "text" }),
@@ -18,6 +19,13 @@
     fields: [
       FIELD.text("serviceName", "Type of work"),
       FIELD.area("summary", "What was delivered")
+    ]
+  };
+  const COMMON_PASSWORDS = {
+    key: "passwords",
+    title: "Change your passwords",
+    fields: [
+      FIELD.area("changeNote", "What the client must do")
     ]
   };
   const COMMON_ARCHIVE = {
@@ -41,7 +49,7 @@
           FIELD.text("domainName", "Domain name", "example.com"),
           FIELD.text("hostedOn", "Registered / hosted with"),
           FIELD.text("username", "Username"),
-          FIELD.secret("password", "Password"),
+          FIELD.secret("password", "Temporary password"),
           FIELD.date("expiry", "Expiry date"),
           FIELD.select("freeTrial", "Free trial", ["No", "Yes"]),
           FIELD.area("renewHow", "How to renew")
@@ -55,7 +63,7 @@
           FIELD.area("accessHow", "How to access it"),
           FIELD.text("loginUrl", "Log in URL", "https://"),
           FIELD.text("username", "Username"),
-          FIELD.secret("password", "Password")
+          FIELD.secret("password", "Temporary password")
         ]
       },
       {
@@ -66,13 +74,14 @@
           FIELD.text("hostedOn", "Provided by"),
           FIELD.text("loginUrl", "Log in URL", "https://"),
           FIELD.text("username", "Username"),
-          FIELD.secret("password", "Password"),
+          FIELD.secret("password", "Temporary password"),
           FIELD.date("expiry", "Expiry date"),
           FIELD.select("freeTrial", "Free trial", ["No", "Yes"]),
           FIELD.area("trialNote", "Trial or renewal notes"),
           FIELD.area("renewHow", "How to renew")
         ]
       },
+      COMMON_PASSWORDS,
       COMMON_ARCHIVE,
       COMMON_CHECKLIST
     ],
@@ -86,9 +95,10 @@
           FIELD.area("accessHow", "How to operate it"),
           FIELD.text("loginUrl", "Log in URL", "https://"),
           FIELD.text("username", "Username"),
-          FIELD.secret("password", "Password")
+          FIELD.secret("password", "Temporary password")
         ]
       },
+      COMMON_PASSWORDS,
       COMMON_ARCHIVE,
       COMMON_CHECKLIST
     ],
@@ -114,7 +124,7 @@
           FIELD.text("domainName", "Domain name"),
           FIELD.text("hostedOn", "Registered / hosted with"),
           FIELD.text("username", "Username"),
-          FIELD.secret("password", "Password"),
+          FIELD.secret("password", "Temporary password"),
           FIELD.date("expiry", "Expiry date"),
           FIELD.area("renewHow", "How to renew")
         ]
@@ -126,12 +136,13 @@
           FIELD.text("mailbox", "Email address"),
           FIELD.text("loginUrl", "Log in URL", "https://"),
           FIELD.text("username", "Username"),
-          FIELD.secret("password", "Password"),
+          FIELD.secret("password", "Temporary password"),
           FIELD.date("expiry", "Expiry date"),
           FIELD.select("freeTrial", "Free trial", ["No", "Yes"]),
           FIELD.area("renewHow", "How to renew")
         ]
       },
+      COMMON_PASSWORDS,
       COMMON_ARCHIVE,
       COMMON_CHECKLIST
     ],
@@ -159,7 +170,7 @@
   function blankSection(section) {
     const values = {};
     (section.fields || []).forEach((field) => {
-      values[field.key] = field.key === "retentionDays" ? "30" : field.key === "warning" ? ARCHIVE_NOTE : field.key === "freeTrial" ? "No" : "";
+      values[field.key] = field.key === "retentionDays" ? "30" : field.key === "warning" ? ARCHIVE_NOTE : field.key === "changeNote" ? PASSWORD_NOTE : field.key === "freeTrial" ? "No" : "";
     });
     return { enabled: true, values };
   }
@@ -254,10 +265,11 @@
           <div class="agreement-fact"><span>Project</span><strong>${escapeHtml(projectTitle)}</strong></div>
         </section>
         <p class="agreement-lead">This pack lists the accounts, logins, and files for this project. Keep your own copy. Geeslane removes our file copy after ${escapeHtml(String(days))} days.</p>
+        <p class="agreement-lead">${escapeHtml(PASSWORD_NOTE)}</p>
         ${defs.map((section) => sectionHtml(section, pack)).join("")}
         ${pack.notes ? `<section class="agreement-block"><h2>Notes</h2><p class="agreement-lead">${escapeHtml(pack.notes).replace(/\n/g, "<br />")}</p></section>` : ""}
         ${pack.fileDriveUrl ? `<section class="agreement-block"><h2>File link</h2><p class="agreement-lead">${escapeHtml(pack.fileDriveUrl)}</p><p class="agreement-endorsement">${escapeHtml(ARCHIVE_NOTE)}</p></section>` : ""}
-        <p class="agreement-endorsement">If something here is missing or a login fails, email contact@geeslane.com with your business name. Help articles are also in your portal and on geeslane.com/faq.html.</p>
+        <p class="agreement-endorsement">If something here is missing or a login fails, email contact@geeslane.com with your business name. After you change the passwords, Geeslane will not have the new ones. Help articles are also in your portal and on geeslane.com/faq.html.</p>
       </article>
     `;
   }
@@ -273,13 +285,14 @@
     return {
       subject: `Thank you — your ${project} handover pack`,
       heading: "Your handover pack is ready",
-      intro: `Thank you for choosing Geeslane. It has been a pleasure to work with you, and we are grateful for your trust.\n\nYour handover pack is attached. It includes the service details, logins, and file notes for this project. Please download the PDF and keep your own copy of any files. We remove our drive copy after ${days} days.\n\nIf anything is missing, reply to this email and we will take care of it promptly.`,
+      intro: `Thank you for choosing Geeslane. It has been a pleasure to work with you, and we are grateful for your trust.\n\nYour handover pack is attached. It includes the service details, logins, and file notes for this project. Please download the PDF and keep your own copy of any files. We remove our drive copy after ${days} days.\n\nThe logins are so you can take over. Sign in, then change every password on those platforms. Keep the new passwords private, and do not send them back to us.\n\nIf anything is missing, reply to this email and we will take care of it promptly.`,
       attachmentNote: "The handover PDF is attached. You can also download it again from your portal."
     };
   }
 
   window.GeeslaneHandover = Object.freeze({
     ARCHIVE_NOTE,
+    PASSWORD_NOTE,
     TRACKS,
     trackOf,
     sectionsFor,
