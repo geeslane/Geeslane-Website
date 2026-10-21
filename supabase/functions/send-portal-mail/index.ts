@@ -79,6 +79,35 @@ function smsErrorText(raw: unknown) {
   return oneLine(raw, 180);
 }
 
+function bytesToBase64(bytes: Uint8Array) {
+  let binary = "";
+  const size = 0x8000;
+  for (let i = 0; i < bytes.length; i += size) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + size));
+  }
+  return btoa(binary);
+}
+
+async function mailAttachment(item: { filename?: string; path?: string; url?: string; content?: string }) {
+  const filename = String(item?.filename || "document.pdf").replace(/[^\w.\- ]+/g, "").slice(0, 120) || "document.pdf";
+  let content = String(item?.content || "").replace(/\s+/g, "");
+  if (content.length > 7000000) content = "";
+  const path = String(item?.path || item?.url || "").trim();
+  if (!content && /^https:\/\//i.test(path)) {
+    try {
+      const file = await fetch(path);
+      if (!file.ok) return null;
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (!bytes.length || bytes.length > 5000000) return null;
+      content = bytesToBase64(bytes);
+    } catch (_) {
+      return null;
+    }
+  }
+  if (!content) return null;
+  return { filename, content };
+}
+
 function smsText(payload: Record<string, unknown>) {
   const heading = oneLine(payload.heading || payload.subject, 80);
   const intro = oneLine(payload.intro, 140);
@@ -314,17 +343,11 @@ Deno.serve(async (req) => {
     let emailed = false;
     if (recipients.size && apiKey) {
       const replyTo = validEmail(String(payload.replyTo || "")) ? String(payload.replyTo).trim() : teamTo;
-      const attachments = (Array.isArray(payload.attachments) ? payload.attachments : [])
-        .slice(0, 3)
-        .map((item) => {
-          const filename = String(item?.filename || "document.pdf").replace(/[^\w.\- ]+/g, "").slice(0, 80) || "document.pdf";
-          const path = String(item?.path || item?.url || "").trim();
-          if (/^https:\/\//i.test(path)) return { filename, path };
-          const content = String(item?.content || "").replace(/\s+/g, "");
-          if (!content || content.length > 7000000) return null;
-          return { filename, content };
-        })
-        .filter(Boolean);
+      const requested = (Array.isArray(payload.attachments) ? payload.attachments : []).slice(0, 3);
+      const attachments = (await Promise.all(requested.map((item) => mailAttachment(item)))).filter(Boolean);
+      if (requested.length && attachments.length !== requested.length) {
+        return json({ error: "The PDF could not be attached." }, 502);
+      }
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {

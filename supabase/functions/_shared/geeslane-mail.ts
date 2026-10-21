@@ -56,7 +56,7 @@ export function brandedHtml(options: {
 .email-brand{color:#c8ead8!important;}
 .email-btn{background:#1ea36a!important;}
 .email-btn a{color:#ffffff!important;}
-.email-logo{background:#ffffff!important;}
+.email-logo{background:transparent!important;padding:0!important;filter:brightness(0) invert(1)!important;-webkit-filter:brightness(0) invert(1)!important;}
 .email-row-label{color:#9bb5a8!important;border-color:#2c4a3e!important;}
 .email-row-value{color:#e8f2ec!important;border-color:#2c4a3e!important;}
 }
@@ -69,7 +69,7 @@ export function brandedHtml(options: {
 [data-ogsc] .email-brand{color:#c8ead8!important;}
 [data-ogsc] .email-btn{background:#1ea36a!important;}
 [data-ogsc] .email-btn a{color:#ffffff!important;}
-[data-ogsc] .email-logo{background:#ffffff!important;}
+[data-ogsc] .email-logo{background:transparent!important;padding:0!important;filter:brightness(0) invert(1)!important;-webkit-filter:brightness(0) invert(1)!important;}
 [data-ogsc] .email-row-label{color:#9bb5a8!important;border-color:#2c4a3e!important;}
 [data-ogsc] .email-row-value{color:#e8f2ec!important;border-color:#2c4a3e!important;}`;
   return `<!doctype html>
@@ -92,10 +92,10 @@ export function brandedHtml(options: {
               </td>
             </tr>
             <tr>
-              <td align="center" style="padding:24px 36px 36px;">
+              <td align="center" style="padding:18px 28px 22px;">
                 ${hello}
-                <h1 class="email-title" style="margin:0 0 12px;font-size:24px;line-height:1.3;letter-spacing:-.02em;color:#063b29;text-align:center;">${escapeHtml(options.heading)}</h1>
-                <p class="email-copy" style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#2a3931;text-align:center;">${escapeHtml(options.intro)}</p>
+                <h1 class="email-title" style="margin:0 0 10px;font-size:20px;line-height:1.3;letter-spacing:-.02em;color:#063b29;text-align:left;">${escapeHtml(options.heading)}</h1>
+                <p class="email-copy" style="margin:0 0 12px;font-size:15px;line-height:1.45;color:#2a3931;text-align:left;">${escapeHtml(options.intro)}</p>
                 ${note}
                 ${rows}
                 ${button}

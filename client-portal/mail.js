@@ -106,7 +106,7 @@
 .email-code{color:#e8f8ef!important;}
 .email-btn{background:#1ea36a!important;}
 .email-btn a{color:#ffffff!important;}
-.email-logo{background:#ffffff!important;}
+.email-logo{background:transparent!important;padding:0!important;filter:brightness(0) invert(1)!important;-webkit-filter:brightness(0) invert(1)!important;}
 .email-row-label{color:#9bb5a8!important;border-color:#2c4a3e!important;}
 .email-row-value{color:#e8f2ec!important;border-color:#2c4a3e!important;}
 .email-block{background:#1b332a!important;border-color:#2c4a3e!important;}
@@ -122,7 +122,7 @@
 [data-ogsc] .email-code{color:#e8f8ef!important;}
 [data-ogsc] .email-btn{background:#1ea36a!important;}
 [data-ogsc] .email-btn a{color:#ffffff!important;}
-[data-ogsc] .email-logo{background:#ffffff!important;}
+[data-ogsc] .email-logo{background:transparent!important;padding:0!important;filter:brightness(0) invert(1)!important;-webkit-filter:brightness(0) invert(1)!important;}
 [data-ogsc] .email-row-label{color:#9bb5a8!important;border-color:#2c4a3e!important;}
 [data-ogsc] .email-row-value{color:#e8f2ec!important;border-color:#2c4a3e!important;}
 [data-ogsc] .email-block{background:#1b332a!important;border-color:#2c4a3e!important;}
@@ -132,16 +132,16 @@
   function introHtml(intro) {
     const parts = String(intro || "").split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
     if (!parts.length) return "";
-    return parts.map((part) => `<p class="email-copy" style="margin:0 0 20px;font-size:16px;line-height:1.7;color:#2a3931;text-align:center;">${cellText(part)}</p>`).join("");
+    return parts.map((part) => `<p class="email-copy" style="margin:0 0 10px;font-size:15px;line-height:1.45;color:#2a3931;text-align:left;">${cellText(part)}</p>`).join("");
   }
 
   function rowsHtml(rows) {
     const filled = (rows || []).filter((row) => row && String(row[1] || "").trim());
     if (!filled.length) return "";
-    return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:8px 0 24px;">${filled.map(([label, value]) => `
+    return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:4px 0 12px;">${filled.map(([label, value]) => `
       <tr>
-        <td class="email-row-label" valign="top" style="padding:12px 12px 12px 0;border-bottom:1px solid #edf2ef;font-size:12px;color:#697870;width:34%;">${escapeHtml(label)}</td>
-        <td class="email-row-value" valign="top" style="padding:12px 0;border-bottom:1px solid #edf2ef;font-size:14px;line-height:1.55;color:#17211c;">${cellText(value)}</td>
+        <td class="email-row-label" valign="top" style="padding:8px 12px 8px 0;border-bottom:1px solid #edf2ef;font-size:12px;color:#697870;width:34%;">${escapeHtml(label)}</td>
+        <td class="email-row-value" valign="top" style="padding:8px 0;border-bottom:1px solid #edf2ef;font-size:14px;line-height:1.4;color:#17211c;">${cellText(value)}</td>
       </tr>`).join("")}</table>`;
   }
 
@@ -156,12 +156,12 @@
   }
 
   function buildHtml({ greeting, heading, intro, rows, blocks, ctaLabel, ctaUrl, signoff, attachmentNote }) {
-    const hello = greeting ? `<p class="email-hello" style="margin:0 0 14px;font-size:14px;color:#0b6b45;font-weight:600;text-align:center;">${escapeHtml(greeting)}</p>` : "";
-    const note = attachmentNote ? `<p class="email-muted" style="margin:0 0 22px;font-size:14px;line-height:1.7;color:#697870;text-align:center;">${escapeHtml(attachmentNote)}</p>` : "";
+    const hello = greeting ? `<p class="email-hello" style="margin:0 0 8px;font-size:14px;color:#0b6b45;font-weight:600;text-align:left;">${escapeHtml(greeting)}</p>` : "";
+    const note = attachmentNote ? `<p class="email-muted" style="margin:0 0 12px;font-size:14px;line-height:1.45;color:#697870;text-align:left;">${escapeHtml(attachmentNote)}</p>` : "";
     const lead = introHtml(intro);
-    const bye = `<p class="email-copy" style="margin:28px 0 0;font-size:14px;line-height:1.7;color:#2a3931;text-align:center;">${escapeHtml(signoff || "Kind regards,")}<br><strong class="email-brand" style="color:#063b29;">Geeslane</strong></p>`;
+    const bye = `<p class="email-copy" style="margin:14px 0 0;font-size:14px;line-height:1.45;color:#2a3931;text-align:left;">${escapeHtml(signoff || "Kind regards,")}<br><strong class="email-brand" style="color:#063b29;">Geeslane</strong></p>`;
     const button = ctaLabel && ctaUrl ? `
-      <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:8px auto 12px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:4px auto 8px;">
         <tr>
           <td class="email-btn" align="center" style="border-radius:999px;background:#0b6b45;">
             <a href="${escapeHtml(ctaUrl)}" style="display:inline-block;padding:12px 22px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">${escapeHtml(ctaLabel)}</a>
@@ -188,9 +188,9 @@
               </td>
             </tr>
             <tr>
-              <td align="center" style="padding:28px 36px 36px;">
+              <td align="center" style="padding:18px 28px 22px;">
                 ${hello}
-                <h1 class="email-title" style="margin:0 0 16px;font-size:24px;line-height:1.3;letter-spacing:-.02em;color:#063b29;text-align:center;">${escapeHtml(heading)}</h1>
+                <h1 class="email-title" style="margin:0 0 10px;font-size:20px;line-height:1.3;letter-spacing:-.02em;color:#063b29;text-align:left;">${escapeHtml(heading)}</h1>
                 ${lead}
                 ${note}
                 ${rowsHtml(rows)}
@@ -223,10 +223,14 @@
     const audience = options.audience || "team";
     const heading = String(options.heading || options.subject || "A note from Geeslane");
     const subject = String(options.subject || options.heading || "A note from Geeslane");
-    const ctaLabel = String(options.ctaLabel || (audience === "team" ? "Open admin portal" : "Open your portal"));
-    const ctaUrl = options.ctaUrl || portalLink(options.ctaPage || (audience === "team" ? "admin" : "client"));
+    const ctaLabel = options.ctaLabel !== undefined
+      ? String(options.ctaLabel || "")
+      : (audience === "team" ? "Open admin portal" : "Open your portal");
+    const ctaUrl = ctaLabel ? (options.ctaUrl || portalLink(options.ctaPage || (audience === "team" ? "admin" : "client"))) : "";
     const name = respectfulName(options.greetingName) || givenName(options.greetingName);
-    const greeting = options.greeting || (audience === "team" ? "Hi team," : name ? `Hi ${name},` : "Hi there,");
+    const greeting = options.greeting !== undefined
+      ? String(options.greeting || "")
+      : (audience === "team" ? "Hi team," : name ? `Hi ${name},` : "Hi there,");
     const payload = {
       greeting,
       heading,

@@ -267,7 +267,7 @@
       if (entry && typeof entry === "object") return handoverItem({ ...item, ...entry }, 0) || { ...item, done: false };
       return { ...item, done: entry === true };
     });
-    const extras = Object.keys(source).filter((key) => key !== "items" && !known.has(key)).map((key, index) => {
+    const extras = Object.keys(source).filter((key) => key !== "items" && key !== "documentCopy" && !known.has(key)).map((key, index) => {
       const entry = source[key];
       if (entry && typeof entry === "object") return handoverItem({ key, ...entry }, index);
       if (entry === true || entry === false) return { key, label: key, done: entry === true };
@@ -316,8 +316,55 @@
     return packHandover(defaultHandoverList(track));
   }
 
+  function defaultDocumentCopy(track) {
+    const resolved = TRACKS[track] ? track : "website";
+    const pack = TRACKS[resolved];
+    const clauses = [];
+    (pack.clauses || []).forEach((section) => {
+      (section.items || []).forEach((item) => clauses.push({ title: String(item[0] || ""), body: String(item[1] || "") }));
+    });
+    return {
+      track: resolved,
+      title: pack.title,
+      lead: pack.lead,
+      checklist: pack.checklist,
+      signCopy: "Continuing this project confirms acceptance of these terms.",
+      endorsement: "Geeslane Technologies · geeslane.com",
+      clauses
+    };
+  }
+
+  function resolveDocumentCopy(track, saved) {
+    const resolved = TRACKS[track] ? track : "website";
+    const base = defaultDocumentCopy(resolved);
+    if (!saved || typeof saved !== "object") return base;
+    const sameTrack = !saved.track || saved.track === resolved;
+    const pick = (key) => {
+      const value = saved[key] != null ? String(saved[key]).trim() : "";
+      return value || base[key];
+    };
+    const clauses = sameTrack && Array.isArray(saved.clauses) && saved.clauses.length === base.clauses.length
+      ? saved.clauses.map((item, index) => ({
+        title: item?.title != null && String(item.title).trim() ? String(item.title) : (base.clauses[index]?.title || ""),
+        body: item?.body != null && String(item.body).trim() ? String(item.body) : (base.clauses[index]?.body || "")
+      }))
+      : base.clauses;
+    return {
+      track: resolved,
+      title: pick("title"),
+      lead: pick("lead"),
+      checklist: pick("checklist"),
+      signCopy: pick("signCopy"),
+      endorsement: pick("endorsement"),
+      clauses
+    };
+  }
+
   function normalizeHandover(value, track) {
-    return packHandover(handoverList(value, track));
+    const packed = packHandover(handoverList(value, track));
+    const copy = value && typeof value === "object" && !Array.isArray(value) ? value.documentCopy : null;
+    if (copy && typeof copy === "object") packed.documentCopy = copy;
+    return packed;
   }
 
   function blankAgreement(track) {
@@ -334,6 +381,7 @@
       completionDate: "",
       timeline: "",
       handover: emptyHandover(resolved),
+      documentCopy: defaultDocumentCopy(resolved),
       savedAt: "",
       saved: false
     };
@@ -403,6 +451,7 @@
       completionDate: saved.completionDate != null && String(saved.completionDate).trim() ? saved.completionDate : base.completionDate,
       timeline: saved.timeline != null ? saved.timeline : base.timeline,
       handover: normalizeHandover(saved.handover || base.handover, track),
+      documentCopy: resolveDocumentCopy(track, saved.documentCopy || saved.handover?.documentCopy),
       savedAt: saved.savedAt || saved.updatedAt || "",
       saved: true
     };
@@ -442,15 +491,11 @@
     return `<div class="agreement-fact${wide ? " agreement-fact-wide" : ""}"><span>${escapeHtml(label)}</span><strong>${body}</strong></div>`;
   }
 
-  function clausesHtml(pack) {
-    let number = 0;
-    return pack.clauses.map((section) => {
-      const items = section.items.map(([title, body]) => {
-        number += 1;
-        return `<li><strong>${number}. ${escapeHtml(title)}:</strong><span>${escapeHtml(body)}</span></li>`;
-      }).join("");
-      return `<section class="agreement-block"><h2>${escapeHtml(section.heading)}</h2><ol class="agreement-clauses">${items}</ol></section>`;
+  function clausesHtml(copy) {
+    const items = (copy?.clauses || []).map((item, index) => {
+      return `<li><strong>${index + 1}. ${escapeHtml(item.title)}:</strong><span>${escapeHtml(item.body)}</span></li>`;
     }).join("");
+    return `<section class="agreement-block"><h2>Terms</h2><ol class="agreement-clauses">${items}</ol></section>`;
   }
 
   function checklistItemsHtml(items) {
@@ -472,6 +517,7 @@
   function documentHtml(data, options = {}) {
     const agreement = { ...blankAgreement(data?.track), ...(data || {}) };
     const pack = packFor(null, agreement);
+    const copy = resolveDocumentCopy(agreement.track, data?.documentCopy || data?.handover?.documentCopy);
     const dateLabel = formatDate(agreement.savedAt) || formatDate(new Date().toISOString());
     const clientName = window.GeeslaneMail?.portalName?.(agreement.clientName) || displayOrPending(agreement.clientName, "Client");
     return `
@@ -483,7 +529,7 @@
           </div>
           <div class="agreement-masthead-title">
             <p class="agreement-doc-type">Agreement</p>
-            <h1>${escapeHtml(pack.title)}</h1>
+            <h1>${escapeHtml(copy.title || pack.title)}</h1>
           </div>
         </header>
         <section class="agreement-facts" aria-label="Project summary">
@@ -496,15 +542,15 @@
           ${fact("Completion", formatDate(agreement.completionDate) || agreement.timeline)}
           ${fact("Deliverables", agreement.deliverables, true)}
         </section>
-        <p class="agreement-lead">${escapeHtml(pack.lead)}</p>
-        ${clausesHtml(pack)}
+        <p class="agreement-lead">${escapeHtml(copy.lead)}</p>
+        ${clausesHtml(copy)}
         <section class="agreement-block">
-          <h2>${escapeHtml(pack.checklist)}</h2>
+          <h2>${escapeHtml(copy.checklist || pack.checklist)}</h2>
           ${handoverHtml(agreement.handover, trackFrom(null, agreement))}
         </section>
         <section class="agreement-sign">
           <h2>Acceptance</h2>
-          <p class="agreement-sign-copy">Continuing this project confirms acceptance of these terms.</p>
+          <p class="agreement-sign-copy">${escapeHtml(copy.signCopy)}</p>
           <div class="agreement-sign-grid">
             <div class="agreement-sign-card">
               <span>For Geeslane</span>
@@ -517,7 +563,7 @@
               <small>${escapeHtml(dateLabel)}</small>
             </div>
           </div>
-          <p class="agreement-endorsement">Geeslane Technologies · geeslane.com</p>
+          <p class="agreement-endorsement">${escapeHtml(copy.endorsement || "Geeslane Technologies · geeslane.com")}</p>
         </section>
       </article>
     `;
@@ -525,38 +571,40 @@
 
   function documentCss() {
     return `
-      .agreement-sheet { position: relative; max-width: 820px; margin: 0 auto; padding: 42px 48px 36px 70px; color: #17211c; background: #fff; overflow: hidden; }
-      .agreement-sheet::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 16px; background: #063b29; }
-      .agreement-sheet::after { content: ""; position: absolute; left: 16px; top: 0; bottom: 0; width: 10px; background: #d8eee3; }
+      .agreement-sheet { position: relative; box-sizing: border-box; max-width: 820px; margin: 0 auto; padding: 32px 24px 32px 42px; color: #17211c; background: #fff; overflow: visible; }
+      .agreement-sheet::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: #063b29; }
+      .agreement-sheet::after { content: none; }
       .agreement-masthead { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 8px; }
       .agreement-logo { height: 42px; width: auto; }
+      .handover-logo { height: 40px; width: auto; max-width: 190px; }
       .agreement-kicker { margin: 12px 0 0; color: #8a9690; font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
       .agreement-masthead-title { text-align: right; }
       .agreement-doc-type { margin: 0 0 6px; color: #111; font-size: 1.85rem; font-weight: 800; letter-spacing: .1em; line-height: 1; text-transform: uppercase; }
-      .agreement-masthead h1 { margin: 0; color: #063b29; font-size: 1rem; font-weight: 700; line-height: 1.35; }
-      .agreement-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 22px 0 18px; overflow: hidden; background: #dfe7e2; border: 1px solid #dfe7e2; }
-      .agreement-fact { display: grid; gap: 5px; padding: 12px 14px; background: #f7fbf8; }
-      .agreement-fact span { color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-      .agreement-fact strong { color: #17211c; font-size: .92rem; font-weight: 700; line-height: 1.45; white-space: pre-wrap; }
+      .agreement-masthead h1 { margin: 0; color: #063b29; font-size: 1.08rem; font-weight: 700; line-height: 1.35; }
+      .agreement-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 22px 0 18px; overflow: visible; background: #dfe7e2; border: 1px solid #dfe7e2; }
+      .agreement-fact { display: grid; gap: 5px; min-width: 0; padding: 12px 14px; background: #f7fbf8; }
+      .agreement-fact span { color: #8a9690; font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; overflow-wrap: anywhere; }
+      .agreement-fact strong { color: #17211c; font-size: 1.02rem; font-weight: 700; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; max-width: 100%; }
+      .agreement-fact strong a { color: #0b6b45; font-weight: 650; text-decoration: underline; }
       .agreement-fact-wide { grid-column: 1 / -1; background: #eff9f4; }
-      .agreement-lead { margin: 0 0 22px; color: #697870; font-size: .9rem; line-height: 1.55; }
+      .agreement-lead { margin: 0 0 22px; color: #697870; font-size: 1rem; line-height: 1.55; overflow-wrap: anywhere; word-break: break-word; }
       .agreement-block { margin: 0 0 24px; }
-      .agreement-block h2 { margin: 0 0 12px; padding-bottom: 8px; color: #063b29; border-bottom: 1px solid #edf2ef; font-size: .78rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+      .agreement-block h2 { margin: 0 0 12px; padding-bottom: 8px; color: #063b29; border-bottom: 1px solid #edf2ef; font-size: .86rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
       .agreement-clauses { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
-      .agreement-clauses li { display: grid; gap: 4px; padding: 12px 0; color: #2a3931; border-bottom: 1px solid #edf2ef; font-size: .9rem; line-height: 1.55; }
+      .agreement-clauses li { display: grid; gap: 4px; padding: 12px 0; color: #2a3931; border-bottom: 1px solid #edf2ef; font-size: 1rem; line-height: 1.55; }
       .agreement-clauses li:last-child { border-bottom: 0; }
-      .agreement-clauses strong { color: #063b29; font-size: .92rem; }
+      .agreement-clauses strong { color: #063b29; font-size: 1.02rem; }
       .agreement-clauses span { color: #2a3931; }
       .agreement-check-group { margin: 0 0 14px; }
       .agreement-check-group:last-child { margin-bottom: 0; }
       .agreement-check-group h3 { margin: 0 0 8px; color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
       .agreement-checklist { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
-      .agreement-checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #edf2ef; font-size: .9rem; line-height: 1.45; }
+      .agreement-checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #edf2ef; font-size: 1rem; line-height: 1.45; }
       .agreement-checklist li:last-child { border-bottom: 0; }
       .agreement-check { width: 16px; height: 16px; flex: 0 0 16px; display: grid; place-items: center; margin-top: 2px; color: #fff; background: #fff; border: 1.5px solid #0b6b45; border-radius: 3px; font-size: .68rem; font-weight: 800; }
       .agreement-checklist li.is-done .agreement-check { background: #0b6b45; border-color: #0b6b45; }
       .agreement-checklist-empty { margin: 0; color: #697870; font-size: .9rem; }
-      .agreement-sign-copy { margin: 0 0 16px; color: #2a3931; font-size: .9rem; line-height: 1.55; }
+      .agreement-sign-copy { margin: 0 0 16px; color: #2a3931; font-size: 1rem; line-height: 1.55; }
       .agreement-sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
       .agreement-sign-card { display: grid; gap: 8px; min-height: 0; padding: 0; background: none; border: 0; }
       .agreement-sign-card > span { color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
@@ -565,6 +613,8 @@
       .agreement-client-mark { color: #063b29; font-size: 1rem; line-height: 1.3; }
       .agreement-sign-card small { color: #8a9690; font-size: .78rem; }
       .agreement-endorsement { margin: 28px 0 0; color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+      .handover-closing { margin: 18px 0 0; color: #2a3931; font-size: 1.02rem; font-weight: 500; letter-spacing: 0; text-transform: none; line-height: 1.55; overflow-wrap: anywhere; word-break: break-word; }
+      .handover-closing a { color: #0b6b45; font-weight: 650; text-decoration: underline; }
       @media (max-width: 720px) {
         .agreement-sheet { padding: 28px 18px 28px 36px; }
         .agreement-masthead, .agreement-facts, .agreement-sign-grid { grid-template-columns: 1fr; }
@@ -656,6 +706,8 @@
     checklistTitle,
     hasRevisions,
     blank: blankAgreement,
+    defaultDocumentCopy,
+    resolveDocumentCopy,
     defaultsFrom,
     merge: mergeAgreement,
     resolve,

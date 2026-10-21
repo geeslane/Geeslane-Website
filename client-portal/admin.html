@@ -140,6 +140,10 @@
                     <fieldset class="field field-full"><legend id="agreement-checklist-legend">Handover Checklist</legend>
                       <div class="confirm-stack" id="agreement-handover"></div>
                     </fieldset>
+                    <details class="field field-full admin-copy-fold">
+                      <summary>Other wording</summary>
+                      <div class="form-grid" id="agreement-copy-fields"></div>
+                    </details>
                   </div>
                 </form>
               </section>
@@ -166,6 +170,10 @@
             <div class="admin-agreement-layout">
               <section class="card admin-card admin-agreement-form-card">
                 <form id="handover-form" novalidate>
+                  <div class="form-grid">
+                    <div class="field"><label for="handover-client">Client</label><input id="handover-client" name="clientName" /></div>
+                    <div class="field"><label for="handover-deliver-email">Send handover to</label><input id="handover-deliver-email" name="deliverEmail" type="email" placeholder="name@email.com" /></div>
+                  </div>
                   <fieldset class="field field-full"><legend>Include sections</legend><div class="confirm-stack" id="handover-section-toggles"></div></fieldset>
                   <div id="handover-section-fields"></div>
                   <div class="field field-full"><label for="handover-drive">Drive or file link</label><input id="handover-drive" name="fileDriveUrl" placeholder="https://" /></div>
@@ -178,6 +186,15 @@
                   </div>
                   <div class="field field-full"><label for="handover-notes">Notes</label><textarea id="handover-notes" name="notes" rows="4"></textarea></div>
                   <fieldset class="field field-full"><legend>Handover checklist</legend><div class="confirm-stack" id="handover-checklist"></div></fieldset>
+                  <details class="field field-full admin-copy-fold">
+                    <summary>Other wording</summary>
+                    <div class="form-grid">
+                      <div class="field field-full"><label for="handover-intro">Opening</label><textarea id="handover-intro" name="handoverIntro" rows="3"></textarea></div>
+                      <div class="field field-full"><label for="handover-password">Password reminder</label><textarea id="handover-password" name="handoverPassword" rows="3"></textarea></div>
+                      <div class="field field-full"><label for="handover-archive">File-copy reminder</label><textarea id="handover-archive" name="handoverArchive" rows="3"></textarea></div>
+                      <div class="field field-full"><label for="handover-closing">Closing</label><textarea id="handover-closing" name="handoverClosing" rows="3"></textarea></div>
+                    </div>
+                  </details>
                 </form>
               </section>
               <section class="admin-agreement-preview-wrap">
@@ -298,6 +315,19 @@
                   <div class="field"><label for="invoice-paid">Paid So Far</label><input id="invoice-paid" name="paidAmount" /></div>
                   <div class="field"><label for="invoice-remaining">Remaining</label><input id="invoice-remaining" name="remaining" readonly tabindex="-1" /></div>
                   <div class="field field-full"><label for="invoice-notes">Payment Notes</label><textarea id="invoice-notes" name="notes" rows="3" placeholder="A note the client will see on this invoice."></textarea></div>
+                  <details class="field field-full admin-copy-fold">
+                    <summary>Other wording</summary>
+                    <div class="form-grid">
+                      <div class="field field-full"><label for="invoice-regards">Sign-off</label><input id="invoice-regards" name="regards" /></div>
+                      <div class="field"><label for="invoice-sign">Signature</label><input id="invoice-sign" name="sign" /></div>
+                      <div class="field"><label for="invoice-sign-name">Name</label><input id="invoice-sign-name" name="signName" /></div>
+                      <div class="field"><label for="invoice-role">Role</label><input id="invoice-role" name="role" /></div>
+                      <div class="field"><label for="invoice-footer-email">Footer email</label><input id="invoice-footer-email" name="footerEmail" /></div>
+                      <div class="field"><label for="invoice-footer-site">Website</label><input id="invoice-footer-site" name="footerSite" /></div>
+                      <div class="field"><label for="invoice-footer-social">Instagram</label><input id="invoice-footer-social" name="footerSocial" /></div>
+                      <div class="field field-full"><label for="invoice-footer-tag">Tagline</label><input id="invoice-footer-tag" name="footerTag" /></div>
+                    </div>
+                  </details>
                 </div>
               </form>
                 <div class="admin-agreement-toolbar">
@@ -456,7 +486,8 @@
           <button class="icon-button modal-close" id="close-handover-email" type="button" aria-label="Close">×</button>
         </header>
         <form id="handover-email-form" class="modal-body" novalidate>
-          <p class="modal-lead" id="handover-email-preview"></p>
+          <p class="modal-lead" id="handover-email-preview">The handover PDF is attached to this email.</p>
+          <div class="field"><label for="handover-email-to">Send to</label><input id="handover-email-to" name="to" type="email" required /></div>
           <div class="field"><label for="handover-email-subject">Subject</label><input id="handover-email-subject" name="subject" required /></div>
           <div class="field"><label for="handover-email-intro">Message</label><textarea id="handover-email-intro" name="intro" rows="6" required></textarea></div>
         </form>
@@ -534,6 +565,20 @@
             </div>
             <div class="field"><label for="receipt-invoice">Related Invoice</label><select id="receipt-invoice" name="invoiceId"><option value="">None</option></select></div>
             <div class="field"><label for="receipt-notes">Notes</label><textarea id="receipt-notes" name="notes" rows="3" placeholder="Optional note on the receipt."></textarea></div>
+            <details class="field field-full admin-copy-fold">
+              <summary>Other wording</summary>
+              <div class="form-grid one-column">
+                <div class="field"><label for="receipt-thanks">Thank-you line</label><input id="receipt-thanks" name="thanks" /></div>
+                <div class="field"><label for="receipt-regards">Sign-off</label><input id="receipt-regards" name="regards" /></div>
+                <div class="field"><label for="receipt-sign">Signature</label><input id="receipt-sign" name="sign" /></div>
+                <div class="field"><label for="receipt-sign-name">Name</label><input id="receipt-sign-name" name="signName" /></div>
+                <div class="field"><label for="receipt-role">Role</label><input id="receipt-role" name="role" /></div>
+                <div class="field"><label for="receipt-footer-email">Footer email</label><input id="receipt-footer-email" name="footerEmail" /></div>
+                <div class="field"><label for="receipt-footer-site">Website</label><input id="receipt-footer-site" name="footerSite" /></div>
+                <div class="field"><label for="receipt-footer-social">Instagram</label><input id="receipt-footer-social" name="footerSocial" /></div>
+                <div class="field"><label for="receipt-footer-tag">Tagline</label><input id="receipt-footer-tag" name="footerTag" /></div>
+              </div>
+            </details>
           </div>
         </form>
         <footer class="modal-footer">
@@ -553,6 +598,7 @@
     </div>
     <div class="toast" id="admin-toast" role="status" aria-live="polite"><span class="toast-icon">✓</span><span id="admin-toast-message">Saved</span></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="./config.js"></script>
     <script src="./mail.js"></script>

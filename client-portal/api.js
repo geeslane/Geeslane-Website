@@ -1731,6 +1731,8 @@
       if (result.data?.sms === false && result.data?.smsError) {
         logPortalError("portal-sms", result.data.smsError);
       }
+      const wantedFile = Array.isArray(payload?.attachments) && payload.attachments.some((item) => item?.content || item?.path);
+      if (wantedFile) return Boolean(result.data?.email);
       return Boolean(result.data?.sent || result.data?.sms || result.data?.push);
     } catch (error) {
       logPortalError("portal-mail", error);

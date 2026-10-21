@@ -42,19 +42,78 @@
     `;
   }
 
-  function billingFooter() {
+  const COPY_MARK = "[[geeslane-copy]]";
+  const BILLING_COPY = {
+    thanks: "Thank you for your payment.",
+    regards: "Kind regards,",
+    sign: "Lois",
+    signName: "Lois Adegbohungbe",
+    role: "Founder, Geeslane",
+    email: "contact@geeslane.com",
+    site: "www.geeslane.com",
+    social: "@gees.lane",
+    tag: "Websites | AI Solutions | Digital Growth"
+  };
+
+  function resolveBillingCopy(saved) {
+    const source = saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+    const copy = { ...BILLING_COPY };
+    Object.keys(BILLING_COPY).forEach((key) => {
+      const value = source[key] != null ? String(source[key]).trim() : "";
+      if (value) copy[key] = value;
+    });
+    return copy;
+  }
+
+  function splitNotes(notes) {
+    const text = String(notes || "");
+    const index = text.indexOf(COPY_MARK);
+    if (index < 0) return { notes: text.trim(), copy: {} };
+    let copy = {};
+    try {
+      const parsed = JSON.parse(text.slice(index + COPY_MARK.length).trim());
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) copy = parsed;
+    } catch (_) { copy = {}; }
+    return { notes: text.slice(0, index).trim(), copy };
+  }
+
+  function joinNotes(notes, copy) {
+    const visible = String(notes || "").trim();
+    const saved = {};
+    const source = copy && typeof copy === "object" ? copy : {};
+    Object.keys(BILLING_COPY).forEach((key) => {
+      const value = source[key] != null ? String(source[key]).trim() : "";
+      if (value && value !== BILLING_COPY[key]) saved[key] = value;
+    });
+    if (!Object.keys(saved).length) return visible;
+    return `${visible}${visible ? "\n\n" : ""}${COPY_MARK}\n${JSON.stringify(saved)}`;
+  }
+
+  function billingFooter(copy) {
+    const resolved = resolveBillingCopy(copy);
     const icon = (inner) => `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#0b6b45"/>${inner}</svg>`;
     const mail = icon('<path fill="#fff" d="M6.2 8h11.6v8H6.2V8zm1.1.9 4.7 3.1 4.7-3.1V8.6L12 11.6 7.3 8.6v.3z"/>');
     const web = icon('<path fill="none" stroke="#fff" stroke-width="1.5" d="M12 6.6a5.4 5.4 0 1 0 0 10.8 5.4 5.4 0 0 0 0-10.8Z"/><path fill="none" stroke="#fff" stroke-width="1.4" d="M6.6 12h10.8M12 6.6c1.5 1.5 2.3 3.3 2.3 5.4s-.8 3.9-2.3 5.4c-1.5-1.5-2.3-3.3-2.3-5.4s.8-3.9 2.3-5.4Z"/>');
     const social = icon('<path fill="#fff" d="M9.2 8.2h5.6c.9 0 1.6.7 1.6 1.6v5.6c0 .9-.7 1.6-1.6 1.6H9.2c-.9 0-1.6-.7-1.6-1.6V9.8c0-.9.7-1.6 1.6-1.6zm2.8 1.5a2.6 2.6 0 1 0 0 5.2 2.6 2.6 0 0 0 0-5.2zm0 1.1a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm2.8-.6a.55.55 0 1 0 0 1.1.55.55 0 0 0 0-1.1z"/>');
     return `<footer class="quote-footer">
       <div class="quote-footer-links">
-        <span>${mail} contact@geeslane.com</span>
-        <span>${web} www.geeslane.com</span>
-        <span>${social} @gees.lane</span>
+        <span>${mail} ${escapeHtml(resolved.email)}</span>
+        <span>${web} ${escapeHtml(resolved.site)}</span>
+        <span>${social} ${escapeHtml(resolved.social)}</span>
       </div>
-      <p class="quote-footer-tag">Websites | AI Solutions | Digital Growth</p>
+      <p class="quote-footer-tag">${escapeHtml(resolved.tag)}</p>
     </footer>`;
+  }
+
+  function billingSignOff(copy, options = {}) {
+    const resolved = resolveBillingCopy(copy);
+    const thanks = options.thanks ? `<p class="quote-thanks-copy">${escapeHtml(resolved.thanks)}</p>` : "";
+    return `${thanks}
+      <p class="quote-regards">${escapeHtml(resolved.regards)}</p>
+      <p class="quote-sign">${escapeHtml(resolved.sign)}</p>
+      <p class="quote-sign-name">${escapeHtml(resolved.signName)}</p>
+      <p class="quote-sign-role">${escapeHtml(resolved.role)}</p>
+      ${billingFooter(resolved)}`;
   }
 
   function fullHtml(title, bodyHtml, options = {}) {
@@ -158,9 +217,9 @@
     return {
       margin: 0,
       filename: filename || "document.pdf",
-      image: { type: "jpeg", quality: 0.98 },
+      image: { type: "jpeg", quality: 0.95 },
       html2canvas: {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
@@ -189,22 +248,31 @@
     style.setAttribute("data-pdf-style", "1");
     style.textContent = `${css}
       [data-pdf-host] { color: #17211c; font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif; }
-      [data-pdf-host] .agreement-sheet { box-shadow: none; border: 0; border-radius: 0; max-width: none; margin: 0; padding: 28px 28px 24px 54px; background: #fff; }
+      [data-pdf-host] .agreement-sheet { box-sizing: border-box; box-shadow: none; border: 0; border-radius: 0; max-width: none; width: 794px; margin: 0; padding: 28px 22px 32px 40px !important; background: #fff; overflow: visible !important; }
+      [data-pdf-host] .agreement-sheet::before { content: "" !important; position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: #063b29; }
+      [data-pdf-host] .agreement-sheet::after { content: none !important; }
       [data-pdf-host] .quote-sheet { max-width: none; margin: 0; min-height: 1040px; }
       [data-pdf-host] .agreement-masthead { display: flex !important; align-items: flex-start; justify-content: space-between; padding-bottom: 12px; gap: 16px; }
       [data-pdf-host] .agreement-masthead-title { text-align: right !important; }
-      [data-pdf-host] .agreement-facts { display: grid !important; grid-template-columns: 1fr 1fr !important; margin: 14px 0 12px; }
+      [data-pdf-host] .agreement-facts { display: grid !important; grid-template-columns: 1fr 1fr !important; margin: 14px 0 12px; overflow: visible !important; }
+      [data-pdf-host] .agreement-fact { min-width: 0 !important; }
+      [data-pdf-host] .agreement-fact strong,
+      [data-pdf-host] .agreement-lead,
+      [data-pdf-host] .handover-closing,
+      [data-pdf-host] .agreement-checklist li { overflow-wrap: anywhere; word-break: break-word; max-width: 100%; }
+      [data-pdf-host] .agreement-fact strong a { color: #0b6b45; text-decoration: underline; }
       [data-pdf-host] .agreement-fact-wide { grid-column: 1 / -1 !important; }
       [data-pdf-host] .agreement-sign-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
       [data-pdf-host] .agreement-lead { margin: 0 0 14px; }
       [data-pdf-host] .agreement-sign-card { min-height: 0; padding: 0; }
       [data-pdf-host] img { max-width: 100%; height: auto; display: block; }
+      [data-pdf-host] .handover-logo { height: 40px !important; width: auto !important; max-width: 190px !important; }
       .html2pdf__overlay, .html2pdf__container { left: -12000px !important; top: 0 !important; right: auto !important; bottom: auto !important; }`;
     document.head.appendChild(style);
     const host = document.createElement("div");
     host.setAttribute("aria-hidden", "true");
     host.setAttribute("data-pdf-host", "1");
-    host.style.cssText = "position:absolute;left:-12000px;top:0;width:794px;background:#fff;padding:0;pointer-events:none;z-index:-1;";
+    host.style.cssText = "position:fixed;left:0;top:0;width:794px;background:#fff;padding:0;opacity:0.01;pointer-events:none;z-index:2147483000;";
     host.innerHTML = html;
     document.body.appendChild(host);
     try {
@@ -226,28 +294,79 @@
   }
 
   function blankPdf() {
-    if (window.jspdf?.jsPDF) return new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    if (window.jspdf?.jsPDF) return new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
     return null;
   }
 
-  async function captureHost(host, filename) {
-    if (typeof window.html2canvas === "function") {
-      return window.html2canvas(host, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        width: host.scrollWidth,
-        height: host.scrollHeight,
-        windowWidth: Math.max(host.scrollWidth, 794),
-        windowHeight: host.scrollHeight
-      });
-    }
-    return window.html2pdf().set(pdfOptions(filename)).from(host).toCanvas();
+  function ensureHtml2Canvas() {
+    if (typeof window.html2canvas === "function") return Promise.resolve(window.html2canvas);
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+      script.onload = () => {
+        if (typeof window.html2canvas === "function") resolve(window.html2canvas);
+        else reject(new Error("Could not load the PDF capture library."));
+      };
+      script.onerror = () => reject(new Error("Could not load the PDF capture library."));
+      document.head.appendChild(script);
+    });
+  }
+
+  function captureScale(host) {
+    const width = Math.max(host.scrollWidth || 794, 1);
+    const height = Math.max(host.scrollHeight || 1, 1);
+    let scale = 2;
+    const maxDim = 16384;
+    if (width * scale > maxDim) scale = maxDim / width;
+    if (height * scale > maxDim) scale = Math.min(scale, maxDim / height);
+    return Math.max(1.5, Math.min(2, Math.round(scale * 100) / 100));
+  }
+
+  function lineBreaks(host, canvas) {
+    const hostBox = host.getBoundingClientRect();
+    const height = hostBox.height || host.scrollHeight || 1;
+    const scaleY = canvas.height / height;
+    const cuts = [];
+    host.querySelectorAll("h1, h2, h3, p, li, .agreement-fact, .agreement-lead, .handover-closing, .agreement-masthead").forEach((node) => {
+      const rects = node.getClientRects();
+      for (let i = 0; i < rects.length; i += 1) {
+        const bottom = (rects[i].bottom - hostBox.top) * scaleY + 10;
+        if (bottom > 12 && bottom < canvas.height - 1) cuts.push(Math.ceil(bottom));
+      }
+    });
+    return [...new Set(cuts)].sort((a, b) => a - b);
+  }
+
+  async function captureHost(host) {
+    const html2canvas = await ensureHtml2Canvas();
+    const width = Math.max(host.scrollWidth, host.offsetWidth, 794);
+    const height = Math.max(host.scrollHeight, host.offsetHeight, 1);
+    const canvas = await html2canvas(host, {
+      scale: captureScale(host),
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      width,
+      height,
+      windowWidth: width,
+      windowHeight: height,
+      scrollX: 0,
+      scrollY: 0,
+      onclone(clonedDoc) {
+        clonedDoc.querySelectorAll("[data-pdf-host]").forEach((node) => {
+          node.style.opacity = "1";
+          node.style.position = "absolute";
+          node.style.left = "0";
+          node.style.top = "0";
+        });
+      }
+    });
+    if (!canvas) throw new Error("Could not capture the document.");
+    return canvas;
   }
 
   async function pdfFromHost(host, filename) {
-    const canvas = await captureHost(host, filename);
+    const canvas = await captureHost(host);
     const pdf = blankPdf() || await window.html2pdf().set({
       margin: 0,
       filename,
@@ -256,14 +375,26 @@
     }).from(host).toPdf().get("pdf");
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
-    const margin = 12;
+    const margin = 10;
     const maxW = pageW - margin * 2;
     const maxH = pageH - margin * 2;
-    const sliceHeight = Math.max(1, Math.floor(canvas.width * (maxH / maxW)));
+    const pagePx = Math.max(1, Math.floor(canvas.width * (maxH / maxW)));
+    const cuts = lineBreaks(host, canvas);
+    const quality = canvas.height > 9000 ? 0.86 : 0.92;
+    const slices = [];
     let offsetY = 0;
-    let pageIndex = 0;
     while (offsetY < canvas.height - 2) {
-      const sliceH = Math.min(sliceHeight, canvas.height - offsetY);
+      let sliceH = Math.min(pagePx, canvas.height - offsetY);
+      if (canvas.height - offsetY > pagePx + 2) {
+        const limit = offsetY + pagePx;
+        let safe = 0;
+        for (let i = 0; i < cuts.length; i += 1) {
+          if (cuts[i] <= offsetY + 48) continue;
+          if (cuts[i] > limit) break;
+          safe = cuts[i];
+        }
+        if (safe) sliceH = safe - offsetY;
+      }
       const slice = document.createElement("canvas");
       slice.width = canvas.width;
       slice.height = sliceH;
@@ -271,13 +402,41 @@
       context.fillStyle = "#ffffff";
       context.fillRect(0, 0, slice.width, slice.height);
       context.drawImage(canvas, 0, offsetY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-      if (pageIndex > 0) pdf.addPage();
-      pdf.setPage(pageIndex + 1);
-      pdf.addImage(slice.toDataURL("image/jpeg", 0.98), "JPEG", margin, margin, maxW, sliceH * (maxW / canvas.width), "", "FAST");
+      if (slices.length) pdf.addPage();
+      pdf.setPage(slices.length + 1);
+      pdf.addImage(slice.toDataURL("image/jpeg", quality), "JPEG", margin, margin, maxW, sliceH * (maxW / canvas.width), undefined, "NONE");
+      slices.push({ y: offsetY, h: sliceH });
       offsetY += sliceH;
-      pageIndex += 1;
     }
+    stampPdfLinks(pdf, host, canvas, margin, maxW, slices);
     return pdf;
+  }
+
+  function stampPdfLinks(pdf, host, canvas, margin, maxW, slices) {
+    if (typeof pdf?.link !== "function" || !host || !slices?.length) return;
+    const hostBox = host.getBoundingClientRect();
+    const width = hostBox.width || host.scrollWidth || 1;
+    const height = hostBox.height || host.scrollHeight || 1;
+    const scaleX = canvas.width / width;
+    const scaleY = canvas.height / height;
+    const mm = maxW / canvas.width;
+    host.querySelectorAll("a[href]").forEach((link) => {
+      const href = link.href || link.getAttribute("href");
+      if (!href) return;
+      const box = link.getBoundingClientRect();
+      const x = (box.left - hostBox.left) * scaleX;
+      const y = (box.top - hostBox.top) * scaleY;
+      const w = box.width * scaleX;
+      const h = box.height * scaleY;
+      if (w < 1 || h < 1) return;
+      const page = slices.findIndex((slice) => y >= slice.y && y + h <= slice.y + slice.h + 4);
+      if (page < 0) return;
+      const yOnPage = y - slices[page].y;
+      try {
+        pdf.setPage(page + 1);
+        pdf.link(margin + x * mm, margin + yOnPage * mm, Math.max(w * mm, 1), Math.max(h * mm, 1), { url: href });
+      } catch (_) { /* the address is still printed on the page */ }
+    });
   }
 
   function blobToBase64(blob) {
@@ -321,6 +480,6 @@
   }
 
   window.GeeslaneDocs = Object.freeze({
-    escapeHtml, billingCss, billingFooter, fullHtml, viewHtml, printHtml, pdfAttachment, downloadPdf
+    escapeHtml, billingCss, billingFooter, billingSignOff, resolveBillingCopy, splitNotes, joinNotes, fullHtml, viewHtml, printHtml, pdfAttachment, downloadPdf
   });
 })();

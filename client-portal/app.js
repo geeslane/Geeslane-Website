@@ -934,7 +934,8 @@
     }
     const ok = await window.GeeslaneHandover?.downloadPdf?.(pack, {
       clientName: state.profile.name,
-      projectTitle: displayProjectName()
+      projectTitle: displayProjectName(),
+      service: state.project?.service || ""
     });
     if (ok === false) toast("The PDF opened in print instead. Save it from there.");
   }

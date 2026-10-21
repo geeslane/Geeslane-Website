@@ -29,7 +29,7 @@
       automation: ["automationNeed"],
       strategy: ["businessProblem", "notWorkingWell", "successLookLike"]
     },
-    4: ["confirmAccurate", "confirmNoContract", "confirmFollowUp"]
+    4: ["confirmAccurate", "confirmNoContract", "confirmFollowUp", "confirmTerms"]
   };
 
   const DETAIL_LABELS = [
@@ -86,7 +86,7 @@
   ];
 
   const DRAFT_KEY = "geeslane.serviceRequest.draft";
-  const CONFIRM_FIELDS = new Set(["confirmAccurate", "confirmNoContract", "confirmFollowUp"]);
+  const CONFIRM_FIELDS = new Set(["confirmAccurate", "confirmNoContract", "confirmFollowUp", "confirmTerms"]);
 
   let step = 1;
   let service = "";
@@ -239,8 +239,11 @@
       return "";
     }
     if (step === 4) {
+      if (!form().elements.confirmTerms.checked) {
+        return "Please read the Terms & Agreement and tick the box before sending.";
+      }
       if (!form().elements.confirmAccurate.checked || !form().elements.confirmNoContract.checked || !form().elements.confirmFollowUp.checked) {
-        return "Please confirm the three statements before sending.";
+        return "Please confirm the statements before sending.";
       }
     }
     return "";

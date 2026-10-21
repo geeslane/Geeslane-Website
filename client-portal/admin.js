@@ -335,12 +335,13 @@
       intro,
       rows: rows || [],
       greetingName,
+      ...(extras.greeting !== undefined ? { greeting: extras.greeting } : {}),
       clientEmail: email,
       clientPhone: phone,
       replyTo: window.GEESLANE_CONFIG?.supportEmail || "contact@geeslane.com",
       ctaPage: extras.ctaPage || "client",
       ctaUrl: extras.ctaUrl,
-      ctaLabel: extras.ctaLabel || "Open your portal",
+      ctaLabel: extras.ctaLabel !== undefined ? extras.ctaLabel : "Open your portal",
       attachments: extras.attachments || [],
       attachmentNote: extras.attachmentNote,
       blocks: extras.blocks || [],
@@ -1389,12 +1390,57 @@
     if (rootId !== "approval-handover") renderAgreementPreview();
   }
 
+  function renderAgreementCopyFields(draft) {
+    const root = document.getElementById("agreement-copy-fields");
+    if (!root || !window.GeeslaneAgreement?.resolveDocumentCopy) return;
+    const track = agreementTrack(draft);
+    const copy = window.GeeslaneAgreement.resolveDocumentCopy(track, draft?.documentCopy || draft?.handover?.documentCopy);
+    const clauses = copy.clauses.map((item, index) => `
+      <div class="field"><label>Term ${index + 1} title</label><input data-copy-clause-title="${index}" value="${escapeHtml(item.title)}" /></div>
+      <div class="field field-full"><label>Term ${index + 1}</label><textarea data-copy-clause-body="${index}" rows="3">${escapeHtml(item.body)}</textarea></div>
+    `).join("");
+    root.innerHTML = `
+      <div class="field field-full"><label for="agreement-doc-title">Document title</label><input id="agreement-doc-title" data-copy="title" value="${escapeHtml(copy.title)}" /></div>
+      <div class="field field-full"><label for="agreement-lead">Introduction</label><textarea id="agreement-lead" data-copy="lead" rows="2">${escapeHtml(copy.lead)}</textarea></div>
+      ${clauses}
+      <div class="field field-full"><label for="agreement-checklist-heading">Checklist heading</label><input id="agreement-checklist-heading" data-copy="checklist" value="${escapeHtml(copy.checklist)}" /></div>
+      <div class="field field-full"><label for="agreement-sign-copy">Acceptance line</label><textarea id="agreement-sign-copy" data-copy="signCopy" rows="2">${escapeHtml(copy.signCopy)}</textarea></div>
+      <div class="field field-full"><label for="agreement-endorsement">Footer line</label><input id="agreement-endorsement" data-copy="endorsement" value="${escapeHtml(copy.endorsement)}" /></div>
+    `;
+  }
+
+  function readAgreementCopy() {
+    const track = agreementTrack();
+    const base = window.GeeslaneAgreement.defaultDocumentCopy(track);
+    const root = document.getElementById("agreement-copy-fields");
+    if (!root) return base;
+    const pick = (key) => {
+      const value = String(root.querySelector(`[data-copy="${key}"]`)?.value || "").trim();
+      return value || base[key];
+    };
+    return {
+      track,
+      title: pick("title"),
+      lead: pick("lead"),
+      checklist: pick("checklist"),
+      signCopy: pick("signCopy"),
+      endorsement: pick("endorsement"),
+      clauses: base.clauses.map((item, index) => ({
+        title: String(root.querySelector(`[data-copy-clause-title="${index}"]`)?.value || "").trim() || item.title,
+        body: String(root.querySelector(`[data-copy-clause-body="${index}"]`)?.value || "").trim() || item.body
+      }))
+    };
+  }
+
   function readAgreementForm() {
     const form = document.getElementById("agreement-form");
     if (!form) return window.GeeslaneAgreement.blank();
     const track = agreementTrack();
     const startDate = dateInputValue(form.elements.startDate?.value);
     const completionDate = dateInputValue(form.elements.completionDate?.value);
+    const documentCopy = readAgreementCopy();
+    const handover = window.GeeslaneAgreement.packHandover(readHandoverList());
+    handover.documentCopy = documentCopy;
     return {
       track,
       clientName: String(form.elements.clientName?.value || "").trim(),
@@ -1408,7 +1454,8 @@
       startDate,
       completionDate,
       timeline: [startDate, completionDate].filter(Boolean).join(" – "),
-      handover: window.GeeslaneAgreement.packHandover(readHandoverList()),
+      handover,
+      documentCopy,
       savedAt: agreementContext.saved?.savedAt || "",
       saved: Boolean(agreementContext.saved)
     };
@@ -1431,6 +1478,7 @@
     if (form.elements.startDate) form.elements.startDate.value = dateInputValue(draft.startDate || agreementContext.project?.startDate);
     if (form.elements.completionDate) form.elements.completionDate.value = dateInputValue(draft.completionDate || agreementContext.project?.targetDate);
     renderHandoverFields(draft.handover, track);
+    renderAgreementCopyFields(draft);
   }
 
   function renderAgreementPreview() {
@@ -1516,6 +1564,23 @@
     if (drive) drive.value = handoverPack.fileDriveUrl || "";
     if (retention) retention.value = String(handoverPack.fileRetentionDays || 30);
     if (notes) notes.value = handoverPack.notes || "";
+    const copy = window.GeeslaneHandover.resolveDocumentCopy?.(handoverPack.sections?.documentCopy, handoverPack.fileRetentionDays);
+    const intro = document.getElementById("handover-intro");
+    const password = document.getElementById("handover-password");
+    const archive = document.getElementById("handover-archive");
+    const closing = document.getElementById("handover-closing");
+    if (copy) {
+      if (intro) intro.value = copy.intro;
+      if (password) password.value = copy.password;
+      if (archive) archive.value = copy.archive;
+      if (closing) closing.value = copy.closing;
+    }
+    const savedDetails = handoverPack.sections?.documentCopy?.values || {};
+    const contact = handoverContact();
+    const clientField = document.getElementById("handover-client");
+    const emailField = document.getElementById("handover-deliver-email");
+    if (clientField) clientField.value = String(savedDetails.clientName || "").trim() || contact.name || contact.user?.name || "";
+    if (emailField) emailField.value = String(savedDetails.deliverEmail || "").trim() || contact.email || "";
     const list = document.getElementById("handover-checklist");
     if (list) {
       const items = Array.isArray(handoverPack.checklist) && handoverPack.checklist.length
@@ -1583,6 +1648,17 @@
     pack.fileRetentionDays = Number(form?.elements.fileRetentionDays?.value || 30);
     pack.notes = String(form?.elements.notes?.value || "").trim();
     pack.checklist = readHandoverChecklist();
+    pack.sections.documentCopy = {
+      enabled: true,
+      values: {
+        intro: String(form?.elements.handoverIntro?.value || "").trim(),
+        password: String(form?.elements.handoverPassword?.value || "").trim(),
+        archive: String(form?.elements.handoverArchive?.value || "").trim(),
+        closing: String(form?.elements.handoverClosing?.value || "").trim(),
+        clientName: String(form?.elements.clientName?.value || "").trim(),
+        deliverEmail: String(form?.elements.deliverEmail?.value || "").trim()
+      }
+    };
     if (pack.sections.archive?.values) {
       pack.sections.archive.values.driveUrl = pack.sections.archive.values.driveUrl || pack.fileDriveUrl;
       pack.sections.archive.values.retentionDays = String(pack.fileRetentionDays);
@@ -1590,15 +1666,28 @@
     return pack;
   }
 
+  function handoverDeliverEmail() {
+    return String(document.getElementById("handover-deliver-email")?.value || "").trim() || handoverContact().email || "";
+  }
+
   function handoverOptions() {
     const contact = handoverContact();
-    return { clientName: contact.name || contact.user?.name, projectTitle: contact.project?.name || handoverProject()?.name };
+    const typedName = String(document.getElementById("handover-client")?.value || "").trim();
+    const project = handoverProject();
+    return { clientName: typedName || contact.name || contact.user?.name, projectTitle: contact.project?.name || project?.name, service: project?.service || "" };
   }
 
   function renderHandoverPreview() {
     const node = document.getElementById("admin-handover-document");
     if (!node || !window.GeeslaneHandover) return;
-    window.GeeslaneHandover.renderInto(node, readHandoverForm(), handoverOptions());
+    const pack = readHandoverForm();
+    const intro = document.getElementById("handover-intro");
+    if (intro && window.GeeslaneHandover.isDefaultIntro?.(intro.value)) {
+      const next = window.GeeslaneHandover.defaultIntro(pack.fileRetentionDays);
+      if (intro.value !== next) intro.value = next;
+      if (pack.sections.documentCopy?.values) pack.sections.documentCopy.values.intro = next;
+    }
+    window.GeeslaneHandover.renderInto(node, pack, handoverOptions());
   }
 
   async function loadHandover() {
@@ -1670,19 +1759,31 @@
   }
 
   function openHandoverEmail() {
-    const contact = handoverContact();
-    if (!contact.email) { toast("This project has no client email yet."); return; }
+    const email = handoverDeliverEmail();
+    if (!email) { toast("Add an email address to send this handover to."); return; }
     const copy = window.GeeslaneHandover.emailCopy(readHandoverForm(), handoverOptions());
+    document.getElementById("handover-email-to").value = email;
     document.getElementById("handover-email-subject").value = copy.subject;
     document.getElementById("handover-email-intro").value = copy.intro;
-    document.getElementById("handover-email-preview").textContent = `This will go to ${contact.email} with the PDF attached.`;
     openModal("handover-email-modal");
   }
 
+  function clientCanOpenPortal(project) {
+    const user = data.users.find((item) => item.role !== "admin" && item.clientId && item.clientId === project?.clientId);
+    if (!user || String(user.status || "").toLowerCase() === "pending") return false;
+    return !clientNeedsPortalInvite(user);
+  }
+
   async function sendHandoverEmail() {
-    const contact = handoverContact();
     const project = handoverProject();
-    if (!contact.email || !project) return;
+    const email = String(document.getElementById("handover-email-to")?.value || "").trim();
+    if (!project) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast("Enter an email address to send this handover to.");
+      return;
+    }
+    const deliver = document.getElementById("handover-deliver-email");
+    if (deliver) deliver.value = email;
     const pack = readHandoverForm();
     const button = document.getElementById("send-handover-email");
     window.GeeslaneAPI.setButtonBusy(button, true, "Sending…");
@@ -1693,32 +1794,39 @@
         toast("The handover PDF could not be built, so the email was not sent.");
         return;
       }
-      let attachment = built;
+      const attachment = {
+        filename: built?.filename || window.GeeslaneHandover.fileName({ ...pack, ...handoverOptions() }, "pdf"),
+        content: built?.content || ""
+      };
       if (blob) {
-        const stored = await window.GeeslaneAPI.adminSubmit("adminStoreHandoverPdf", { projectId: project.id, blob });
-        pack.storagePath = stored?.storagePath || pack.storagePath;
-        if (stored?.url) attachment = { filename: built?.filename || window.GeeslaneHandover.fileName({ ...pack, ...handoverOptions() }, "pdf"), path: stored.url };
+        try {
+          const stored = await window.GeeslaneAPI.adminSubmit("adminStoreHandoverPdf", { projectId: project.id, blob });
+          pack.storagePath = stored?.storagePath || pack.storagePath;
+        } catch (_) { /* the email still carries the PDF */ }
       }
-      if (!attachment?.path && !attachment?.content) {
+      if (!attachment.content) {
         toast("The handover PDF could not be attached, so the email was not sent.");
         return;
       }
-      const sent = await notifyClient(contact.email, document.getElementById("handover-email-subject").value, document.getElementById("handover-email-intro").value, [
+      const intro = document.getElementById("handover-email-intro").value;
+      const portalReady = clientCanOpenPortal(project);
+      const sent = await notifyClient(email, document.getElementById("handover-email-subject").value, intro, [
         ["Project", project.name],
         ["File copy", pack.fileDriveUrl],
         ["Our copy removed after", `${pack.fileRetentionDays} days`]
-      ], contact.name, {
+      ], handoverOptions().clientName, {
+        greeting: /^hi\b/i.test(String(intro || "").trim()) ? "" : undefined,
         attachments: [attachment],
-        attachmentNote: window.GeeslaneHandover.emailCopy(pack, handoverOptions()).attachmentNote,
+        attachmentNote: portalReady ? "You can also download the PDF again from your portal." : "",
         ctaPage: "client",
-        ctaLabel: "Open your portal"
+        ctaLabel: portalReady ? "Open your portal" : ""
       });
       if (!sent) {
         toast("The email could not be sent with the PDF attached.");
         return;
       }
       pack.status = "sent";
-      pack.sentTo = contact.email;
+      pack.sentTo = email;
       pack.sentAt = new Date().toISOString();
       handoverPack = await window.GeeslaneAPI.adminSubmit("adminSaveHandover", { projectId: project.id, handover: pack });
       closeModal("handover-email-modal");
@@ -1955,6 +2063,39 @@
     resetReceiptForm();
   }
 
+  const BILLING_COPY_FIELDS = [
+    ["thanks", "thanks"],
+    ["regards", "regards"],
+    ["sign", "sign"],
+    ["signName", "signName"],
+    ["role", "role"],
+    ["footerEmail", "email"],
+    ["footerSite", "site"],
+    ["footerSocial", "social"],
+    ["footerTag", "tag"]
+  ];
+
+  function fillBillingCopy(form, copy) {
+    if (!form || !window.GeeslaneDocs?.resolveBillingCopy) return;
+    const resolved = window.GeeslaneDocs.resolveBillingCopy(copy);
+    BILLING_COPY_FIELDS.forEach(([name, key]) => {
+      if (form.elements[name]) form.elements[name].value = resolved[key] || "";
+    });
+  }
+
+  function readBillingCopy(form) {
+    const copy = {};
+    BILLING_COPY_FIELDS.forEach(([name, key]) => {
+      if (form?.elements[name]) copy[key] = String(form.elements[name].value || "").trim();
+    });
+    return copy;
+  }
+
+  function storedNotes(form) {
+    const notes = String(form?.elements?.notes?.value || "").trim();
+    return window.GeeslaneDocs?.joinNotes?.(notes, readBillingCopy(form)) ?? notes;
+  }
+
   function resetInvoiceForm() {
     const form = document.getElementById("invoice-form");
     if (!form) return;
@@ -1962,6 +2103,7 @@
     form.elements.id.value = "";
     form.elements.currency.value = "NGN";
     form.elements.status.value = "Draft";
+    fillBillingCopy(form, {});
     setBillingFormTitle("invoice-form-title", false, "Invoice");
     constrainDateInput(document.getElementById("invoice-due"));
     updateInvoiceRemaining();
@@ -1978,7 +2120,9 @@
     form.elements.dueDate.value = dateInputValue(invoice.dueDate);
     form.elements.status.value = invoice.status || "Draft";
     form.elements.paidAmount.value = invoice.paidAmount || "";
-    form.elements.notes.value = invoice.notes || "";
+    const invoiceNotes = window.GeeslaneDocs?.splitNotes?.(invoice.notes) || { notes: invoice.notes || "", copy: {} };
+    form.elements.notes.value = invoiceNotes.notes;
+    fillBillingCopy(form, invoiceNotes.copy);
     setBillingFormTitle("invoice-form-title", Boolean(invoice.id), "Invoice");
     constrainDateInput(document.getElementById("invoice-due"), invoice.dueDate);
     updateInvoiceRemaining();
@@ -1996,7 +2140,7 @@
       dueDate: dateInputValue(form.elements.dueDate.value),
       status: String(form.elements.status.value || "Draft").trim() || "Draft",
       paidAmount: String(form.elements.paidAmount.value || "").trim(),
-      notes: String(form.elements.notes.value || "").trim()
+      notes: storedNotes(form)
     };
   }
 
@@ -2083,6 +2227,7 @@
     form.elements.currency.value = "NGN";
     form.elements.status.value = "Issued";
     form.elements.paidOn.value = todayInputValue();
+    fillBillingCopy(form, {});
     setBillingFormTitle("record-payment-title", false, "Record Payment");
     fillReceiptInvoiceOptions("");
   }
@@ -2098,7 +2243,9 @@
     form.elements.paidOn.value = dateInputValue(receipt.paidOn) || todayInputValue();
     form.elements.method.value = receipt.method || "";
     form.elements.status.value = receipt.status || "Draft";
-    form.elements.notes.value = receipt.notes || "";
+    const receiptNotes = window.GeeslaneDocs?.splitNotes?.(receipt.notes) || { notes: receipt.notes || "", copy: {} };
+    form.elements.notes.value = receiptNotes.notes;
+    fillBillingCopy(form, receiptNotes.copy);
     setBillingFormTitle("record-payment-title", Boolean(receipt.id), "Record Payment");
     fillReceiptInvoiceOptions(receipt.invoiceId || "");
   }
@@ -2115,7 +2262,7 @@
       method: String(form.elements.method.value || "").trim(),
       invoiceId: String(form.elements.invoiceId.value || "").trim(),
       status: String(form.elements.status.value || "Draft").trim() || "Draft",
-      notes: String(form.elements.notes.value || "").trim()
+      notes: storedNotes(form)
     };
   }
 
@@ -3484,6 +3631,8 @@
     document.getElementById("save-portal-bank")?.addEventListener("click", savePortalBank);
     document.getElementById("invoice-form").addEventListener("input", updateInvoiceRemaining);
     document.getElementById("invoice-form").addEventListener("change", updateInvoiceRemaining);
+    fillBillingCopy(document.getElementById("invoice-form"), {});
+    fillBillingCopy(document.getElementById("receipt-form"), {});
     document.getElementById("reset-invoice").addEventListener("click", () => {
       resetInvoiceForm();
       focusBillingForm("invoice");

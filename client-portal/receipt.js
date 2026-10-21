@@ -43,6 +43,8 @@
     const description = receipt.description && receipt.description !== title ? receipt.description : "";
     const total = moneyLabel(receipt);
     const meta = [receipt.reference, receipt.projectName ? `Project: ${receipt.projectName}` : ""].filter(Boolean).join(" · ");
+    const split = window.GeeslaneDocs?.splitNotes?.(receipt.notes) || { notes: String(receipt.notes || "").replace(/\n*\[\[geeslane-copy\]\][\s\S]*$/, "").trim(), copy: {} };
+    const signOff = window.GeeslaneDocs?.billingSignOff?.(split.copy, { thanks: true }) || "";
     return `
       <article class="quote-sheet" lang="en">
         <header class="quote-top">
@@ -59,17 +61,12 @@
           <thead><tr><th>Description</th><th>Amount</th></tr></thead>
           <tbody>
             <tr><td>${escapeHtml(title)}${description ? `<small>${escapeHtml(description).replace(/\n/g, "<br />")}</small>` : ""}</td><td>${escapeHtml(total)}</td></tr>
-            ${receipt.notes ? `<tr><td colspan="2"><small>${escapeHtml(receipt.notes).replace(/\n/g, "<br />")}</small></td></tr>` : ""}
+            ${split.notes ? `<tr><td colspan="2"><small>${escapeHtml(split.notes).replace(/\n/g, "<br />")}</small></td></tr>` : ""}
           </tbody>
         </table>
         <div class="quote-total"><div><span>TOTAL</span><strong>${escapeHtml(total)}</strong></div></div>
         ${receipt.method ? `<p class="quote-method"><span>Payment method</span><strong>${escapeHtml(receipt.method)}</strong></p>` : ""}
-        <p class="quote-thanks-copy">Thank you for your payment.</p>
-        <p class="quote-regards">Kind regards,</p>
-        <p class="quote-sign">Lois</p>
-        <p class="quote-sign-name">Lois Adegbohungbe</p>
-        <p class="quote-sign-role">Founder, Geeslane</p>
-        ${window.GeeslaneDocs?.billingFooter?.() || ""}
+        ${signOff || `<p class="quote-thanks-copy">Thank you for your payment.</p><p class="quote-regards">Kind regards,</p><p class="quote-sign">Lois</p><p class="quote-sign-name">Lois Adegbohungbe</p><p class="quote-sign-role">Founder, Geeslane</p>${window.GeeslaneDocs?.billingFooter?.() || ""}`}
       </article>
     `;
   }

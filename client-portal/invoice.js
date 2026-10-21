@@ -54,6 +54,8 @@
     const meta = [invoice.reference, invoice.projectName ? `Project: ${invoice.projectName}` : "", due ? `Due ${due}` : ""].filter(Boolean).join(" · ");
     const dueTotal = remaining && remaining !== total ? remaining : total;
     const totalLabel = remaining && remaining !== total ? "AMOUNT DUE" : "TOTAL";
+    const split = window.GeeslaneDocs?.splitNotes?.(invoice.notes) || { notes: String(invoice.notes || "").replace(/\n*\[\[geeslane-copy\]\][\s\S]*$/, "").trim(), copy: {} };
+    const signOff = window.GeeslaneDocs?.billingSignOff?.(split.copy) || "";
     return `
       <article class="quote-sheet" lang="en">
         <header class="quote-top">
@@ -71,16 +73,12 @@
           <tbody>
             <tr><td>${escapeHtml(title)}${description ? `<small>${escapeHtml(description).replace(/\n/g, "<br />")}</small>` : ""}</td><td>${escapeHtml(total)}</td></tr>
             ${paid && remaining && remaining !== total ? `<tr><td>Paid so far</td><td>${escapeHtml(paid)}</td></tr>` : ""}
-            ${invoice.notes ? `<tr><td colspan="2"><small>${escapeHtml(invoice.notes).replace(/\n/g, "<br />")}</small></td></tr>` : ""}
+            ${split.notes ? `<tr><td colspan="2"><small>${escapeHtml(split.notes).replace(/\n/g, "<br />")}</small></td></tr>` : ""}
           </tbody>
         </table>
         <div class="quote-total"><div><span>${totalLabel}</span><strong>${escapeHtml(dueTotal)}</strong></div></div>
         ${bankBlock(invoice.bank || options.bank)}
-        <p class="quote-regards">Kind regards,</p>
-        <p class="quote-sign">Lois</p>
-        <p class="quote-sign-name">Lois Adegbohungbe</p>
-        <p class="quote-sign-role">Founder, Geeslane</p>
-        ${window.GeeslaneDocs?.billingFooter?.() || ""}
+        ${signOff || `<p class="quote-regards">Kind regards,</p><p class="quote-sign">Lois</p><p class="quote-sign-name">Lois Adegbohungbe</p><p class="quote-sign-role">Founder, Geeslane</p>${window.GeeslaneDocs?.billingFooter?.() || ""}`}
       </article>
     `;
   }
