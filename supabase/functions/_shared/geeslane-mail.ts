@@ -1,6 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
 
 export const LOGO_URL = "https://geeslane.com/images/logo.png";
+export const LOGO_WHITE_URL = "https://geeslane.com/images/logo-white.png";
 
 export function escapeHtml(value: unknown) {
   return String(value ?? "").replace(/[&<>'"]/g, (char) => (
@@ -56,7 +57,8 @@ export function brandedHtml(options: {
 .email-brand{color:#c8ead8!important;}
 .email-btn{background:#1ea36a!important;}
 .email-btn a{color:#ffffff!important;}
-.email-logo{background:transparent!important;padding:0!important;filter:brightness(0) invert(1)!important;-webkit-filter:brightness(0) invert(1)!important;}
+.email-logo-light{display:none!important;max-height:0!important;overflow:hidden!important;}
+.email-logo-dark{display:block!important;max-height:none!important;overflow:visible!important;width:132px!important;height:auto!important;}
 .email-row-label{color:#9bb5a8!important;border-color:#2c4a3e!important;}
 .email-row-value{color:#e8f2ec!important;border-color:#2c4a3e!important;}
 }
@@ -69,7 +71,8 @@ export function brandedHtml(options: {
 [data-ogsc] .email-brand{color:#c8ead8!important;}
 [data-ogsc] .email-btn{background:#1ea36a!important;}
 [data-ogsc] .email-btn a{color:#ffffff!important;}
-[data-ogsc] .email-logo{background:transparent!important;padding:0!important;filter:brightness(0) invert(1)!important;-webkit-filter:brightness(0) invert(1)!important;}
+[data-ogsc] .email-logo-light{display:none!important;max-height:0!important;overflow:hidden!important;}
+[data-ogsc] .email-logo-dark{display:block!important;max-height:none!important;overflow:visible!important;width:132px!important;height:auto!important;}
 [data-ogsc] .email-row-label{color:#9bb5a8!important;border-color:#2c4a3e!important;}
 [data-ogsc] .email-row-value{color:#e8f2ec!important;border-color:#2c4a3e!important;}`;
   return `<!doctype html>
@@ -88,7 +91,10 @@ export function brandedHtml(options: {
           <table class="email-card" role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid #d7ebe0;border-radius:20px;overflow:hidden;">
             <tr>
               <td class="email-header" align="center" style="padding:22px 36px 10px;background:#063b29;">
-                <img class="email-logo" src="${LOGO_URL}" alt="Geeslane" width="132" style="display:block;margin:0 auto;border:0;height:auto;max-width:132px;background:#ffffff;padding:10px 14px;border-radius:12px;" />
+                <img class="email-logo email-logo-light" src="${LOGO_URL}" alt="Geeslane" width="132" style="display:block;margin:0 auto;border:0;height:auto;max-width:132px;background:#ffffff;padding:10px 14px;border-radius:12px;" />
+                <!--[if !mso]><!-->
+                <img class="email-logo email-logo-dark" src="${LOGO_WHITE_URL}" alt="" width="132" style="display:none;max-height:0;overflow:hidden;margin:0 auto;border:0;height:auto;max-width:132px;" />
+                <!--<![endif]-->
               </td>
             </tr>
             <tr>

@@ -36,6 +36,6 @@ Portal activity emails (Brand & Content, requests, milestone updates) are sent f
 | Payment received | `payment-received.html` | Client | Receipt PDF |
 | Payment received | same layout, different copy | Admin | Receipt PDF |
 
-They use the Geeslane logo at `https://geeslane.com/images/logo.png`. Client emails greet by first name when it is known. The PDF is attached so nobody has to open the portal only to download it.
+They use the Geeslane logo at `https://geeslane.com/images/logo.png`. Dark mode swaps in `https://geeslane.com/images/logo-white.png`, so publish that file with the site. Paste these templates into Supabase again after this change. Client emails greet by first name when it is known. The PDF is attached so nobody has to open the portal only to download it.
 
 Custom SMTP (Resend) is configured only in the Supabase dashboard. See `DEPLOYMENT.md`. Redeploy `send-portal-mail`, `paystack-webhook`, and `verify-payment` after changing Edge Function mail.

@@ -18,7 +18,8 @@
         .email-code { color:#e8f8ef !important; }
         .email-btn { background:#1ea36a !important; }
         .email-btn a { color:#ffffff !important; }
-        .email-logo { background:#ffffff !important; }
+        .email-logo-light { display:none !important; max-height:0 !important; overflow:hidden !important; }
+        .email-logo-dark { display:block !important; max-height:none !important; overflow:visible !important; width:132px !important; height:auto !important; }
       }
       [data-ogsc] .email-bg { background:#102018 !important; color:#e8f2ec !important; }
       [data-ogsc] .email-card { background:#173028 !important; border-color:#2c4a3e !important; }
@@ -29,7 +30,8 @@
       [data-ogsc] .email-code { color:#e8f8ef !important; }
       [data-ogsc] .email-btn { background:#1ea36a !important; }
       [data-ogsc] .email-btn a { color:#ffffff !important; }
-      [data-ogsc] .email-logo { background:#ffffff !important; }
+      [data-ogsc] .email-logo-light { display:none !important; max-height:0 !important; overflow:hidden !important; }
+      [data-ogsc] .email-logo-dark { display:block !important; max-height:none !important; overflow:visible !important; width:132px !important; height:auto !important; }
     </style>
   </head>
   <body class="email-bg" style="margin:0;padding:0;background:#eef6f1;font-family:'DM Sans',Arial,sans-serif;color:#17211c;">
@@ -39,7 +41,10 @@
           <table class="email-card" role="presentation" width="560" cellspacing="0" cellpadding="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid #d7ebe0;border-radius:20px;overflow:hidden;">
             <tr>
               <td align="center" style="padding:30px 36px 8px;">
-                <img class="email-logo" src="https://geeslane.com/images/logo.png" alt="Geeslane" width="132" style="display:block;margin:0 auto;border:0;height:auto;max-width:132px;background:#ffffff;padding:10px 14px;border-radius:12px;" />
+                <img class="email-logo email-logo-light" src="https://geeslane.com/images/logo.png" alt="Geeslane" width="132" style="display:block;margin:0 auto;border:0;height:auto;max-width:132px;background:#ffffff;padding:10px 14px;border-radius:12px;" />
+                <!--[if !mso]><!-->
+                <img class="email-logo email-logo-dark" src="https://geeslane.com/images/logo-white.png" alt="" width="132" style="display:none;max-height:0;overflow:hidden;margin:0 auto;border:0;height:auto;max-width:132px;" />
+                <!--<![endif]-->
               </td>
             </tr>
             <tr>
