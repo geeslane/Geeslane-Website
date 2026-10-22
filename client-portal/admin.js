@@ -1539,6 +1539,44 @@
     return `<input name="${escapeHtml(name)}" type="${escapeHtml(type)}" value="${escapeHtml(current)}" placeholder="${escapeHtml(field.placeholder || "")}" autocomplete="off" />`;
   }
 
+  function extraServicesHtml(pack) {
+    const items = window.GeeslaneHandover?.extraItems?.(pack) || [];
+    const fields = window.GeeslaneHandover?.extraServiceFields?.() || [];
+    const blocks = items.map((item) => `<fieldset class="field field-full handover-extra" data-extra-service="${escapeHtml(item.id)}">
+      <legend>${escapeHtml(item.values.serviceName || "Other service")}</legend>
+      ${fields.map((field) => `<div class="field"><label>${escapeHtml(field.label)}</label>${handoverFieldControl(`extra-${item.id}`, field, item.values[field.key])}</div>`).join("")}
+      <button class="text-button handover-extra-remove" type="button" data-extra-remove>Remove this service</button>
+    </fieldset>`).join("");
+    return `${blocks}<p class="field-help handover-extra-help">Add Resend, Stripe, or any other account that is not listed above.</p><button class="button button-secondary" id="add-handover-service" type="button">Add another service</button>`;
+  }
+
+  function addHandoverService() {
+    const pack = readHandoverForm();
+    const id = `svc-${Date.now()}`;
+    pack.sections.extraServices = pack.sections.extraServices || { enabled: true, items: [] };
+    pack.sections.extraServices.items.push({ id, values: { serviceName: "", loginUrl: "", username: "", password: "", note: "" } });
+    handoverPack = pack;
+    renderHandoverForm();
+    document.querySelector(`[data-extra-service="${id}"] input`)?.focus();
+  }
+
+  function readExtraServices(form) {
+    return [...document.querySelectorAll("[data-extra-service]")].map((node, index) => {
+      const id = node.dataset.extraService || `svc-${index + 1}`;
+      const value = (key) => String(form?.elements[`extra-${id}-${key}`]?.value || "").trim();
+      return {
+        id,
+        values: {
+          serviceName: value("serviceName"),
+          loginUrl: value("loginUrl"),
+          username: value("username"),
+          password: value("password"),
+          note: value("note")
+        }
+      };
+    });
+  }
+
   function renderHandoverForm() {
     if (!window.GeeslaneHandover || !handoverPack) return;
     const defs = window.GeeslaneHandover.sectionsFor(handoverPack.track);
@@ -1556,7 +1594,7 @@
         return `<fieldset class="field field-full"><legend>${escapeHtml(section.title)}</legend>${(section.fields || []).map((field) =>
           `<div class="field"><label>${escapeHtml(field.label)}</label>${handoverFieldControl(section.key, field, values[field.key])}</div>`
         ).join("")}</fieldset>`;
-      }).join("");
+      }).join("") + extraServicesHtml(handoverPack);
     }
     const drive = document.getElementById("handover-drive");
     const retention = document.getElementById("handover-retention");
@@ -1647,6 +1685,7 @@
     pack.fileDriveUrl = String(form?.elements.fileDriveUrl?.value || "").trim();
     pack.fileRetentionDays = Number(form?.elements.fileRetentionDays?.value || 30);
     pack.notes = String(form?.elements.notes?.value || "").trim();
+    pack.sections.extraServices = { enabled: true, items: readExtraServices(form) };
     pack.checklist = readHandoverChecklist();
     pack.sections.documentCopy = {
       enabled: true,
@@ -3595,6 +3634,18 @@
       renderHandoverPreview();
     });
     document.getElementById("handover-form")?.addEventListener("input", renderHandoverPreview);
+    document.getElementById("handover-form")?.addEventListener("click", (event) => {
+      if (event.target.closest("#add-handover-service")) {
+        event.preventDefault();
+        addHandoverService();
+        return;
+      }
+      const remove = event.target.closest("[data-extra-remove]");
+      if (!remove) return;
+      event.preventDefault();
+      remove.closest("[data-extra-service]")?.remove();
+      renderHandoverPreview();
+    });
     document.getElementById("handover-checklist")?.addEventListener("click", (event) => {
       if (event.target.closest("#add-handover-check")) {
         event.preventDefault();

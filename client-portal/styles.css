@@ -922,6 +922,8 @@ body.is-page-loading { overflow: hidden; }
 .agreement-endorsement { margin: 28px 0 0; color: #8a9690; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .handover-closing { margin: 18px 0 0; color: #2a3931; font-size: 1.02rem; font-weight: 500; letter-spacing: 0; text-transform: none; line-height: 1.55; overflow-wrap: anywhere; word-break: break-word; }
 .handover-closing a { color: #0b6b45; font-weight: 650; text-decoration: underline; }
+.handover-extra-help { margin: 2px 0 10px; }
+.handover-extra-remove { margin-top: 2px; }
 @media (max-width: 720px) {
   .agreement-sheet { padding: 28px 18px 28px 36px; }
   .agreement-masthead, .agreement-facts, .agreement-sign-grid { grid-template-columns: 1fr; }

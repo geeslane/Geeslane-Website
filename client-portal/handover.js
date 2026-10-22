@@ -15,7 +15,13 @@
     { test: /github/i, href: "https://github.com/login" },
     { test: /godaddy/i, href: "https://sso.godaddy.com/" },
     { test: /cloudflare/i, href: "https://dash.cloudflare.com/login" },
-    { test: /netlify/i, href: "https://app.netlify.com/login" }
+    { test: /netlify/i, href: "https://app.netlify.com/login" },
+    { test: /resend/i, href: "https://resend.com/login" },
+    { test: /stripe/i, href: "https://dashboard.stripe.com/login" },
+    { test: /supabase/i, href: "https://supabase.com/dashboard/sign-in" },
+    { test: /mailgun/i, href: "https://login.mailgun.com/" },
+    { test: /twilio/i, href: "https://console.twilio.com/" },
+    { test: /sendgrid/i, href: "https://login.sendgrid.com/" }
   ];
 
   const FIELD = {
@@ -104,6 +110,13 @@
     ]
   };
   const COMMON_CHECKLIST = { key: "checklist", title: "Handover checklist", kind: "checklist" };
+  const EXTRA_FIELDS = [
+    FIELD.text("serviceName", "Service", "e.g. Resend"),
+    FIELD.signIn("loginUrl", "Where to log in", "resend.com or a login link"),
+    FIELD.text("username", "Username"),
+    FIELD.secret("password", "Password"),
+    FIELD.area("note", "Anything else", "Plan, sender address, API notes, or how the client uses it.")
+  ];
 
   const CATALOG = {
     website: [
@@ -279,6 +292,7 @@
     const sections = {};
     sectionsFor(resolved).forEach((section) => { sections[section.key] = blankSection(section); });
     sections.documentCopy = { enabled: true, values: defaultDocumentCopy(30) };
+    sections.extraServices = { enabled: true, items: [] };
     return {
       track: resolved,
       sections,
@@ -298,11 +312,17 @@
     if (!saved || typeof saved !== "object") return base;
     const incoming = saved.sections && typeof saved.sections === "object" ? saved.sections : {};
     Object.keys(base.sections).forEach((key) => {
+      if (key === "extraServices") return;
       const current = incoming[key];
       if (!current || typeof current !== "object") return;
       base.sections[key].enabled = current.enabled !== false;
       base.sections[key].values = fillSectionDefaults(key, { ...base.sections[key].values, ...(current.values || {}) });
     });
+    const savedExtras = Array.isArray(incoming.extraServices?.items) ? incoming.extraServices.items : [];
+    base.sections.extraServices = {
+      enabled: true,
+      items: savedExtras.map(normalizeExtra).filter(extraHasContent)
+    };
     if (incoming.documentCopy && typeof incoming.documentCopy === "object") {
       const values = incoming.documentCopy.values && typeof incoming.documentCopy.values === "object"
         ? incoming.documentCopy.values
@@ -380,8 +400,46 @@
     return text;
   }
 
+  function normalizeExtra(item, index) {
+    const values = item?.values && typeof item.values === "object" ? item.values : {};
+    return {
+      id: String(item?.id || `svc-${index + 1}`).replace(/[^a-z0-9-]/gi, "") || `svc-${index + 1}`,
+      values: {
+        serviceName: String(values.serviceName || "").trim(),
+        loginUrl: String(values.loginUrl || "").trim(),
+        username: String(values.username || "").trim(),
+        password: String(values.password || "").trim(),
+        note: String(values.note || "").trim()
+      }
+    };
+  }
+
+  function extraHasContent(item) {
+    return Object.values(item?.values || {}).some((value) => String(value || "").trim());
+  }
+
+  function extraItems(pack) {
+    const raw = pack?.sections?.extraServices?.items || [];
+    return (Array.isArray(raw) ? raw : []).map(normalizeExtra);
+  }
+
+  function documentSections(pack) {
+    const defs = sectionsFor(pack.track);
+    const extras = extraItems(pack).filter(extraHasContent).map((item) => ({
+      key: item.id,
+      title: item.values.serviceName || "Other service",
+      extra: true,
+      fields: EXTRA_FIELDS.filter((field) => field.key !== "serviceName")
+    }));
+    const at = defs.findIndex((section) => section.key === "passwords" || section.key === "checklist");
+    if (at === -1) return defs.concat(extras);
+    return defs.slice(0, at).concat(extras, defs.slice(at));
+  }
+
   function sectionHtml(section, data) {
-    const entry = data.sections?.[section.key];
+    const entry = section.extra
+      ? extraItems(data).find((item) => item.id === section.key)
+      : data.sections?.[section.key];
     if (!entry || entry.enabled === false) return "";
     if (section.kind === "checklist") {
       const items = Array.isArray(data.checklist) ? data.checklist.filter((item) => item?.label) : [];
@@ -418,13 +476,18 @@
       laid.push(pending);
     }
     const rows = laid.map((fact) => `<div class="agreement-fact${fact.wide ? " agreement-fact-wide" : ""}"><span>${escapeHtml(fact.field.label)}</span><strong>${linkedValue(fact.field, fact.value)}</strong></div>`).join("");
-    if (!rows) return "";
+    if (!rows) {
+      if (section.extra && section.title && section.title !== "Other service") {
+        return `<section class="agreement-block"><h2>${escapeHtml(section.title)}</h2></section>`;
+      }
+      return "";
+    }
     return `<section class="agreement-block"><h2>${escapeHtml(section.title)}</h2><div class="agreement-facts handover-facts">${rows}</div></section>`;
   }
 
   function documentHtml(data, options = {}) {
     const pack = mergePack(data?.track, data);
-    const defs = sectionsFor(pack.track);
+    const defs = documentSections(pack);
     const savedName = String(pack.sections?.documentCopy?.values?.clientName || "").trim();
     const clientName = savedName || window.GeeslaneMail?.portalName?.(options.clientName) || options.clientName || "Client";
     const projectTitle = options.projectTitle || "Project";
@@ -506,6 +569,8 @@
     TRACKS,
     trackOf,
     sectionsFor,
+    extraServiceFields() { return EXTRA_FIELDS.map((field) => ({ ...field })); },
+    extraItems,
     blankPack,
     mergePack,
     defaultIntro,
