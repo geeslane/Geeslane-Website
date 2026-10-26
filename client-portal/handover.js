@@ -9,6 +9,8 @@
   const NAMECHEAP_RENEW = "You will get a mail from namecheap once the expiry date approaches including the renewal steps.";
   const COST_NOTE = "This is the renewal cost at handover. The provider can change the price before the next renewal.";
   const HOSTING_NOTE = "This hosting is on Vercel's free plan. If the app goes beyond the free limits, such as traffic, bandwidth, builds, or commercial use, it will need a paid upgrade. The upgrade options are shown in the Vercel account after you sign in.";
+  const EMAIL_SETUP_NOTE = "Use this setup guide to set up your email on your phone or computer:";
+  const EMAIL_SETUP_LINK = "https://www.namecheap.com/support/knowledgebase/subcategory/2175/private-email-client-setup";
   const SIGN_IN = [
     { test: /namecheap/i, href: "https://www.namecheap.com/myaccount/login/" },
     { test: /vercel/i, href: "https://vercel.com/login" },
@@ -26,12 +28,12 @@
 
   const FIELD = {
     text: (key, label, placeholder) => ({ key, label, placeholder: placeholder || "", type: "text" }),
-    area: (key, label, placeholder) => ({ key, label, placeholder: placeholder || "", type: "textarea" }),
+    area: (key, label, placeholder, extra) => ({ key, label, placeholder: placeholder || "", type: "textarea", ...(extra || {}) }),
     date: (key, label) => ({ key, label, type: "date" }),
     secret: (key, label) => ({ key, label, type: "password" }),
     select: (key, label, options) => ({ key, label, type: "select", options }),
     signIn: (key, label, placeholder) => ({ key, label, placeholder: placeholder || "", type: "text", link: "signin" }),
-    url: (key, label, placeholder) => ({ key, label, placeholder: placeholder || "", type: "text", link: "url" })
+    url: (key, label, placeholder, extra) => ({ key, label, placeholder: placeholder || "", type: "text", link: "url", ...(extra || {}) })
   };
 
   const DOMAIN = {
@@ -65,7 +67,8 @@
     title: "Email",
     fields: [
       FIELD.text("mailbox", "Email address"),
-      FIELD.signIn("loginUrl", "Where to log in"),
+      FIELD.area("loginUrl", "Where to log in", EMAIL_SETUP_NOTE, { compact: true }),
+      FIELD.url("setupLink", "Setup guide link", "https://", { attach: "loginUrl" }),
       FIELD.text("username", "Username"),
       FIELD.secret("password", "Password"),
       FIELD.date("expiry", "Expiry date"),
@@ -263,6 +266,11 @@
     const next = { ...(values || {}) };
     if (key === "domain" || key === "email") {
       if (key === "domain" && !String(next.hostedOn || "").trim()) next.hostedOn = "namecheap.com";
+      if (key === "email") {
+        const login = normalizeEmailLogin(next.loginUrl, next.setupLink);
+        next.loginUrl = login.loginUrl;
+        next.setupLink = login.setupLink;
+      }
       if (!String(next.renewHow || "").trim()) next.renewHow = NAMECHEAP_RENEW;
       if (!String(next.renewCost || "").trim()) next.renewCost = key === "email" ? "$14.88 per year" : "$14.98 per year";
       if (!String(next.costNote || "").trim()) next.costNote = COST_NOTE;
@@ -355,6 +363,18 @@
     catch (_) { return "../images/logo.png"; }
   }
 
+  function normalizeEmailLogin(note, link) {
+    let text = String(note || "").trim();
+    let href = String(link || "").trim();
+    const match = text.match(/https?:\/\/[^\s)]+/i);
+    const embedded = match ? match[0].replace(/[.,)]+$/, "") : "";
+    const isGuide = /setup guide|set up your email/i.test(text);
+    if (!href) href = isGuide && embedded ? embedded : EMAIL_SETUP_LINK;
+    if (href && text.includes(href)) text = text.replace(href, " ").replace(/\s+/g, " ").trim();
+    if (!text) text = EMAIL_SETUP_NOTE;
+    return { loginUrl: text, setupLink: href };
+  }
+
   function signInHref(value) {
     const text = String(value || "").trim();
     if (!text) return "";
@@ -379,6 +399,29 @@
     const href = field.link === "signin" ? signInHref(value) : field.link === "url" ? directHref(value) : "";
     if (!href) return safe;
     return `<a href="${escapeHtml(href)}">${safe}</a>`;
+  }
+
+  function anchorHtml(value) {
+    const label = String(value || "").trim();
+    const href = directHref(label);
+    if (!href) return escapeHtml(label);
+    return `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
+  }
+
+  function fieldHtml(section, field, values) {
+    const text = fieldValue(values, field);
+    const links = (section.fields || [])
+      .filter((item) => item.attach === field.key)
+      .map((item) => String(values?.[item.key] || "").trim())
+      .filter(Boolean);
+    if (!text && !links.length) return "";
+    if (!links.length) return field.type === "textarea" && !field.link ? linkText(text) : linkedValue(field, text);
+    let html = text ? linkText(text) : "";
+    links.forEach((href) => {
+      if (text && text.includes(href)) return;
+      html += `${html ? " " : ""}${anchorHtml(href)}`;
+    });
+    return html;
   }
 
   function formatPackDate(value) {
@@ -449,9 +492,11 @@
       ).join("")}</ul></section>`;
     }
     const facts = (section.fields || []).map((field) => {
-      const value = fieldValue(entry.values, field);
+      if (field.attach) return null;
+      const plain = fieldValue(entry.values, field);
+      const value = fieldHtml(section, field, entry.values);
       if (!value) return null;
-      const wide = field.type === "textarea" && (value.includes("\n") || value.length > 60);
+      const wide = field.type === "textarea" && !field.compact && (plain.includes("\n") || plain.length > 60);
       return { field, value, wide };
     }).filter(Boolean);
     const laid = [];
@@ -475,7 +520,7 @@
       pending.wide = true;
       laid.push(pending);
     }
-    const rows = laid.map((fact) => `<div class="agreement-fact${fact.wide ? " agreement-fact-wide" : ""}"><span>${escapeHtml(fact.field.label)}</span><strong>${linkedValue(fact.field, fact.value)}</strong></div>`).join("");
+    const rows = laid.map((fact) => `<div class="agreement-fact${fact.wide ? " agreement-fact-wide" : ""}"><span>${escapeHtml(fact.field.label)}</span><strong>${fact.value}</strong></div>`).join("");
     if (!rows) {
       if (section.extra && section.title && section.title !== "Other service") {
         return `<section class="agreement-block"><h2>${escapeHtml(section.title)}</h2></section>`;

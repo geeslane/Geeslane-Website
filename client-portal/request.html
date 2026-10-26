@@ -35,6 +35,8 @@
           <h1 id="request-title">Tell Us What You Need</h1>
           <p id="request-lead" hidden></p>
           <p class="request-note">Do not submit passwords, card details, secret keys, or other sensitive credentials.</p>
+          <p class="request-note" id="request-prepare-note" hidden>Fill in what you already know from the conversation, then copy the link. They can edit every answer, and they still tick the confirmations and the Terms &amp; Agreement before it sends.</p>
+          <p class="request-note" id="request-shared-note" hidden>Geeslane filled this in from your conversation. Change anything that is wrong. On the last step, read the Terms &amp; Agreement and tick each box before you send.</p>
           <p id="request-followup" hidden><a class="button button-primary" href="../index.html">Go to Website</a></p>
         </section>
 
@@ -50,6 +52,7 @@
             <div class="request-step is-visible" data-step="1">
               <h2>About You</h2>
               <div class="form-grid">
+                <div class="field field-full" id="partner-code-field" hidden><label for="req-partner-code">Partner code</label><input id="req-partner-code" name="partnerCode" readonly /><small id="partner-code-note"></small></div>
                 <div class="field field-full"><label for="req-business">Business / Organisation Name <span>*</span></label><input id="req-business" name="business" required /></div>
                 <div class="field"><label for="req-name">Contact Person <span>*</span></label><input id="req-name" name="name" autocomplete="name" required /></div>
                 <div class="field"><label for="req-email">Email Address <span>*</span></label><input id="req-email" name="email" type="email" autocomplete="email" required /></div>
@@ -195,6 +198,7 @@
 
             <p class="form-error" id="request-error" hidden></p>
             <footer class="request-actions" id="request-actions">
+              <button class="button button-secondary" type="button" id="request-copy-link" hidden>Copy link for client</button>
               <button class="button button-secondary" type="button" id="request-back" hidden>Back</button>
               <button class="button button-primary" type="button" id="request-next">Continue</button>
             </footer>

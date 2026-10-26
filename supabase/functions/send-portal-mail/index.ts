@@ -254,6 +254,7 @@ Deno.serve(async (req) => {
     const audience = payload.audience === "client" || payload.audience === "both" ? payload.audience : "team";
     const kind = String(payload.kind || "").trim();
     const isServiceRequest = kind === "service-request";
+    const isPartnerWelcome = kind === "partner-welcome";
     const isEnsureUser = kind === "ensure-user";
     if (!isEnsureUser && (!subject || (!html && !text))) return json({ error: "Missing mail" }, 400);
 
@@ -264,7 +265,7 @@ Deno.serve(async (req) => {
     });
     const { data: authData, error: authError } = await supabase.auth.getUser(accessToken);
     const signedIn = Boolean(authData?.user) && !authError;
-    if (!signedIn && !isServiceRequest) return json({ error: "Sign in required" }, 401);
+    if (!signedIn && !isServiceRequest && !isPartnerWelcome) return json({ error: "Sign in required" }, 401);
 
     const { data: profile } = signedIn
       ? await supabase.from("profiles").select("role,status,email").eq("user_id", authData.user.id).maybeSingle()
@@ -309,10 +310,20 @@ Deno.serve(async (req) => {
         if (!rows?.length) return json({ error: "Request not found" }, 403);
       }
     }
+    if (isPartnerWelcome && !isAdmin) {
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+      if (!serviceKey || !validEmail(clientEmail)) return json({ error: "Missing email" }, 400);
+      const adminClient = createClient(Deno.env.get("SUPABASE_URL") || "", serviceKey, {
+        auth: { persistSession: false, autoRefreshToken: false }
+      });
+      const since = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+      const { data: partnerRows } = await adminClient.from("partners").select("id").ilike("email", clientEmail).gte("created_at", since).limit(1);
+      if (!partnerRows?.length) return json({ error: "Partner not found" }, 403);
+    }
 
     const recipients = new Set<string>();
     if (audience === "team" || audience === "both") recipients.add(teamTo.toLowerCase());
-    if ((audience === "client" || audience === "both") && validEmail(clientEmail) && (isAdmin || isServiceRequest)) {
+    if ((audience === "client" || audience === "both") && validEmail(clientEmail) && (isAdmin || isServiceRequest || isPartnerWelcome)) {
       recipients.add(clientEmail);
     }
 

@@ -90,7 +90,7 @@
   }
 
   function cellText(value) {
-    return escapeHtml(value).replace(/\r\n|\n|\r/g, "<br>");
+    return escapeHtml(value).replace(/\r\n|\n|\r/g, "<br>").replace(/https?:\/\/[^\s<]+/g, (url) => `<a href="${url}">${url}</a>`);
   }
 
   function darkModeCss() {

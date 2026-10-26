@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b6b45" />
+    <meta name="description" content="Join the Geeslane November Partner Programme. Share your invite link from 1 to 30 November 2026 and earn 20% of Geeslane fees." />
+    <title>November Partner Programme | Geeslane</title>
+    <link rel="icon" href="../favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../client-portal/styles.css" />
+  </head>
+  <body class="request-body">
+    <section class="request-screen" aria-labelledby="partner-title">
+      <header class="auth-header">
+        <a class="auth-brand" href="../index.html" aria-label="Geeslane home">
+          <img class="brand-logo" src="../images/logo.png" alt="Geeslane Technologies" />
+        </a>
+        <nav class="auth-actions" aria-label="Account actions">
+          <a class="button button-ghost" href="../index.html">Website</a>
+          <a class="button button-primary" href="#partner-form">Register</a>
+        </nav>
+      </header>
+
+      <main class="request-main partner-main">
+        <section class="request-intro" id="partner-intro">
+          <p class="eyebrow">1–30 November 2026</p>
+          <h1 id="partner-title">November Partner Programme</h1>
+          <p id="partner-lead">Share your invite link. When a new client accepts Geeslane’s quote and pays in November, you earn 20% of the Geeslane fee. The most you can earn on one project is ₦100,000.</p>
+        </section>
+
+        <section class="card partner-card" id="partner-join">
+          <form id="partner-form" novalidate>
+            <h2>Register as a partner</h2>
+            <p class="partner-copy">This is for you as a person. The business you refer registers itself through your link.</p>
+            <div class="form-grid">
+              <div class="field"><label for="partner-name">Full name <span>*</span></label><input id="partner-name" name="fullName" autocomplete="name" required /><small>Use the same name as your bank account.</small></div>
+              <div class="field"><label for="partner-email">Email address <span>*</span></label><input id="partner-email" name="email" type="email" autocomplete="email" required /></div>
+              <div class="field field-full"><label for="partner-phone-local">Phone / WhatsApp <span>*</span></label><div class="phone-combo" data-phone-combo="phone"><select id="partner-phone-code" aria-label="Country code"></select><input id="partner-phone-local" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="801 234 5678" required /><input id="partner-phone" name="phone" type="hidden" /></div></div>
+              <div class="field"><label for="partner-bank">Bank name <span>*</span></label><input id="partner-bank" name="bankName" required /></div>
+              <div class="field"><label for="partner-account-number">Account number <span>*</span></label><input id="partner-account-number" name="accountNumber" inputmode="numeric" maxlength="10" required /></div>
+              <div class="field field-full"><label for="partner-account-name">Account name <span>*</span></label><input id="partner-account-name" name="accountName" required /><small>This must match your full name above. Geeslane pays this account.</small></div>
+            </div>
+            <p class="partner-copy">Join the partner WhatsApp group before you send this form. That group is where updates, marketing kits, and tips are shared.</p>
+            <p><a class="button button-secondary" href="https://chat.whatsapp.com/FVDHHYw2IVBL2JayqlzUES?s=cl&amp;p=i&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener">Join the WhatsApp group</a></p>
+            <div class="confirm-stack">
+              <label class="confirm-check"><input name="joinedWhatsapp" type="checkbox" required /><span>I have joined the Geeslane Refer &amp; Earn WhatsApp group.</span></label>
+              <label class="confirm-check"><input name="agreeTerms" type="checkbox" required /><span>I have read and agree to the <a href="#partner-terms">November Partner Programme terms</a>.</span></label>
+            </div>
+            <p class="form-error" id="partner-error" hidden></p>
+            <button class="button button-primary" id="partner-submit" type="submit">Send and get my link</button>
+          </form>
+        </section>
+
+        <section class="card partner-card" id="partner-ready" hidden>
+          <p class="eyebrow">You are in</p>
+          <h2 id="partner-ready-title">Check your email</h2>
+          <p class="partner-copy" id="partner-ready-copy"></p>
+          <p class="partner-label">Your invite link</p>
+          <p class="partner-link-row"><a id="partner-invite-link" href=""></a><button class="button button-secondary" id="partner-copy-invite" type="button">Copy</button></p>
+          <p class="partner-label">Your partner page</p>
+          <p class="partner-link-row"><a id="partner-space-link" href="">Open your page</a></p>
+          <div class="partner-kit" id="partner-ready-kit"></div>
+        </section>
+
+        <section class="card partner-card" id="partner-space" hidden>
+          <p class="eyebrow">Your page</p>
+          <h2 id="partner-space-title">Partner page</h2>
+          <p class="partner-copy" id="partner-space-lead"></p>
+          <p class="partner-label">Invite link</p>
+          <p class="partner-link-row"><a id="partner-space-invite" href=""></a><button class="button button-secondary" id="partner-space-copy" type="button">Copy</button></p>
+          <h3>Notifications</h3>
+          <ul class="partner-notices" id="partner-notices"></ul>
+          <h3>People from your link</h3>
+          <div id="partner-referrals"></div>
+          <h3>Payments to you</h3>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Project</th><th>Business</th><th>Payment</th><th>Date client paid</th><th>Your amount</th><th>Receipt</th></tr></thead><tbody id="partner-payments"></tbody></table></div>
+          <h3>Flyer kit</h3>
+          <div class="partner-kit" id="partner-space-kit"></div>
+          <p class="partner-copy"><a href="https://chat.whatsapp.com/FVDHHYw2IVBL2JayqlzUES?s=cl&amp;p=i&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener">WhatsApp group for updates, kits, and tips</a></p>
+        </section>
+
+        <section class="card partner-card partner-terms" id="partner-terms">
+          <p class="eyebrow">Terms</p>
+          <h2>November Partner Programme terms</h2>
+          <p>These terms are between you and Geeslane Technologies. They apply from the moment you send the registration form. Sending the form means you agree to them.</p>
+
+          <h3>What this is</h3>
+          <p>This is a 30-day referral arrangement for November 2026. You introduce new clients to Geeslane. You are not an employee, not an agent, and not a partner in the legal sense. You cannot set Geeslane’s prices, collect client money, sign for Geeslane, or say that you work for Geeslane.</p>
+          <p>You register as a person. A business does not register as a partner. A referred business sends its own service request through your invite link.</p>
+
+          <h3>When it runs</h3>
+          <p>The programme uses West Africa Time (Africa/Lagos). Your invite link attributes a request only from 1 November 2026 through 30 November 2026. After 30 November the link stops working for new requests. Your page stays open so you can see what you earned and which transfers Geeslane has made.</p>
+          <p>You may register before 1 November. The link still starts counting on 1 November. Registration itself closes at the end of 30 November 2026.</p>
+
+          <h3>Your link</h3>
+          <p>Geeslane issues one invite link to the email on your form as soon as you register. The request form fills your code from that link. A code typed in by hand does not count. If two partners send the same person, the first request Geeslane stores for that email address keeps the referral.</p>
+          <p>You may share the link and the flyer kit Geeslane gives you. Do not change the logo, invent a discount, or promise a result Geeslane has not agreed. Do not present the flyers as your own brand.</p>
+
+          <h3>What counts</h3>
+          <p>A referral counts only when all of these are true:</p>
+          <ul>
+            <li>The person is new. If Geeslane was already speaking with them, the referral does not count. Geeslane’s record of that conversation is final.</li>
+            <li>They send the service request through your invite link in November 2026.</li>
+            <li>They accept Geeslane’s quote and the first payment clears between 1 and 30 November 2026. Accepting the quote includes paying the initial 50%. A one-off fee that clears in that window is the project payment.</li>
+          </ul>
+          <p>You earn 20% of the Geeslane fee in each counted payment, after any discount Geeslane has agreed. Domain, hosting, email, licences, and any other third-party amount are not part of that fee. Extra work quoted after the accepted offer does not earn.</p>
+          <p>The first payment earns 20% when it clears. The second payment earns 20% when it clears, including a balance paid after 30 November. A one-off fee is one project payment. The most you can earn on one project is ₦100,000. After that cap, further payments on the same project earn nothing.</p>
+
+          <h3>How you are paid</h3>
+          <p>Geeslane transfers your amount after each counted client payment has cleared, to the bank account on your form. The account name must match the full name you register with. If the account details are wrong, Geeslane is not required to pay a second time. Your page shows the project name, the business name, the payment type, the date the client paid, your amount, and the receipt note for Geeslane’s transfer. It does not show the client’s phone number or email. Keep what you see on that page private.</p>
+
+          <h3>WhatsApp group</h3>
+          <p>You confirm that you have joined the Geeslane Refer &amp; Earn WhatsApp group before you send the form. That group is for programme updates, marketing kits, and tips. Your welcome email repeats the group link.</p>
+
+          <h3>Records and law</h3>
+          <p>Geeslane’s record of the invite link, the request, the quote, and the cleared payments decides what counts. Nigerian law applies. Write first to contact@geeslane.com if something looks wrong. These terms cover this November programme only.</p>
+        </section>
+      </main>
+
+      <footer class="auth-footer">
+        <nav class="auth-footer-links" aria-label="Helpful links">
+          <a href="../index.html">Website</a>
+          <a href="../faq.html">FAQ</a>
+          <a href="../terms.html">Terms &amp; Agreement</a>
+          <a href="mailto:contact@geeslane.com">Contact</a>
+        </nav>
+      </footer>
+    </section>
+
+    <div class="page-loader" id="page-loader" hidden>
+      <div class="page-loader-card" role="status" aria-live="polite" aria-busy="true">
+        <span class="page-spinner" aria-hidden="true"></span>
+        <p class="page-loader-copy">Sending…</p>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../client-portal/config.js"></script>
+    <script src="../client-portal/mail.js"></script>
+    <script src="../client-portal/api.js"></script>
+    <script src="../client-portal/partner.js"></script>
+  </body>
+</html>

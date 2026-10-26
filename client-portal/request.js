@@ -43,6 +43,7 @@
     ["socialLinks", "Social Media Links"],
     ["businessDescription", "Business Description"],
     ["heardAbout", "How They Heard About Geeslane"],
+    ["partnerCode", "Partner code"],
     ["serviceLabel", "Service"],
     ["purpose", "Primary Purpose"],
     ["audience", "Who the Website Should Serve"],
@@ -94,6 +95,40 @@
   let submitted = false;
 
   function form() { return document.getElementById("service-request-form"); }
+
+  function lagosDay() {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lagos", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  }
+
+  function partnerWindow(day) {
+    if (day < "2026-11-01") return "before";
+    if (day > "2026-11-30") return "after";
+    return "open";
+  }
+
+  function livePartnerCode() {
+    const field = document.getElementById("partner-code-field");
+    if (!field || field.hidden || partnerWindow(lagosDay()) !== "open") return "";
+    return String(document.getElementById("req-partner-code")?.value || "").trim().toUpperCase();
+  }
+
+  function applyPartnerLink(params) {
+    const code = String(params.get("ref") || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const field = document.getElementById("partner-code-field");
+    const input = document.getElementById("req-partner-code");
+    const note = document.getElementById("partner-code-note");
+    if (!field || !input || !code || params.get("prepare") === "1") return;
+    const when = partnerWindow(lagosDay());
+    field.hidden = false;
+    input.value = code;
+    if (note) {
+      note.textContent = when === "open"
+        ? "This code came from your invite link. It cannot be typed in by hand."
+        : when === "before"
+          ? "This invite link starts on 1 November 2026."
+          : "This invite link closed on 30 November 2026.";
+    }
+  }
   function valueOf(name) {
     const node = form().elements[name];
     if (!node) return "";
@@ -135,7 +170,7 @@
     const fields = {};
     const checks = {};
     [...form().elements].forEach((el) => {
-      if (!el.name || CONFIRM_FIELDS.has(el.name)) return;
+      if (!el.name || CONFIRM_FIELDS.has(el.name) || el.name === "partnerCode") return;
       if (el.type === "checkbox") {
         if (!checks[el.name]) checks[el.name] = [];
         if (el.checked) checks[el.name].push(el.value);
@@ -166,6 +201,38 @@
     } catch (_) {}
   }
 
+  function applyDraft(draft, keepStep) {
+    if (!draft || typeof draft !== "object") return false;
+    step = keepStep ? Math.min(4, Math.max(1, Number(draft.step) || 1)) : 1;
+    service = String(draft.service || "");
+    if (step >= 3 && !service) step = 2;
+    if (form().elements.service) form().elements.service.value = service;
+    document.querySelectorAll("[data-service]").forEach((item) => {
+      item.classList.toggle("is-selected", item.dataset.service === service);
+    });
+    Object.entries(draft.fields || {}).forEach(([name, value]) => {
+      if (CONFIRM_FIELDS.has(name)) return;
+      const node = form().elements[name];
+      if (!node || node.type === "checkbox") return;
+      node.value = value == null ? "" : String(value);
+    });
+    Object.entries(draft.checks || {}).forEach(([name, values]) => {
+      if (CONFIRM_FIELDS.has(name)) return;
+      const nodes = form().elements[name];
+      if (!nodes) return;
+      const wanted = new Set(Array.isArray(values) ? values : []);
+      const list = typeof nodes.length === "number" ? [...nodes] : [nodes];
+      list.forEach((item) => {
+        if (item.type === "checkbox") item.checked = wanted.has(item.value);
+      });
+    });
+    CONFIRM_FIELDS.forEach((name) => {
+      const node = form().elements[name];
+      if (node) node.checked = false;
+    });
+    return true;
+  }
+
   function restoreDraft() {
     let draft;
     try {
@@ -173,29 +240,72 @@
     } catch (_) {
       return false;
     }
-    if (!draft || typeof draft !== "object") return false;
-    step = Math.min(4, Math.max(1, Number(draft.step) || 1));
-    service = draft.service || "";
-    if (step >= 3 && !service) step = 2;
-    if (form().elements.service) form().elements.service.value = service;
-    document.querySelectorAll("[data-service]").forEach((item) => {
-      item.classList.toggle("is-selected", item.dataset.service === service);
+    return applyDraft(draft, true);
+  }
+
+  function encodePrefill(draft) {
+    const json = JSON.stringify({
+      service: draft.service || "",
+      fields: draft.fields || {},
+      checks: draft.checks || {}
     });
-    Object.entries(draft.fields || {}).forEach(([name, value]) => {
-      const node = form().elements[name];
-      if (!node || node.type === "checkbox") return;
-      node.value = value == null ? "" : String(value);
-    });
-    Object.entries(draft.checks || {}).forEach(([name, values]) => {
-      const nodes = form().elements[name];
-      if (!nodes) return;
-      const wanted = new Set(Array.isArray(values) ? values : []);
-      const list = nodes.length !== undefined ? [...nodes] : [nodes];
-      list.forEach((item) => {
-        if (item.type === "checkbox") item.checked = wanted.has(item.value);
+    const bytes = new TextEncoder().encode(json);
+    let binary = "";
+    bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  }
+
+  function decodePrefill(token) {
+    const source = String(token || "").trim();
+    if (!source) return null;
+    try {
+      const padded = source.replace(/-/g, "+").replace(/_/g, "/");
+      const pad = padded.length % 4 === 0 ? "" : "=".repeat(4 - (padded.length % 4));
+      const binary = atob(padded + pad);
+      const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+      const draft = JSON.parse(new TextDecoder().decode(bytes));
+      if (!draft || typeof draft !== "object") return null;
+      const fields = {};
+      Object.entries(draft.fields || {}).forEach(([name, value]) => {
+        if (!CONFIRM_FIELDS.has(name)) fields[name] = value;
       });
-    });
-    return true;
+      const checks = {};
+      Object.entries(draft.checks || {}).forEach(([name, value]) => {
+        if (!CONFIRM_FIELDS.has(name)) checks[name] = value;
+      });
+      return { service: String(draft.service || ""), fields, checks };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function clientLink() {
+    const url = new URL("./request.html", location.href);
+    url.search = "";
+    url.hash = "";
+    url.searchParams.set("d", encodePrefill(collectDraft()));
+    return url.href;
+  }
+
+  async function copyClientLink() {
+    const button = document.getElementById("request-copy-link");
+    const link = clientLink();
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(link);
+      copied = true;
+    } catch (_) {
+      const input = document.createElement("textarea");
+      input.value = link;
+      document.body.appendChild(input);
+      input.select();
+      try { copied = document.execCommand("copy"); } catch (_) { copied = false; }
+      input.remove();
+    }
+    if (!button) return;
+    const label = button.textContent;
+    button.textContent = copied ? (link.length > 7000 ? "Link copied. It is long, so send it as one message." : "Link copied") : "Could not copy. Try again.";
+    setTimeout(() => { button.textContent = label; }, 2500);
   }
 
   function showStep(next) {
@@ -261,6 +371,7 @@
       socialLinks: valueOf("socialLinks"),
       businessDescription: valueOf("businessDescription"),
       heardAbout: valueOf("heardAbout"),
+      partnerCode: livePartnerCode(),
       service,
       serviceLabel: SERVICES[service] || service,
       purpose: valueOf("purpose"),
@@ -319,6 +430,7 @@
       contact: "WhatsApp",
       service: SERVICES[service] || service,
       description,
+      partnerCode: discovery.partnerCode,
       discovery
     };
   }
@@ -433,6 +545,7 @@
   document.querySelectorAll("[data-go-step]").forEach((button) => button.addEventListener("click", () => showStep(Number(button.dataset.goStep))));
   document.getElementById("request-back").addEventListener("click", () => showStep(Math.max(1, step - 1)));
   document.getElementById("request-next").addEventListener("click", goNext);
+  document.getElementById("request-copy-link")?.addEventListener("click", copyClientLink);
   form().addEventListener("submit", (event) => { event.preventDefault(); goNext(); });
   form().addEventListener("input", scheduleDraftSave);
   form().addEventListener("change", () => {
@@ -443,10 +556,24 @@
 
   fillChoices();
   window.GeeslaneAPI?.bindPhoneFields?.(form());
-  const restored = restoreDraft();
+  const params = new URLSearchParams(location.search);
+  const preparing = params.get("prepare") === "1";
+  const shared = decodePrefill(params.get("d"));
+  const restored = shared ? applyDraft(shared, false) : restoreDraft();
   window.GeeslaneAPI?.fillPhoneField?.("phone", valueOf("phone"));
   syncOtherFields();
-  showStep(restored ? step : 1);
+  const prepareNote = document.getElementById("request-prepare-note");
+  const sharedNote = document.getElementById("request-shared-note");
+  const copyLink = document.getElementById("request-copy-link");
+  if (preparing) {
+    if (prepareNote) prepareNote.hidden = false;
+    if (copyLink) copyLink.hidden = false;
+    const title = document.getElementById("request-title");
+    if (title) title.textContent = "Prepare a Request";
+  }
+  if (shared && sharedNote) sharedNote.hidden = false;
+  applyPartnerLink(params);
+  showStep(shared ? 1 : (restored ? step : 1));
   if (window.GEESLANE_ENV_READY) {
     window.GEESLANE_ENV_READY.then(() => {
       if (!window.GeeslaneAPI?.backendConfigured()) {

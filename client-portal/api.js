@@ -129,6 +129,9 @@
     if (/column .*goal.*does not exist|42703/i.test(message)) return "Run portal_settings.sql in Supabase so project briefs can be saved, then try again.";
     if (/client with this email already exists/i.test(message)) return "That email is still in Clients. The last reset did not finish. Run the updated reset SQL, delete that email under Authentication → Users, then try again.";
     if (/Administrator access is required/i.test(message)) return "Administrator access is required.";
+    const partner = message.match(/Partner:\s*(.+)/i);
+    if (partner) return partner[1].replace(/\s+$/, "");
+    if (/could not find the function|schema cache|pgrst202/i.test(message) && /partner/i.test(message)) return "The partner programme is not on Supabase yet. Run partner_programme.sql, then try again.";
     return fallback;
   }
 
@@ -1021,17 +1024,21 @@
         p_name: details.name, p_business: details.business, p_email: details.email, p_phone: details.phone || "",
         p_contact: details.contact || "Email", p_service: details.service, p_description: details.description
       };
+      const withDiscovery = { ...payload, p_discovery: details.discovery || {} };
       try {
-        resultOrThrow(await client().rpc("submit_portal_registration", { ...payload, p_discovery: details.discovery || {} }), "Could not submit the service request");
+        resultOrThrow(await client().rpc("submit_portal_registration", { ...withDiscovery, p_partner_code: details.partnerCode || "" }), "Could not submit the service request");
       } catch (error) {
-        if (details.discovery) {
+        const missingCode = /p_partner_code|schema cache|could not find the function|pgrst202/i.test(String(error?.message || error?.cause?.message || ""));
+        if (!missingCode) throw error;
+        try {
+          resultOrThrow(await client().rpc("submit_portal_registration", withDiscovery), "Could not submit the service request");
+        } catch (discoveryError) {
+          if (!details.discovery) throw error;
           try {
             resultOrThrow(await client().rpc("submit_portal_registration", payload), "Could not submit the service request");
           } catch (_) {
-            throw error;
+            throw discoveryError;
           }
-        } else {
-          throw error;
         }
       }
       return { received: true };
@@ -1721,6 +1728,53 @@
     }
   }
 
+  async function registerPartner(details) {
+    return withLoader(async () => resultOrThrow(await client().rpc("register_partner", {
+      p_name: details.name,
+      p_email: details.email,
+      p_phone: details.phone || "",
+      p_bank_name: details.bankName || "",
+      p_account_number: details.accountNumber || "",
+      p_account_name: details.accountName || "",
+      p_whatsapp: Boolean(details.whatsapp),
+      p_terms: Boolean(details.terms)
+    }), "Could not register this partner"), "Sending…");
+  }
+
+  async function partnerBoard(token) {
+    return resultOrThrow(await client().rpc("partner_board", { p_token: token }), "Could not open this partner page");
+  }
+
+  async function markPartnerNoticesRead(token) {
+    try { await client().rpc("partner_mark_notices_read", { p_token: token }); } catch (_) {}
+  }
+
+  async function adminPartnerBoard() {
+    return resultOrThrow(await client().rpc("admin_partner_board"), "Could not load the partner programme");
+  }
+
+  async function excludePartnerReferral(referralId) {
+    resultOrThrow(await client().rpc("admin_exclude_referral", { p_referral_id: referralId }), "Could not update that referral");
+  }
+
+  async function recordPartnerEarning(details) {
+    return resultOrThrow(await client().rpc("partner_add_earning", {
+      p_referral_id: details.referralId,
+      p_project_name: details.projectName,
+      p_kind: details.kind,
+      p_fee: Number(details.fee),
+      p_paid_on: details.paidOn
+    }), "Could not record that payment");
+  }
+
+  async function markPartnerPayout(details) {
+    resultOrThrow(await client().rpc("admin_mark_partner_payout", {
+      p_earning_id: details.earningId,
+      p_payout_on: details.payoutOn,
+      p_receipt: details.receipt
+    }), "Could not record that transfer");
+  }
+
   async function sendPortalMail(payload) {
     if (!backendConfigured()) return false;
     try {
@@ -1784,6 +1838,13 @@
     fillPhoneField,
     readPhoneField,
     requestAccess,
+    registerPartner,
+    partnerBoard,
+    markPartnerNoticesRead,
+    adminPartnerBoard,
+    excludePartnerReferral,
+    recordPartnerEarning,
+    markPartnerPayout,
     readProject,
     readPortalSettings,
     submit,

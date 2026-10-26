@@ -84,6 +84,7 @@
           <button class="admin-nav-item" data-admin-page="projects" type="button">Projects</button>
           <button class="admin-nav-item" data-admin-page="help" type="button">Help Centre</button>
           <button class="admin-nav-item" data-admin-page="invoices" type="button">Payments</button>
+          <button class="admin-nav-item" data-admin-page="partners" type="button">Partners</button>
         </nav>
         <div class="admin-sidebar-footer"><span>Signed In As</span><strong id="admin-sidebar-name">Administrator</strong><small id="admin-sidebar-email"></small></div>
       </aside>
@@ -107,11 +108,11 @@
             </div>
           </section>
 
-          <section class="admin-page" data-admin-view="registrations"><div class="admin-page-heading"><div><p class="eyebrow">New Clients</p><h2>Access Requests</h2></div></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="registration-search" type="search" placeholder="Search name, business, or email" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Client</th><th>Service</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody id="registrations-table"></tbody></table></div><div class="table-pager" id="registrations-pager"></div></section></section>
+          <section class="admin-page" data-admin-view="registrations"><div class="admin-page-heading with-action"><div><p class="eyebrow">New Clients</p><h2>Access Requests</h2></div><a class="button button-secondary" href="./request.html?prepare=1">Prepare a request</a></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="registration-search" type="search" placeholder="Search name, business, or email" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Client</th><th>Service</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody id="registrations-table"></tbody></table></div><div class="table-pager" id="registrations-pager"></div></section></section>
 
           <section class="admin-page" data-admin-view="clients"><div class="admin-page-heading with-action"><div><p class="eyebrow">Client</p><h2>Clients</h2></div><button class="button button-primary" id="open-create-client" type="button">Add Client &amp; Project</button></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="client-search" type="search" placeholder="Search clients" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Client</th><th>Contact</th><th>Role</th><th>Status</th><th>Device</th><th>Last Sign-In</th><th></th></tr></thead><tbody id="clients-table"></tbody></table></div><div class="table-pager" id="clients-pager"></div></section></section>
 
-          <section class="admin-page" data-admin-view="projects"><div class="admin-page-heading with-action"><div><p class="eyebrow">Work</p><h2>Projects</h2></div><button class="button button-primary" id="open-add-project" type="button">Add Project</button></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="project-search" type="search" placeholder="Search projects" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Project</th><th>Service</th><th>Stage</th><th>Progress</th><th>Status</th><th>Active</th><th>Start</th><th>Completion</th><th></th></tr></thead><tbody id="projects-table"></tbody></table></div><div class="table-pager" id="projects-pager"></div></section></section>
+          <section class="admin-page" data-admin-view="projects"><div class="admin-page-heading with-action"><div><p class="eyebrow">Work</p><h2>Projects</h2></div><button class="button button-primary" id="open-add-project" type="button">Add Project</button></div><section class="card admin-card"><div class="admin-toolbar"><label class="compact-field"><span>Status</span><select id="project-status-filter" aria-label="Filter by status"><option value="">All statuses</option></select></label><label class="search-field"><input id="project-search" type="search" placeholder="Search projects" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Project</th><th>Service</th><th>Stage</th><th>Progress</th><th>Status</th><th>Active</th><th>Start</th><th>Completion</th><th></th></tr></thead><tbody id="projects-table"></tbody></table></div><div class="table-pager" id="projects-pager"></div></section></section>
 
           <section class="admin-page" data-admin-view="agreements">
             <div class="admin-page-heading with-action">
@@ -395,6 +396,35 @@
           <section class="admin-page" data-admin-view="requests"><div class="admin-page-heading with-action"><div><button class="text-button admin-back-projects" type="button" data-go-admin-page="projects">← Projects</button><h2>Requests & Approvals</h2></div><div class="admin-heading-actions"><label class="field compact-field admin-project-picker"><span>Project</span><select id="request-project-filter" aria-label="Choose project"><option value="">All projects</option></select></label><button class="button button-primary" id="open-log-item" type="button">Log for Client</button></div></div><section class="card admin-card"><div class="admin-toolbar"><label class="search-field"><input id="admin-request-search" type="search" placeholder="Search requests" /></label></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Request</th><th>Project</th><th>Type</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody id="admin-requests-table"></tbody></table></div><div class="table-pager" id="requests-pager"></div></section></section>
 
           <section class="admin-page" data-admin-view="milestones"><div class="admin-page-heading with-action"><div><button class="text-button admin-back-projects" type="button" data-go-admin-page="projects">← Projects</button><h2>Milestones</h2><div class="admin-stage-options"><span>Include</span><label><input id="stage-include-wireframe" type="checkbox" checked /> Wireframe</label><label><input id="stage-include-design" type="checkbox" checked /> Visual Design</label></div></div><div class="admin-heading-actions"><label class="field compact-field admin-project-picker"><span>Project</span><select id="milestone-project-filter" aria-label="Choose project"></select></label><label class="field compact-field admin-target-picker"><span>Start date</span><input id="milestone-start-date" type="date" /></label><label class="field compact-field admin-target-picker"><span>Projected completion</span><input id="milestone-target-date" type="date" min="" /></label></div></div><section class="card admin-card" id="admin-milestone-context"></section><section class="card admin-card"><div id="admin-milestone-list"></div></section></section>
+
+          <section class="admin-page" data-admin-view="partners" id="admin-partners-page">
+            <div class="admin-page-heading"><div><p class="eyebrow">November 2026</p><h2>Partners</h2></div></div>
+            <p class="modal-lead">A referral counts when the client accepts the quote and the first payment clears from 1 to 30 November. Enter only the Geeslane fee, after any discount, and leave out domain, hosting, and other third-party amounts. The page stops a project at ₦100,000.</p>
+            <p class="form-error" id="partner-admin-note" hidden></p>
+            <section class="card admin-card"><h3>Partners</h3><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Bank</th><th>Code</th><th></th></tr></thead><tbody id="partner-admin-people"></tbody></table></div></section>
+            <section class="card admin-card"><h3>Referrals</h3><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Business</th><th>Partner</th><th>Service</th><th>Status</th><th>Request</th><th></th></tr></thead><tbody id="partner-admin-referrals"></tbody></table></div></section>
+            <section class="card admin-card">
+              <h3>Record a client payment</h3>
+              <form id="partner-payment-form" class="form-grid">
+                <div class="field field-full"><label for="partner-payment-referral">Referral</label><select id="partner-payment-referral" name="referralId" required></select></div>
+                <div class="field"><label for="partner-payment-project">Project name</label><input id="partner-payment-project" name="projectName" required /></div>
+                <div class="field"><label for="partner-payment-kind">Payment</label><select id="partner-payment-kind" name="kind" required><option value="first">First payment</option><option value="project">Project payment</option><option value="second">Second payment</option></select></div>
+                <div class="field"><label for="partner-payment-fee">Geeslane fee in this payment</label><input id="partner-payment-fee" name="fee" inputmode="decimal" required /></div>
+                <div class="field"><label for="partner-payment-date">Date it cleared</label><input id="partner-payment-date" name="paidOn" type="date" required /></div>
+                <div class="field field-full"><button class="button button-primary" type="submit">Save payment</button></div>
+              </form>
+            </section>
+            <section class="card admin-card">
+              <h3>Record your transfer</h3>
+              <form id="partner-payout-form" class="form-grid">
+                <div class="field field-full"><label for="partner-payout-earning">Amount due</label><select id="partner-payout-earning" name="earningId" required></select></div>
+                <div class="field"><label for="partner-payout-date">Date transferred</label><input id="partner-payout-date" name="payoutOn" type="date" required /></div>
+                <div class="field"><label for="partner-payout-receipt">Receipt note</label><input id="partner-payout-receipt" name="receipt" placeholder="Bank and transfer reference" required /></div>
+                <div class="field field-full"><button class="button button-primary" type="submit">Save transfer</button></div>
+              </form>
+            </section>
+            <section class="card admin-card"><h3>Earnings</h3><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Project</th><th>Business</th><th>Partner</th><th>Payment</th><th>Geeslane fee</th><th>20%</th><th>Transfer</th></tr></thead><tbody id="partner-admin-earnings"></tbody></table></div></section>
+          </section>
         </div>
       </main>
     </div>
@@ -610,6 +640,7 @@
     <script src="./receipt.js"></script>
     <script src="./invoice.js"></script>
     <script src="./admin.js"></script>
+    <script src="./partner-admin.js"></script>
     <script src="./pwa.js"></script>
   </body>
 </html>

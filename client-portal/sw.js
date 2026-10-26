@@ -1,5 +1,5 @@
 /* Geeslane portal shell. Live data, OTP, and Paystack still need the network. */
-const CACHE = "geeslane-portal-v58";
+const CACHE = "geeslane-portal-v64";
 const SHELL = [
   "./",
   "./index.html",
@@ -20,6 +20,9 @@ const SHELL = [
   "./receipt.js",
   "./invoice.js",
   "./request.js",
+  "./partner.html",
+  "./partner.js",
+  "./partner-admin.js",
   "./pwa.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",

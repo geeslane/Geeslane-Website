@@ -3,7 +3,7 @@
 
   /* Admin shell: auth, lists, billing, agreement, files, milestones. Shared table UI lives in ui.js. */
 
-  const pageTitles = { overview: "Overview", registrations: "Access Requests", clients: "Clients", projects: "Projects", agreements: "Agreements", handover: "Handover", help: "Help Centre", invoices: "Payments", billing: "Payments", files: "Brand & Files", requests: "Requests & Approvals", milestones: "Milestones" };
+  const pageTitles = { overview: "Overview", registrations: "Access Requests", clients: "Clients", projects: "Projects", agreements: "Agreements", handover: "Handover", help: "Help Centre", invoices: "Payments", billing: "Payments", partners: "Partners", files: "Brand & Files", requests: "Requests & Approvals", milestones: "Milestones" };
   const projectNestedPages = { agreements: true, handover: true, files: true, requests: true, billing: true, milestones: true };
   const requestStatuses = ["Received", "In review", "Approved", "Changes requested", "Completed", "Declined"];
   const milestoneStatuses = ["upcoming", "current", "review", "admin_review", "complete"];
@@ -84,6 +84,7 @@
       : value === "overdue" ? "is-overdue"
       : value === "draft" ? "is-draft"
       : value === "sent" ? "is-sent"
+      : value === "completed" ? "is-paid"
       : "";
   }
   function isOpaqueId(value) {
@@ -723,6 +724,7 @@
     if (page === "handover") loadHandover();
     if (page === "help") loadHelpGuides();
     if (page === "billing") loadInvoices();
+    if (page === "partners") window.GeeslanePartnerAdmin?.load?.();
     if (page === "milestones") renderMilestones();
     if (page === "requests") renderRequests();
   }
@@ -809,10 +811,39 @@
     clientTable.querySelectorAll("[data-delete-client]").forEach((button) => button.addEventListener("click", () => openDeleteClient(button.dataset.deleteClient)));
   }
 
+  function projectIsComplete(item) {
+    return Number(item?.progress) >= 100;
+  }
+
+  function projectListStatus(item) {
+    return projectIsComplete(item) ? "Completed" : item.status;
+  }
+
+  function fillProjectStatusFilter() {
+    const select = document.getElementById("project-status-filter");
+    if (!select) return;
+    const current = select.value;
+    const statuses = [...new Set(data.projects.map(projectListStatus).filter(Boolean))].sort((a, b) => {
+      if (a === "Completed") return 1;
+      if (b === "Completed") return -1;
+      return a.localeCompare(b);
+    });
+    select.innerHTML = `<option value="">All statuses</option>${statuses.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(status)}</option>`).join("")}`;
+    if (!current || statuses.includes(current)) select.value = current;
+  }
+
   function renderProjects() {
     window.GeeslaneUI?.closeRowMenus?.();
+    fillProjectStatusFilter();
     const query = document.getElementById("project-search").value.trim().toLowerCase();
-    const rows = data.projects.filter((item) => `${item.name} ${item.service} ${item.stage} ${item.status}`.toLowerCase().includes(query));
+    const statusFilter = document.getElementById("project-status-filter")?.value || "";
+    const rows = data.projects
+      .filter((item) => {
+        const status = projectListStatus(item);
+        const matchesQuery = `${item.name} ${item.service} ${item.stage} ${status}`.toLowerCase().includes(query);
+        return matchesQuery && (!statusFilter || status === statusFilter);
+      })
+      .sort((a, b) => Number(projectIsComplete(a)) - Number(projectIsComplete(b)));
     const slice = pagedRows("projects", rows);
     document.getElementById("projects-table").innerHTML = slice.items.length ? slice.items.map((item) => {
       const client = data.users.find((user) => user.clientId && user.clientId === item.clientId);
@@ -820,8 +851,8 @@
       const subtitle = clientLabel && !String(item.name || "").toLowerCase().includes(clientLabel.toLowerCase())
         ? clientLabel
         : (client?.business && String(client.business).toLowerCase() !== String(clientLabel).toLowerCase() ? client.business : "");
-      return `<tr><td><strong>${escapeHtml(item.name)}</strong>${subtitle ? `<small>${escapeHtml(subtitle)}</small>` : ""}</td><td>${escapeHtml(item.service)}</td><td>${escapeHtml(item.stage)}</td><td class="progress-cell"><strong>${item.progress}%</strong><div class="progress-mini"><span style="width:${Math.max(0,Math.min(100,item.progress))}%"></span></div></td><td><span class="status-pill ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td><td><label class="admin-active-toggle"><input type="checkbox" data-project-active="${escapeHtml(item.id)}" ${item.isActive !== false ? "checked" : ""} /><span>${item.isActive !== false ? "Active" : "Paused"}</span></label></td><td><input class="table-date-input" type="date" data-project-start="${escapeHtml(item.id)}" value="${escapeHtml(dateInputValue(item.startDate))}" aria-label="Start date for ${escapeHtml(item.name)}" /></td><td><input class="table-date-input" type="date" data-project-target="${escapeHtml(item.id)}" min="${todayInputValue()}" value="${escapeHtml(dateInputValue(item.targetDate))}" aria-label="Projected completion for ${escapeHtml(item.name)}" /></td><td>${rowActions([{ label: "View portal", attrs: `data-view-portal="${escapeHtml(item.id)}"` }, { label: "This project", items: [{ label: "Brand & Files", attrs: `data-open-files="${escapeHtml(item.id)}"` }, { label: "Agreement", attrs: `data-open-agreement="${escapeHtml(item.id)}"` }, { label: "Handover", attrs: `data-open-handover="${escapeHtml(item.id)}"` }, { label: "Requests", attrs: `data-open-requests="${escapeHtml(item.id)}"` }, { label: "Milestones", attrs: `data-open-milestones="${escapeHtml(item.id)}"` }] }, { label: "Payments", attrs: `data-open-invoices="${escapeHtml(item.id)}"` }, { label: "Delete", danger: true, attrs: `data-delete-project="${escapeHtml(item.id)}"` }])}</td></tr>`;
-    }).join("") : '<tr><td class="table-empty" colspan="9">No projects match this search.</td></tr>';
+      return `<tr><td><strong>${escapeHtml(item.name)}</strong>${subtitle ? `<small>${escapeHtml(subtitle)}</small>` : ""}</td><td>${escapeHtml(item.service)}</td><td>${escapeHtml(item.stage)}</td><td class="progress-cell"><strong>${item.progress}%</strong><div class="progress-mini"><span style="width:${Math.max(0,Math.min(100,item.progress))}%"></span></div></td><td><span class="status-pill ${statusClass(projectListStatus(item))}">${escapeHtml(projectListStatus(item))}</span></td><td><label class="admin-active-toggle"><input type="checkbox" data-project-active="${escapeHtml(item.id)}" ${item.isActive !== false ? "checked" : ""} /><span>${item.isActive !== false ? "Active" : "Paused"}</span></label></td><td><input class="table-date-input" type="date" data-project-start="${escapeHtml(item.id)}" value="${escapeHtml(dateInputValue(item.startDate))}" aria-label="Start date for ${escapeHtml(item.name)}" /></td><td><input class="table-date-input" type="date" data-project-target="${escapeHtml(item.id)}" min="${todayInputValue()}" value="${escapeHtml(dateInputValue(item.targetDate))}" aria-label="Projected completion for ${escapeHtml(item.name)}" /></td><td>${rowActions([{ label: "View portal", attrs: `data-view-portal="${escapeHtml(item.id)}"` }, { label: "This project", items: [{ label: "Brand & Files", attrs: `data-open-files="${escapeHtml(item.id)}"` }, { label: "Agreement", attrs: `data-open-agreement="${escapeHtml(item.id)}"` }, { label: "Handover", attrs: `data-open-handover="${escapeHtml(item.id)}"` }, { label: "Requests", attrs: `data-open-requests="${escapeHtml(item.id)}"` }, { label: "Milestones", attrs: `data-open-milestones="${escapeHtml(item.id)}"` }] }, { label: "Payments", attrs: `data-open-invoices="${escapeHtml(item.id)}"` }, { label: "Delete", danger: true, attrs: `data-delete-project="${escapeHtml(item.id)}"` }])}</td></tr>`;
+    }).join("") : '<tr><td class="table-empty" colspan="9">No projects match.</td></tr>';
     drawPager("projects-pager", "projects", slice, renderProjects);
     const projectTable = document.getElementById("projects-table");
     projectTable.querySelectorAll("[data-open-files]").forEach((button) => button.addEventListener("click", () => openProjectFiles(button.dataset.openFiles)));
@@ -3594,6 +3625,10 @@
     fillWorkTypeSelects();
     document.querySelectorAll("[data-admin-page]").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.adminPage)));
     document.querySelectorAll("[data-go-admin-page]").forEach((button) => button.addEventListener("click", () => navigate(button.dataset.goAdminPage)));
+    document.getElementById("project-status-filter")?.addEventListener("change", () => {
+      tablePages.projects = 1;
+      renderProjects();
+    });
     ["registration-search","client-search","project-search","admin-request-search","invoice-search","receipt-search"].forEach((id) => {
       const node = document.getElementById(id);
       if (!node) return;
