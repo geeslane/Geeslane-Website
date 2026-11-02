@@ -88,9 +88,40 @@
 
   const DRAFT_KEY = "geeslane.serviceRequest.draft";
   const CONFIRM_FIELDS = new Set(["confirmAccurate", "confirmNoContract", "confirmFollowUp", "confirmTerms"]);
+  const FIELD_KEYS = {
+    business: "b", name: "n", email: "e", phone: "p", location: "l", industry: "i",
+    websiteUrl: "w", socialLinks: "so", businessDescription: "d", heardAbout: "h",
+    purpose: "pu", audience: "au", featuresOther: "fo", visitorDetails: "vd",
+    hasDomain: "hd", hasHosting: "hh", references: "rf", websiteNotes: "wn",
+    existingUrl: "eu", notWorking: "nw", changesWanted: "cw", prompted: "pr",
+    platform: "pl", revampHosting: "rh", adminAccess: "aa", revampNotes: "rn",
+    domainName: "dn", registrar: "rg", hostingProvider: "hp", issue: "is",
+    issueStarted: "ist", supportUrl: "su", urgent: "ur", currentSupport: "cs",
+    automationNeed: "an", automationTools: "at", automationSuccess: "as",
+    businessProblem: "bp", digitalChannels: "dc", notWorkingWell: "nww",
+    successLookLike: "sl", alreadyTried: "tr", timing: "ti", anythingElse: "ae"
+  };
+  const CHECK_KEYS = {
+    features: "f", availableAssets: "a", improvementTypes: "m", hostingHelp: "o", supportNeeds: "u"
+  };
+  const SERVICE_KEYS = {
+    "website-new": "n", "website-revamp": "r", "domain-hosting": "d",
+    monitoring: "m", automation: "a", strategy: "s"
+  };
+  const VALUE_CODES = {
+    heardAbout: { Referral: "r", "Social media": "s", "Google / web search": "g", "Previous client / previous work": "p", "Event / community": "e", Other: "o" },
+    hasDomain: { Yes: "y", No: "n", "Not sure": "?" },
+    hasHosting: { Yes: "y", No: "n", "Not sure": "?" },
+    adminAccess: { "Yes, I have administrator access": "y", "I can obtain authorised access": "o", "I am not sure who controls access": "?" }
+  };
+  const FIELD_NAMES = Object.fromEntries(Object.entries(FIELD_KEYS).map(([name, key]) => [key, name]));
+  const CHECK_NAMES = Object.fromEntries(Object.entries(CHECK_KEYS).map(([name, key]) => [key, name]));
+  const SERVICE_NAMES = Object.fromEntries(Object.entries(SERVICE_KEYS).map(([name, key]) => [key, name]));
+  const VALUE_LABELS = Object.fromEntries(Object.entries(VALUE_CODES).map(([name, codes]) => [name, Object.fromEntries(Object.entries(codes).map(([label, code]) => [code, label]))]));
 
   let step = 1;
   let service = "";
+  let serviceLocked = false;
   let saveTimer = 0;
   let submitted = false;
 
@@ -243,53 +274,119 @@
     return applyDraft(draft, true);
   }
 
-  function encodePrefill(draft) {
-    const json = JSON.stringify({
-      service: draft.service || "",
-      fields: draft.fields || {},
-      checks: draft.checks || {}
-    });
-    const bytes = new TextEncoder().encode(json);
+  function bytesToToken(bytes) {
     let binary = "";
     bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
     return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
   }
 
-  function decodePrefill(token) {
-    const source = String(token || "").trim();
-    if (!source) return null;
-    try {
-      const padded = source.replace(/-/g, "+").replace(/_/g, "/");
-      const pad = padded.length % 4 === 0 ? "" : "=".repeat(4 - (padded.length % 4));
-      const binary = atob(padded + pad);
-      const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-      const draft = JSON.parse(new TextDecoder().decode(bytes));
-      if (!draft || typeof draft !== "object") return null;
+  function tokenToBytes(token) {
+    const padded = token.replace(/-/g, "+").replace(/_/g, "/");
+    const pad = padded.length % 4 === 0 ? "" : "=".repeat(4 - (padded.length % 4));
+    const binary = atob(padded + pad);
+    return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  }
+
+  function packDraft(draft) {
+    const packed = {};
+    const serviceKey = SERVICE_KEYS[draft.service];
+    if (serviceKey) packed.s = serviceKey;
+    const fields = {};
+    Object.entries(draft.fields || {}).forEach(([name, raw]) => {
+      const key = FIELD_KEYS[name];
+      const value = String(raw || "").trim();
+      if (!key || !value) return;
+      fields[key] = VALUE_CODES[name]?.[value] || value;
+    });
+    if (Object.keys(fields).length) packed.f = fields;
+    const checks = {};
+    Object.entries(draft.checks || {}).forEach(([name, values]) => {
+      const key = CHECK_KEYS[name];
+      const chosen = Array.isArray(values) ? values.filter(Boolean) : [];
+      if (!key || !chosen.length) return;
+      const options = CHOICES[name] || [];
+      checks[key] = chosen.map((value) => {
+        const index = options.indexOf(value);
+        return index >= 0 ? index : value;
+      });
+    });
+    if (Object.keys(checks).length) packed.c = checks;
+    return packed;
+  }
+
+  function unpackDraft(draft) {
+    if (!draft || typeof draft !== "object") return null;
+    if (draft.fields || draft.service || draft.checks) {
       const fields = {};
       Object.entries(draft.fields || {}).forEach(([name, value]) => {
-        if (!CONFIRM_FIELDS.has(name)) fields[name] = value;
+        if (!CONFIRM_FIELDS.has(name) && name !== "service") fields[name] = value;
       });
       const checks = {};
       Object.entries(draft.checks || {}).forEach(([name, value]) => {
         if (!CONFIRM_FIELDS.has(name)) checks[name] = value;
       });
-      return { service: String(draft.service || ""), fields, checks };
+      return { service: String(draft.service || fields.service || ""), fields, checks };
+    }
+    const fields = {};
+    Object.entries(draft.f || {}).forEach(([key, value]) => {
+      const name = FIELD_NAMES[key];
+      if (!name) return;
+      fields[name] = VALUE_LABELS[name]?.[value] || value;
+    });
+    const checks = {};
+    Object.entries(draft.c || {}).forEach(([key, values]) => {
+      const name = CHECK_NAMES[key];
+      const options = CHOICES[name] || [];
+      if (!name || !Array.isArray(values)) return;
+      checks[name] = values.map((value) => (Number.isInteger(value) ? options[value] : value)).filter(Boolean);
+    });
+    return { service: SERVICE_NAMES[draft.s] || "", fields, checks };
+  }
+
+  async function encodePrefill(draft) {
+    const json = JSON.stringify(packDraft(draft));
+    const plain = new TextEncoder().encode(json);
+    if (typeof CompressionStream === "function") {
+      try {
+        const stream = new Blob([plain]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+        const compressed = new Uint8Array(await new Response(stream).arrayBuffer());
+        if (compressed.length < plain.length) return `z${bytesToToken(compressed)}`;
+      } catch (_) {}
+    }
+    return `c${bytesToToken(plain)}`;
+  }
+
+  async function decodePrefill(token) {
+    const source = String(token || "").trim();
+    if (!source) return null;
+    try {
+      const packed = source[0] === "z" || source[0] === "c";
+      const bytes = tokenToBytes(packed ? source.slice(1) : source);
+      let json;
+      if (source[0] === "z") {
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+        json = await new Response(stream).text();
+      } else {
+        json = new TextDecoder().decode(bytes);
+      }
+      return unpackDraft(JSON.parse(json));
     } catch (_) {
       return null;
     }
   }
 
-  function clientLink() {
+  async function clientLink() {
+    window.GeeslaneAPI?.readPhoneField?.("phone");
     const url = new URL("./request.html", location.href);
     url.search = "";
     url.hash = "";
-    url.searchParams.set("d", encodePrefill(collectDraft()));
+    url.searchParams.set("d", await encodePrefill(collectDraft()));
     return url.href;
   }
 
   async function copyClientLink() {
     const button = document.getElementById("request-copy-link");
-    const link = clientLink();
+    const link = await clientLink();
     let copied = false;
     try {
       await navigator.clipboard.writeText(link);
@@ -304,14 +401,32 @@
     }
     if (!button) return;
     const label = button.textContent;
-    button.textContent = copied ? (link.length > 7000 ? "Link copied. It is long, so send it as one message." : "Link copied") : "Could not copy. Try again.";
+    button.textContent = copied ? "Link copied" : "Could not copy. Try again.";
     setTimeout(() => { button.textContent = label; }, 2500);
   }
 
+  function stepOrder() {
+    return serviceLocked ? [1, 3, 4] : [1, 2, 3, 4];
+  }
+
   function showStep(next) {
+    if (serviceLocked && next === 2) next = 3;
     step = next;
+    const order = stepOrder();
+    const labels = { 1: "About You", 2: "Service", 3: "Details", 4: "Send" };
+    const current = order.indexOf(step);
     document.querySelectorAll(".request-step").forEach((panel) => panel.classList.toggle("is-visible", Number(panel.dataset.step) === step));
-    document.querySelectorAll("[data-step-indicator]").forEach((item) => item.classList.toggle("is-active", Number(item.dataset.stepIndicator) <= step));
+    document.querySelectorAll("[data-step-indicator]").forEach((item) => {
+      const number = Number(item.dataset.stepIndicator);
+      const index = order.indexOf(number);
+      item.hidden = index < 0;
+      item.classList.toggle("is-active", index >= 0 && index <= current);
+      if (index >= 0) item.textContent = `${index + 1}. ${labels[number]}`;
+      const line = item.nextElementSibling;
+      if (line && line.tagName === "I") line.hidden = index < 0 || index === order.length - 1;
+    });
+    const changeService = document.querySelector("[data-change-service]");
+    if (changeService) changeService.hidden = serviceLocked;
     document.getElementById("request-back").hidden = step === 1;
     document.getElementById("request-next").textContent = step === 4 ? "Send Request" : "Continue";
     document.getElementById("request-actions").hidden = false;
@@ -530,7 +645,8 @@
     const missing = missingOnStep();
     if (missing) { setError(missing); return; }
     if (step === 4) { submitRequest(); return; }
-    showStep(step + 1);
+    const order = stepOrder();
+    showStep(order[Math.min(order.length - 1, order.indexOf(step) + 1)]);
   }
 
   document.querySelectorAll("[data-service]").forEach((button) => {
@@ -543,7 +659,10 @@
     });
   });
   document.querySelectorAll("[data-go-step]").forEach((button) => button.addEventListener("click", () => showStep(Number(button.dataset.goStep))));
-  document.getElementById("request-back").addEventListener("click", () => showStep(Math.max(1, step - 1)));
+  document.getElementById("request-back").addEventListener("click", () => {
+    const order = stepOrder();
+    showStep(order[Math.max(0, order.indexOf(step) - 1)]);
+  });
   document.getElementById("request-next").addEventListener("click", goNext);
   document.getElementById("request-copy-link")?.addEventListener("click", copyClientLink);
   form().addEventListener("submit", (event) => { event.preventDefault(); goNext(); });
@@ -558,8 +677,9 @@
   window.GeeslaneAPI?.bindPhoneFields?.(form());
   const params = new URLSearchParams(location.search);
   const preparing = params.get("prepare") === "1";
-  const shared = decodePrefill(params.get("d"));
+  decodePrefill(params.get("d")).then((shared) => {
   const restored = shared ? applyDraft(shared, false) : restoreDraft();
+  serviceLocked = Boolean(shared?.service) && !preparing;
   window.GeeslaneAPI?.fillPhoneField?.("phone", valueOf("phone"));
   syncOtherFields();
   const prepareNote = document.getElementById("request-prepare-note");
@@ -571,9 +691,13 @@
     const title = document.getElementById("request-title");
     if (title) title.textContent = "Prepare a Request";
   }
-  if (shared && sharedNote) sharedNote.hidden = false;
+  if (shared && sharedNote) {
+    sharedNote.hidden = false;
+    if (serviceLocked) sharedNote.textContent = "Geeslane filled this in from your conversation, including the service. Change any answer that is wrong. On the last step, read the Terms & Agreement and tick each box before you send.";
+  }
   applyPartnerLink(params);
   showStep(shared ? 1 : (restored ? step : 1));
+  });
   if (window.GEESLANE_ENV_READY) {
     window.GEESLANE_ENV_READY.then(() => {
       if (!window.GeeslaneAPI?.backendConfigured()) {
