@@ -19,7 +19,7 @@
   };
 
   const STEP_REQUIRED = {
-    1: ["business", "name", "email", "phone", "location", "industry", "businessDescription"],
+    1: ["business", "name", "email", "phone", "industry", "businessDescription"],
     2: ["service"],
     3: {
       "website-new": ["purpose", "audience", "hasDomain", "hasHosting"],
@@ -37,7 +37,6 @@
     ["name", "Contact Person"],
     ["email", "Email Address"],
     ["phone", "Phone / WhatsApp"],
-    ["location", "Business Location"],
     ["industry", "Industry / Business Type"],
     ["websiteUrl", "Website URL"],
     ["socialLinks", "Social Media Links"],
@@ -89,7 +88,7 @@
   const DRAFT_KEY = "geeslane.serviceRequest.draft";
   const CONFIRM_FIELDS = new Set(["confirmAccurate", "confirmNoContract", "confirmFollowUp", "confirmTerms"]);
   const FIELD_KEYS = {
-    business: "b", name: "n", email: "e", phone: "p", location: "l", industry: "i",
+    business: "b", name: "n", email: "e", phone: "p", industry: "i",
     websiteUrl: "w", socialLinks: "so", businessDescription: "d", heardAbout: "h",
     purpose: "pu", audience: "au", featuresOther: "fo", visitorDetails: "vd",
     hasDomain: "hd", hasHosting: "hh", references: "rf", websiteNotes: "wn",
@@ -428,7 +427,9 @@
     const changeService = document.querySelector("[data-change-service]");
     if (changeService) changeService.hidden = serviceLocked;
     document.getElementById("request-back").hidden = step === 1;
-    document.getElementById("request-next").textContent = step === 4 ? "Send Request" : "Continue";
+    const nextButton = document.getElementById("request-next");
+    nextButton.hidden = preparing && step === 4;
+    nextButton.textContent = step === 4 ? "Send Request" : "Continue";
     document.getElementById("request-actions").hidden = false;
     setError("");
     if (step === 3) {
@@ -441,13 +442,13 @@
   }
 
   function missingOnStep() {
+    if (preparing) return "";
     if (step === 1) {
       const email = valueOf("email");
       if (valueOf("business").length < 2) return "Enter the business or organisation name.";
       if (valueOf("name").length < 2) return "Enter the contact person’s name.";
       if (email.indexOf("@") < 1) return "Enter a valid email address.";
       if ((window.GeeslaneAPI?.readPhoneField?.("phone") || valueOf("phone")).replace(/\D/g, "").length < 7) return "Enter a phone or WhatsApp number.";
-      if (!valueOf("location")) return "Enter the business location.";
       if (!valueOf("industry")) return "Enter the industry or business type.";
       if (valueOf("businessDescription").length < 5) return "Describe the business in a few sentences.";
       return "";
@@ -480,7 +481,6 @@
       name: valueOf("name"),
       email: valueOf("email"),
       phone: window.GeeslaneAPI?.readPhoneField?.("phone") || valueOf("phone"),
-      location: valueOf("location"),
       industry: valueOf("industry"),
       websiteUrl: valueOf("websiteUrl"),
       socialLinks: valueOf("socialLinks"),
@@ -644,7 +644,10 @@
   function goNext() {
     const missing = missingOnStep();
     if (missing) { setError(missing); return; }
-    if (step === 4) { submitRequest(); return; }
+    if (step === 4) {
+      if (!preparing) submitRequest();
+      return;
+    }
     const order = stepOrder();
     showStep(order[Math.min(order.length - 1, order.indexOf(step) + 1)]);
   }
@@ -686,6 +689,10 @@
   const sharedNote = document.getElementById("request-shared-note");
   const copyLink = document.getElementById("request-copy-link");
   if (preparing) {
+    form().querySelectorAll("[required]").forEach((node) => node.removeAttribute("required"));
+    form().querySelectorAll("label span, legend span").forEach((node) => {
+      if (node.textContent.trim() === "*") node.hidden = true;
+    });
     if (prepareNote) prepareNote.hidden = false;
     if (copyLink) copyLink.hidden = false;
     const title = document.getElementById("request-title");

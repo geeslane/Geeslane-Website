@@ -35,7 +35,7 @@
           <h1 id="request-title">Tell Us What You Need</h1>
           <p id="request-lead" hidden></p>
           <p class="request-note">Do not submit passwords, card details, secret keys, or other sensitive credentials.</p>
-          <p class="request-note" id="request-prepare-note" hidden>Fill in what you already know from the conversation, then copy the link. They can edit every answer, and they still tick the confirmations and the Terms &amp; Agreement before it sends.</p>
+          <p class="request-note" id="request-prepare-note" hidden>Fill in what you already know. Every field is optional here. On their form, the required questions stay required, and they still tick the confirmations and the Terms &amp; Agreement before it sends.</p>
           <p class="request-note" id="request-shared-note" hidden>Geeslane filled this in from your conversation. Change anything that is wrong. On the last step, read the Terms &amp; Agreement and tick each box before you send.</p>
           <p id="request-followup" hidden><a class="button button-primary" href="../index.html">Go to Website</a></p>
         </section>
@@ -57,8 +57,7 @@
                 <div class="field"><label for="req-name">Contact Person <span>*</span></label><input id="req-name" name="name" autocomplete="name" required /></div>
                 <div class="field"><label for="req-email">Email Address <span>*</span></label><input id="req-email" name="email" type="email" autocomplete="email" required /></div>
                 <div class="field field-full"><label for="req-phone-local">Phone / WhatsApp Number <span>*</span></label><div class="phone-combo" data-phone-combo="phone"><select id="req-phone-code" aria-label="Country code"></select><input id="req-phone-local" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="801 234 5678" required /><input id="req-phone" name="phone" type="hidden" /></div></div>
-                <div class="field"><label for="req-location">Business Location <span>*</span></label><input id="req-location" name="location" placeholder="City and country" required /></div>
-                <div class="field"><label for="req-industry">Industry / Business Type <span>*</span></label><input id="req-industry" name="industry" required /></div>
+                <div class="field field-full"><label for="req-industry">Industry / Business Type <span>*</span></label><input id="req-industry" name="industry" required /></div>
                 <div class="field field-full"><label for="req-website">Website URL</label><input id="req-website" name="websiteUrl" type="url" placeholder="https://…" /></div>
                 <div class="field field-full"><label for="req-social">Social Media Links</label><textarea id="req-social" name="socialLinks" placeholder="Add any relevant business social media links."></textarea></div>
                 <div class="field field-full"><label for="req-description">Briefly describe your business or organisation. <span>*</span></label><textarea id="req-description" name="businessDescription" required></textarea></div>
