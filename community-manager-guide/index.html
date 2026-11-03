@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Geeslane Partner Community Manager Guide — November 2026 Refer & Earn campaign.">
+<meta name="robots" content="noindex, nofollow">
+<title>Geeslane | Partner Community Manager Guide</title>
+<style>
+:root{--green:#16845b;--green-dark:#0c563d;--mint:#eaf6ef;--ink:#1d2b25;--muted:#66736c;--line:#e2e9e4;--paper:#fff;--bg:#f5f8f6}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.68 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}
+.topbar{background:var(--green-dark);color:#fff;padding:12px 24px;font-size:13px;letter-spacing:.08em;font-weight:750;line-height:1.4}
+.layout{max-width:1440px;margin:0 auto;display:grid;grid-template-columns:270px minmax(0,1fr);gap:32px;padding:28px 28px 70px}
+.sidebar{position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);overflow:auto;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px 18px;box-shadow:0 8px 30px #173c2810}
+.brand{font-size:13px;letter-spacing:.16em;font-weight:850;color:var(--green-dark)}
+.sidebar h2{font-size:16px;margin:8px 0 14px}
+.search{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:13px;margin-bottom:14px;outline-color:var(--green)}
+nav{display:flex;flex-direction:column;gap:4px;min-width:0}
+nav a{padding:8px 10px;border-radius:8px;color:#44534b;font-size:13px;line-height:1.4}
+nav a:hover,nav a.active{background:var(--mint);color:var(--green-dark);text-decoration:none;font-weight:700}
+.content{min-width:0}
+.hero{background:linear-gradient(135deg,#0c563d,#16845b);color:#fff;padding:42px 44px;border-radius:22px;margin-bottom:26px;box-shadow:0 12px 35px #0c563d20}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.8}
+.hero h1{font-size:clamp(30px,4vw,46px);line-height:1.12;margin:10px 0 12px;letter-spacing:-.035em}
+.hero p{margin:0;color:#e4f5eb}
+.hero .tagline{margin-top:22px;font-size:14px;font-weight:700}
+article{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:34px 42px;box-shadow:0 8px 30px #173c2808}
+article h2{font-size:25px;line-height:1.25;letter-spacing:-.02em;margin:42px 0 16px;padding-top:18px;border-top:1px solid var(--line);color:var(--green-dark);scroll-margin-top:20px}
+article h2:first-child{margin-top:0;border-top:0;padding-top:0}
+article h3{font-size:18px;margin:26px 0 10px;color:#254b39}
+article p{margin:10px 0 16px}
+article p,article li,article td,.hero p{overflow-wrap:break-word}
+article ul,article ol{padding-left:24px}
+article li{margin:5px 0}
+article table{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:14px}
+article th,article td{padding:12px 14px;border:1px solid var(--line);text-align:left;vertical-align:top}
+article th{background:var(--mint);color:var(--green-dark);font-weight:750}
+article tr:nth-child(even) td{background:#fbfdfb}
+article blockquote{margin:18px 0;padding:14px 18px;background:var(--mint);border-left:4px solid var(--green);border-radius:0 10px 10px 0}
+article strong{color:#193f2e}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
+.backtop{display:inline-block;margin-top:20px;font-size:13px;font-weight:700}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr;padding:16px;gap:16px}
+  .sidebar{position:relative;top:auto;max-height:none}
+  nav{flex-direction:row;gap:8px;overflow-x:auto;padding-bottom:4px}
+  nav a{flex:0 0 auto;white-space:nowrap;background:#f7faf8;border:1px solid var(--line)}
+  .hero{padding:30px 22px}
+  article{padding:26px 22px}
+  article table,article tbody,article tr,article td{display:block;width:100%;min-width:0}
+  article tr{margin:0 0 12px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  article tr:first-child{display:none}
+  article td{display:grid;grid-template-columns:minmax(0,7.2rem) minmax(0,1fr);gap:8px 12px;border:0;border-bottom:1px solid var(--line);background:#fff}
+  article td:last-child{border-bottom:0}
+  article td::before{content:attr(data-label);color:var(--green-dark);font-size:12px;font-weight:750;line-height:1.35}
+}
+@media(max-width:520px){
+  .topbar{padding:10px 14px;font-size:11px;letter-spacing:.04em}
+  .layout{padding:12px 12px 48px}
+  .hero{padding:24px 16px;border-radius:16px}
+  .hero h1{font-size:clamp(26px,8vw,34px)}
+  article{padding:18px 14px;border-radius:14px}
+  article h2{font-size:22px}
+  article ul,article ol{padding-left:18px}
+  article td{grid-template-columns:1fr;gap:4px}
+}
+@media print{body{background:#fff}.topbar,.sidebar{display:none}.layout{display:block;padding:0;max-width:none}.hero,article{box-shadow:none;border:0}.hero{border-radius:0}article{padding:10px 0}}
+</style>
+</head>
+<body>
+<div class="topbar">GEESLANE · PARTNER COMMUNITY MANAGER GUIDE</div>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">GEESLANE 💚</div>
+  <h2>Guide contents</h2>
+  <input class="search" id="sectionSearch" type="search" placeholder="Find a section…" aria-label="Search guide sections">
+  <nav id="sectionNav"><a href="#about-geeslane">About Geeslane</a>
+<a href="#community-manager-role">Your Role as Community Manager</a>
+<a href="#culture-values">Our Culture &amp; Values</a>
+<a href="#weekly-responsibilities">Your Weekly Responsibilities</a>
+<a href="#content-calendar">November Content Calendar</a>
+<a href="#ready-to-use-messages">Ready-to-Use Messages</a>
+<a href="#partner-wins">Celebrating Partner Wins</a>
+<a href="#payment-confirmations">Sharing Payment Confirmations</a>
+<a href="#dos-donts">Do’s &amp; Don’ts</a>
+<a href="#faqs">Frequently Asked Questions</a>
+<a href="#november-goal">Our November Goal</a></nav>
+  <a class="backtop" href="#top">↑ Back to top</a>
+</aside>
+<main class="content" id="top">
+  <header class="hero">
+    <div class="eyebrow">Refer & Earn · November 2026</div>
+    <h1>Partner Community<br>Manager Guide</h1>
+    <p>Your practical guide to managing the Geeslane Partner WhatsApp Group.</p>
+    <div class="tagline">Scale your business with technology & AI.</div>
+  </header>
+  <article><h1>GEESLANE</h1>
+<h1>PARTNER COMMUNITY MANAGER GUIDE</h1>
+<p><strong>Refer &amp; Earn | November 2026</strong></p>
+<p><em>Your practical guide to managing the Geeslane Partner WhatsApp Group 💚</em></p>
+<h2 id="about-geeslane">1. About Geeslane</h2>
+<p>Geeslane is a technology company helping businesses grow through technology and AI.</p>
+<p>We help businesses establish, improve and scale their digital presence through:</p>
+<table><tbody>
+<tr><td>Service</td><td>What We Offer</td></tr>
+<tr><td>Website Development</td><td>Building professional websites for businesses and individuals.</td></tr>
+<tr><td>Website Revamp</td><td>Improving existing websites and completing AI-generated websites.</td></tr>
+<tr><td>Domain &amp; Hosting</td><td>Domain registration and website hosting.</td></tr>
+<tr><td>Business Consultation</td><td>Helping businesses identify suitable technology solutions.</td></tr>
+<tr><td>AI Automation</td><td>Helping businesses automate processes and work smarter with AI.</td></tr>
+</tbody></table>
+<p><strong>Our tagline:</strong> Scale your business with technology &amp; AI.</p>
+<h3>About the November Refer &amp; Earn Programme</h3>
+<p>The November campaign gives registered partners an opportunity to earn <strong>20% commission on successful referrals</strong> to Geeslane.</p>
+<p>Partners share their personal referral links with potential clients. Geeslane handles the business discussions and service delivery, while partners earn commissions on eligible successful referrals.</p>
+<p><strong>Programme terms:</strong> https://geeslane.com/partners</p>
+<h2 id="community-manager-role">2. Your Role as Community Manager</h2>
+<p>Your responsibility is to keep partners informed, encouraged and updated throughout the campaign.</p>
+<p>Your responsibilities include:</p>
+<ul>
+<li>Welcoming new partners into the WhatsApp group.</li>
+<li>Sharing useful information about Geeslane and its services.</li>
+<li>Sharing referral tips and occasional reminders.</li>
+<li>Responding to general questions.</li>
+<li>Sharing approved programme updates.</li>
+<li>Celebrating successful referrals and payments communicated by Geeslane Admin.</li>
+<li>Helping partners understand how to access and use their referral links.</li>
+<li>Escalating issues that require management&#x27;s attention.</li>
+</ul>
+<p><strong>Understanding the nature of this group</strong></p>
+<p>This is a business referral group, not a social or friendship group.</p>
+<p>Partners do not have to participate in conversations. Some may simply read the updates and share their referral links with potential clients. That&#x27;s perfectly fine.</p>
+<p>Our goal is to help them refer potential clients, not pressure them to chat.</p>
+<h2 id="culture-values">3. Our Culture &amp; Values 💚</h2>
+<table><tbody>
+<tr><td>Value</td><td>What It Means</td></tr>
+<tr><td>Professional but friendly</td><td>Be approachable and conversational. Use emojis where appropriate without losing professionalism.</td></tr>
+<tr><td>Purposeful communication</td><td>Every message should have a reason. Don&#x27;t post simply because the group is quiet.</td></tr>
+<tr><td>Transparency</td><td>Share accurate information. Never guess, exaggerate or make unapproved promises.</td></tr>
+<tr><td>Appreciation</td><td>Recognise successful referrals and payments without making other partners feel left out.</td></tr>
+<tr><td>Respect</td><td>Respect everyone&#x27;s time and privacy. Partners are not required to introduce themselves or participate in conversations.</td></tr>
+<tr><td>Simplicity</td><td>Partners don&#x27;t need to understand website development or AI. They simply need to identify potential clients and share their links.</td></tr>
+</tbody></table>
+<h2 id="weekly-responsibilities">4. Your Weekly Responsibilities</h2>
+<p>Keep things simple and consistent.</p>
+<table><tbody>
+<tr><td>Frequency</td><td>Responsibility</td></tr>
+<tr><td>Daily</td><td>Check messages and respond to questions.</td></tr>
+<tr><td>Monday</td><td>Share a short motivational message.</td></tr>
+<tr><td>Saturday</td><td>Share a useful referral tip or reminder.</td></tr>
+<tr><td>1–2 additional days weekly</td><td>Share Geeslane content, service highlights, testimonials or programme updates.</td></tr>
+<tr><td>Weekly</td><td>Share confirmed progress updates and celebrate wins communicated by management.</td></tr>
+<tr><td>As needed</td><td>Welcome new partners and share approved payment announcements.</td></tr>
+<tr><td>November 30</td><td>Share the closing appreciation message.</td></tr>
+</tbody></table>
+<p><strong>Remember:</strong> We don&#x27;t want to overwhelm partners with messages. Every post should have a purpose.</p>
+<h2 id="content-calendar">5. November Content Calendar 📅</h2>
+<p>The campaign starts on Tuesday, November 3.</p>
+<table><tbody>
+<tr><td>Date</td><td>Activity</td><td>What to Do</td></tr>
+<tr><td>Tue, Nov 3</td><td>Welcome &amp; Onboarding</td><td>Welcome partners as they join. Tag them, share important previous messages using WhatsApp&#x27;s Share Message History feature and help them get started.</td></tr>
+<tr><td>Wed, Nov 4</td><td>Introduce Geeslane</td><td>Introduce Geeslane, explain what we do and highlight our services.</td></tr>
+<tr><td>Sat, Nov 7</td><td>Referral Tip</td><td>Share tips on businesses and individuals who may need Geeslane&#x27;s services.</td></tr>
+<tr><td>Mon, Nov 9</td><td>Monday Motivation</td><td>Share a motivational message and encourage partners to recognise opportunities within their networks.</td></tr>
+<tr><td>Wed, Nov 11</td><td>Service Highlight</td><td>Highlight a Geeslane service or share an approved project showcase.</td></tr>
+<tr><td>Sat, Nov 14</td><td>Referral Tip</td><td>Explain how to introduce Geeslane to potential clients and share personal referral links.</td></tr>
+<tr><td>Mon, Nov 16</td><td>Monday Motivation</td><td>Share motivation and a gentle campaign reminder.</td></tr>
+<tr><td>Wed, Nov 18</td><td>Geeslane Showcase</td><td>Share a service highlight, project showcase or client testimonial.</td></tr>
+<tr><td>Sat, Nov 21</td><td>Referral Reminder</td><td>Share a useful referral tip or reminder. No engagement questions.</td></tr>
+<tr><td>Mon, Nov 23</td><td>Monday Motivation</td><td>Encourage partners as we approach the final week.</td></tr>
+<tr><td>Wed, Nov 25</td><td>Progress Update</td><td>Share approved programme progress updates and celebrate confirmed conversions or payments where applicable.</td></tr>
+<tr><td>Sat, Nov 28</td><td>Final Referral Reminder</td><td>Remind partners that the November campaign is almost over.</td></tr>
+<tr><td>Mon, Nov 30</td><td>Campaign Closing</td><td>Share the final campaign reminder and appreciation message.</td></tr>
+</tbody></table>
+<p><strong>New member onboarding:</strong> Whenever a new partner joins, welcome them briefly in the group, tag them and use WhatsApp&#x27;s Share Message History feature to share previous important messages.</p>
+<p>There is no need to send a separate private welcome message or ask anyone to introduce themselves.</p>
+<h2 id="ready-to-use-messages">6. Ready-to-Use Messages 💬</h2>
+<p>You can copy these messages and make small adjustments where necessary.</p>
+<h3>A. Welcome Message for New Partners</h3>
+<p>Hey @Name! 👋🏽</p>
+<p>Welcome to the Geeslane Partner Group! 💚</p>
+<p>We&#x27;re glad to have you here.</p>
+<p>This group is where we&#x27;ll share important programme updates, referral tips and useful information to help you get started.</p>
+<p>You can also check the previous messages shared in the group for important information.</p>
+<p>Here&#x27;s to successful referrals and exciting opportunities! 🚀</p>
+<h3>B. Introducing Geeslane</h3>
+<p>Hello, partners! 👋🏽</p>
+<p>Let&#x27;s officially introduce Geeslane!</p>
+<p>Geeslane is a technology company helping businesses grow through technology and AI.</p>
+<p>Here are some of the services we offer:</p>
+<p>🌐 Website Development</p>
+<p>✨ Website Revamp</p>
+<p>🤖 AI Automation</p>
+<p>🌍 Domain Purchase &amp; Hosting</p>
+<p>💡 Business Consultation</p>
+<p>Think about the businesses, entrepreneurs and brands around you. Some may need a website, others may need to improve an existing one, while some could benefit from automation.</p>
+<p>You don&#x27;t need to understand the technical details. Simply connect potential clients to Geeslane using your personal referral link.</p>
+<p>We&#x27;ll handle the rest!</p>
+<p>Learn more: https://geeslane.com</p>
+<h3>C. Monday Motivation</h3>
+<p>Good morning, partners! ☀️</p>
+<p>A new week means new opportunities!</p>
+<p>Think about the business owners, entrepreneurs and brands in your network.</p>
+<p>Someone might be looking for a website, considering a revamp or searching for ways to automate their business.</p>
+<p>Sometimes, all it takes is one introduction.</p>
+<p>Don&#x27;t underestimate the power of your network.</p>
+<p>Have a productive week! 🚀💚</p>
+<h3>D. Saturday Referral Tip</h3>
+<p>💡 <strong>SATURDAY REFERRAL TIP</strong></p>
+<p>Who should you be looking out for?</p>
+<p>Here are a few examples:</p>
+<ul>
+<li>Business owners without websites.</li>
+<li>Brands with outdated websites.</li>
+<li>Businesses that rely entirely on social media.</li>
+<li>Entrepreneurs struggling with repetitive manual processes.</li>
+<li>Businesses looking to introduce AI automation.</li>
+</ul>
+<p>You don&#x27;t have to convince everyone or become a salesperson.</p>
+<p>Identify a potential need and share your referral link.</p>
+<p>Simple! 😊</p>
+<h3>E. Mid-month Reminder</h3>
+<p>Hello, partners! 💚</p>
+<p>We&#x27;re making progress through November!</p>
+<p>A quick reminder that you don&#x27;t need to be a tech expert to make successful referrals.</p>
+<p>You already have a network of business owners, entrepreneurs, professionals and people who may know someone who needs Geeslane&#x27;s services.</p>
+<p>Share your personal referral link whenever you identify an opportunity.</p>
+<p>Remember, Geeslane handles the technical conversations.</p>
+<p>Keep the referrals coming! 🚀</p>
+<h3>F. Final Week Motivation</h3>
+<p>Good morning, partners! ☀️</p>
+<p>We&#x27;re entering the final stretch of our November Refer &amp; Earn campaign!</p>
+<p>If you&#x27;ve been meaning to introduce Geeslane to someone, this is a good time to do so.</p>
+<p>Think about the businesses in your network that could benefit from our services.</p>
+<p>One introduction could open up a great opportunity.</p>
+<p>Let&#x27;s finish November strong! 💚</p>
+<h3>G. Final Saturday Reminder</h3>
+<p>It&#x27;s our final Saturday of November! 🎉</p>
+<p>There&#x27;s still time to introduce potential clients to Geeslane.</p>
+<p>Share your referral link with business owners, entrepreneurs and brands that may need our services.</p>
+<p>Thank you for being part of the campaign!</p>
+<h3>H. End-of-month Appreciation</h3>
+<p>And that&#x27;s a wrap on November! 🎉💚</p>
+<p>A massive THANK YOU to everyone who participated in the Geeslane Refer &amp; Earn campaign.</p>
+<p>Thank you for sharing your networks, making introductions and helping more businesses discover Geeslane.</p>
+<p>We appreciate your contribution and the opportunity to have you participate in this campaign.</p>
+<p>Here&#x27;s to more opportunities, more connections and more growth!</p>
+<p>Thank you for being part of Geeslane! 💚</p>
+<h2 id="partner-wins">7. Celebrating Partner Wins 🥳</h2>
+<p>Celebrating successful referrals and payments helps build confidence in the programme.</p>
+<p>However, <strong>you will only know about successful conversions when Geeslane Admin communicates them to you.</strong></p>
+<p>Do not independently check, estimate or announce conversion figures.</p>
+<p>You may celebrate:</p>
+<ul>
+<li>A confirmed successful referral.</li>
+<li>A partner&#x27;s first successful conversion.</li>
+<li>A partner receiving a commission.</li>
+<li>A confirmed commission payment.</li>
+<li>Multiple successful referrals by a partner.</li>
+</ul>
+<h3>Sample Celebration Messages</h3>
+<p><strong>Successful Conversion 🎉</strong></p>
+<p>🎉 WE HAVE A WIN!</p>
+<p>Congratulations to @PartnerName!</p>
+<p>One of their referrals has successfully converted into a Geeslane client!</p>
+<p>Thank you for connecting another business to Geeslane. We appreciate your contribution.</p>
+<p>More wins ahead! 🚀</p>
+<p><strong>First Successful Referral 🏆</strong></p>
+<p>A FIRST WIN! 🎉</p>
+<p>Congratulations to @PartnerName on their first successful referral!</p>
+<p>We&#x27;re excited to celebrate this milestone with you.</p>
+<p>Thank you for trusting the programme and helping us connect with more businesses.</p>
+<p><strong>Payment Celebration 💰</strong></p>
+<p>It&#x27;s payday! 🥳</p>
+<p>Congratulations to @PartnerName on receiving their referral commission!</p>
+<p>Thank you for helping Geeslane reach another business.</p>
+<p>We celebrate this win with you! 💚</p>
+<p><strong>Important:</strong></p>
+<ul>
+<li>Only celebrate achievements confirmed by Geeslane Admin.</li>
+<li>Do not rank partners or compare referral numbers.</li>
+<li>Do not make partners who haven&#x27;t made referrals feel unsuccessful.</li>
+<li>Avoid creating unnecessary competition.</li>
+</ul>
+<h2 id="payment-confirmations">8. Sharing Payment Confirmations</h2>
+<p>Sharing approved payment confirmations helps demonstrate transparency and builds trust.</p>
+<p>However, recipients&#x27; privacy must always be protected.</p>
+<h3>Before sharing a payment screenshot</h3>
+<table><tbody>
+<tr><td>Step</td><td>What to Do</td></tr>
+<tr><td>1</td><td>Obtain the recipient&#x27;s permission first.</td></tr>
+<tr><td>2</td><td>Open the screenshot in WhatsApp&#x27;s image editor.</td></tr>
+<tr><td>3</td><td>Use the <strong>pen icon</strong> to draw a solid, opaque line over the recipient&#x27;s full name.</td></tr>
+<tr><td>4</td><td>Completely cover the recipient&#x27;s account number.</td></tr>
+<tr><td>5</td><td>Cover transaction references, session IDs, phone numbers and any other sensitive information.</td></tr>
+<tr><td>6</td><td>Check the image carefully before posting to ensure no private information is visible.</td></tr>
+<tr><td>7</td><td>Tag the recipient only if they have given permission.</td></tr>
+</tbody></table>
+<p><strong>Important:</strong></p>
+<ul>
+<li>Use a solid line, not a transparent highlighter.</li>
+<li>Do not alter the payment amount or transaction status.</li>
+<li>Never share screenshots without the recipient&#x27;s consent.</li>
+<li>If the recipient does not want their payment shared, celebrate with a simple text message instead.</li>
+</ul>
+<h2 id="dos-donts">9. Do&#x27;s &amp; Don&#x27;ts</h2>
+<p>Use this table as a quick reference when managing the group.</p>
+<table><tbody>
+<tr><td>DO 👍🏽</td><td>DON&#x27;T 👎🏽</td></tr>
+<tr><td>Be friendly and approachable.</td><td>Be unnecessarily formal or intimidating.</td></tr>
+<tr><td>Keep messages short and purposeful.</td><td>Spam the group with unnecessary messages.</td></tr>
+<tr><td>Respond to questions promptly.</td><td>Leave partners without responses.</td></tr>
+<tr><td>Share approved Geeslane content.</td><td>Share unapproved offers or information.</td></tr>
+<tr><td>Encourage partners to use their referral links.</td><td>Pressure anyone to participate in conversations.</td></tr>
+<tr><td>Celebrate confirmed achievements.</td><td>Announce unconfirmed conversions.</td></tr>
+<tr><td>Respect partners who prefer not to engage.</td><td>Force partners to introduce themselves.</td></tr>
+<tr><td>Protect personal and financial information.</td><td>Share private conversations or sensitive details.</td></tr>
+<tr><td>Give accurate information.</td><td>Guess or make promises on behalf of Geeslane.</td></tr>
+<tr><td>Escalate issues when necessary.</td><td>Make independent decisions about programme rules.</td></tr>
+</tbody></table>
+<h3>What You Must Not Decide Independently</h3>
+<p>The following matters must always be referred to Geeslane management:</p>
+<ul>
+<li>Changing commission arrangements.</li>
+<li>Promising special bonuses or additional rewards.</li>
+<li>Announcing changes to programme deadlines.</li>
+<li>Confirming disputed referrals.</li>
+<li>Making exceptions to programme rules.</li>
+<li>Publishing sensitive business or financial information.</li>
+</ul>
+<p><strong>Escalation Contact: Geeslane Admin</strong></p>
+<p><strong>07044902301</strong></p>
+<p>You can respond:</p>
+<p>&quot;Thank you for bringing this up! Let me confirm with the Geeslane team so I can give you the correct information.&quot;</p>
+<h2 id="faqs">10. Frequently Asked Questions</h2>
+<p>Here are some questions partners may ask and how you should respond.</p>
+<p><strong>Q: What is Geeslane?</strong></p>
+<p>Geeslane is a technology company helping businesses grow through website development, digital solutions and AI automation.</p>
+<p><strong>Q: How do I join the programme?</strong></p>
+<p>Visit https://geeslane.com/partners, read the programme terms and complete the registration form. After submitting the form, you can join the WhatsApp group using the link provided.</p>
+<p><strong>Q: How does the referral programme work?</strong></p>
+<p>It&#x27;s simple!</p>
+<ol>
+<li>Register at geeslane.com/partners.</li>
+<li>Join the WhatsApp group through the link provided.</li>
+<li>Check your email for your personal Geeslane Partner Link.</li>
+<li>Share your link with potential clients.</li>
+<li>Track your referral history from your partner page.</li>
+</ol>
+<p><strong>Q: Where do I find my invite link?</strong></p>
+<p>Check your email inbox for a message titled <strong>&quot;Your Geeslane Partner Link&quot;</strong>.</p>
+<p>Your personal referral link is included in that email. Copy and share it with potential clients.</p>
+<p>If you cannot find it, check your spam and promotions folders.</p>
+<p><strong>Q: Where can I view my referral history?</strong></p>
+<p>You can view your referral history on your personal partner page using the partner page link provided in your email.</p>
+<p><strong>Q: What if I can&#x27;t find my partner email?</strong></p>
+<p>First, check your inbox, spam and promotions folders for an email titled &quot;Your Geeslane Partner Link&quot;.</p>
+<p>If you still cannot find it, contact Geeslane Admin for assistance.</p>
+<p><strong>Q: How much commission do I earn?</strong></p>
+<p>The November campaign offers 20% commission on successful referrals, subject to the programme terms at https://geeslane.com/partners.</p>
+<p><strong>Q: Can I refer more than one person?</strong></p>
+<p>Absolutely! You can share your personal referral link with multiple potential clients.</p>
+<p><strong>Q: Do I need to understand website development or AI?</strong></p>
+<p>Not at all! Your role is to identify potential clients and share your referral link. The Geeslane team handles the technical discussions.</p>
+<p><strong>Q: What if the person I refer doesn&#x27;t need a website?</strong></p>
+<p>Geeslane offers several services, including website revamps, domain and hosting services, business consultation and AI automation. They may need something else we offer.</p>
+<p><strong>Q: What happens after I share my referral link?</strong></p>
+<p>Your referral activity can be viewed on your partner page. Geeslane will handle follow-up discussions with potential clients and validate successful conversions according to the programme terms.</p>
+<p><strong>Q: When will I receive my commission?</strong></p>
+<p>Commission eligibility and payment arrangements are subject to the programme terms. For specific payment questions, please contact Geeslane Admin.</p>
+<p><strong>Q: My referral hasn&#x27;t appeared on my partner page. What should I do?</strong></p>
+<p>Contact Geeslane Admin with your referral details so the team can investigate.</p>
+<p><strong>Q: Can I refer businesses outside Nigeria?</strong></p>
+<p>You can introduce potential clients outside Nigeria, but please confirm specific service availability with management before making commitments.</p>
+<p><strong>Q: Can I share Geeslane&#x27;s promotional materials on my social media?</strong></p>
+<p>Yes! You can share approved Geeslane promotional materials and your personal referral link with your network.</p>
+<p><strong>Q: What if a potential client wants to speak directly with Geeslane?</strong></p>
+<p>That&#x27;s perfectly fine. They can use the contact information on Geeslane&#x27;s website or follow the relevant referral process.</p>
+<p><strong>Q: Who do I contact if I have a problem?</strong></p>
+<p>For general questions, contact the Community Manager.</p>
+<p>For missing links, referral validation, commissions, payments or programme-related issues, contact Geeslane Admin on <strong>07044902301</strong>.</p>
+<p><strong>Golden rule:</strong> If you don&#x27;t know the answer, don&#x27;t guess. Confirm with management.</p>
+<h2 id="november-goal">11. Our November Goal 💚</h2>
+<p>Our goal is simple:</p>
+<p><strong>Help partners connect Geeslane to potential clients and reward them for successful referrals.</strong></p>
+<p>As Community Manager, your success is not measured by how many messages you post or how active the WhatsApp group looks.</p>
+<p>It is about ensuring that:</p>
+<ul>
+<li>Partners understand how the programme works.</li>
+<li>Everyone knows where to find their referral links.</li>
+<li>Partners receive useful reminders and information.</li>
+<li>Questions are answered or directed appropriately.</li>
+<li>Successful referrals and payments are recognised.</li>
+<li>The programme is represented professionally and transparently.</li>
+</ul>
+<p>We want partners to have a smooth experience without unnecessary pressure or noise.</p>
+<p><strong>Geeslane provides the service. Partners provide the connections. We reward successful referrals.</strong></p>
+<p>Let&#x27;s make November count! 🚀💚</p>
+<p><strong>GEESLANE</strong></p>
+<p><em>Scale your business with technology &amp; AI.</em></p></article>
+  <footer>GEESLANE · Scale your business with technology & AI.</footer>
+</main>
+</div>
+<script>
+const search = document.getElementById('sectionSearch');
+const links = [...document.querySelectorAll('#sectionNav a')];
+search.addEventListener('input', () => {
+  const q = search.value.toLowerCase().trim();
+  links.forEach(link => {
+    link.style.display = link.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      links.forEach(link => link.classList.toggle('active', link.hash === '#' + entry.target.id));
+    }
+  });
+}, {rootMargin:'-10% 0px -78% 0px'});
+document.querySelectorAll('article h2[id]').forEach(section => observer.observe(section));
+document.querySelectorAll('article table').forEach(table => {
+  const headers = [...table.rows[0].cells].map(cell => cell.textContent.trim());
+  [...table.rows].slice(1).forEach(row => {
+    [...row.cells].forEach((cell, index) => {
+      if (headers[index]) cell.dataset.label = headers[index];
+    });
+  });
+});
+</script>
+</body>
+</html>
