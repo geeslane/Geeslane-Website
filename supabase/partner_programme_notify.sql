@@ -7,6 +7,9 @@
 --   select vault.create_secret('YOUR_SERVICE_ROLE_KEY', 'partner_notify_key');
 -- And set the Edge Function secret COMMUNITY_MANAGER_EMAIL.
 -- Then redeploy send-portal-mail.
+-- pg_net makes the request to that function. Its functions live in the net schema.
+
+create extension if not exists pg_net with schema extensions;
 
 create table if not exists public.partner_notifications (
   id uuid primary key default gen_random_uuid(),

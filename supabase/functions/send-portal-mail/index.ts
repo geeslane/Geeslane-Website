@@ -17,6 +17,65 @@ function validEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+function bearerValue(header: string) {
+  let token = header.trim();
+  while (/^bearer\s+/i.test(token)) token = token.replace(/^bearer\s+/i, "").trim();
+  return token;
+}
+
+function normalizeKey(value: string) {
+  return bearerValue(value).replace(/^["']|["']$/g, "").replace(/\s+/g, "");
+}
+
+function configuredServiceKeys() {
+  const keys = new Set<string>();
+  const add = (value: string) => {
+    const key = normalizeKey(value);
+    if (key) keys.add(key);
+  };
+  add(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "");
+  const bundled = Deno.env.get("SUPABASE_SECRET_KEYS") || "";
+  if (!bundled) return keys;
+  try {
+    const parsed = JSON.parse(bundled);
+    if (typeof parsed === "string") add(parsed);
+    else if (Array.isArray(parsed)) parsed.forEach((item) => add(String(item ?? "")));
+    else if (parsed && typeof parsed === "object") Object.values(parsed).forEach((item) => add(String(item ?? "")));
+  } catch {
+    add(bundled);
+  }
+  return keys;
+}
+
+async function acceptedServiceKey(accessToken: string) {
+  const token = normalizeKey(accessToken);
+  if (!token) return "";
+  const serviceKey = (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "").trim();
+  if (configuredServiceKeys().has(token)) return serviceKey || token;
+
+  const url = Deno.env.get("SUPABASE_URL") || "";
+  const anon = Deno.env.get("SUPABASE_ANON_KEY") || "";
+  if (url && anon && token.split(".").length === 3) {
+    try {
+      const supabase = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
+      const { data, error } = await supabase.auth.getClaims(token);
+      if (!error && data?.claims?.role === "service_role") return serviceKey || token;
+    } catch {
+      /* The installed client may not verify this token. The admin check below still can. */
+    }
+  }
+
+  if (!url) return "";
+  try {
+    const admin = createClient(url, token, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1 });
+    if (!error) return serviceKey || token;
+  } catch {
+    return "";
+  }
+  return "";
+}
+
 function communityManagerRecipients() {
   const seen = new Map<string, string>();
   for (const item of String(Deno.env.get("COMMUNITY_MANAGER_EMAIL") || "").split(/[,;]+/)) {
@@ -442,10 +501,10 @@ Deno.serve(async (req) => {
     const isEnsureUser = kind === "ensure-user";
     if (!isEnsureUser && !isPartnerAdminAlert && !isPartnerReferralAlert && !isPartnerNotification && (!subject || (!html && !text))) return json({ error: "Missing mail" }, 400);
 
-    const accessToken = authHeader.slice(7).trim();
+    const accessToken = bearerValue(authHeader);
     if (isPartnerNotification) {
-      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-      if (!serviceKey || accessToken !== serviceKey) return json({ error: "Sign in required" }, 401);
+      const serviceKey = await acceptedServiceKey(accessToken);
+      if (!serviceKey) return json({ error: "Sign in required" }, 401);
       return await deliverPartnerNotification(serviceKey, apiKey, mailFrom, String(payload.notificationId || ""));
     }
     const supabase = createClient(Deno.env.get("SUPABASE_URL") || "", Deno.env.get("SUPABASE_ANON_KEY") || "", {

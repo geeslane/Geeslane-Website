@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const WHATSAPP = "https://chat.whatsapp.com/FVDHHYw2IVBL2JayqlzUES?s=cl&p=i&mlu=4&ilr=4";
+  const WHATSAPP = "https://chat.whatsapp.com/GVAzFM3iBNADtK1sDUHzcw";
   const TOKEN_KEY = "geeslane-partner-token";
   const KIND = { first: "Initial 50%", second: "Final 50%", project: "Project payment" };
   const STATUS = {
