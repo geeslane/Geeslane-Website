@@ -499,7 +499,8 @@ function placeMenu() {
   const passed = menuSlot.getBoundingClientRect().top + menuHeight < topBar.getBoundingClientRect().bottom + 4;
   if (passed !== docked) {
     document.body.classList.toggle('menu-docked', passed);
-    if (!passed) document.body.classList.remove('menu-hidden');
+    if (passed) document.body.classList.add('menu-hidden');
+    else document.body.classList.remove('menu-hidden');
   }
   syncOffset();
 }
