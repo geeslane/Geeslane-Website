@@ -154,6 +154,7 @@ npx supabase link --project-ref xostzntvowmdjlwpsevq
 npx supabase secrets set RESEND_API_KEY=YOUR_RESEND_KEY
 npx supabase secrets set NOTIFY_TEAM_EMAIL=contact@geeslane.com
 npx supabase secrets set MAIL_FROM="Geeslane <no-reply@auth.geeslane.com>"
+npx supabase secrets set COMMUNITY_MANAGER_EMAIL="one@example.com,two@example.com"
 npx supabase functions deploy send-portal-mail
 ```
 
@@ -163,6 +164,22 @@ npx supabase functions deploy send-portal-mail
 2. Save **Brand Identity**.
 3. Open `contact@geeslane.com`. The note should be the green Geeslane card, not a Web3Forms “new form submitted” email.
 4. If it fails, open **Edge Functions** → `send-portal-mail` → **Logs**. A Resend domain error means `MAIL_FROM` does not match the verified domain.
+
+### Partner programme emails
+
+Referral and commission emails are sent by `send-portal-mail` after the database row is saved. The browser does not send them and never receives `COMMUNITY_MANAGER_EMAIL`.
+
+1. Run `supabase/partner_programme_notify.sql` in the Supabase SQL editor after `partner_programme_ops.sql`.
+2. Set the Edge Function secret `COMMUNITY_MANAGER_EMAIL` to one address, or several addresses separated by commas. Each address receives the same referral and commission alert. The partner's own payout email still goes only to the address on their registration. Use a placeholder in git, never a production address.
+3. In the SQL editor, store the dispatch target in Vault. Replace the service-role value locally. Do not commit it.
+
+```
+select vault.create_secret('https://xostzntvowmdjlwpsevq.supabase.co/functions/v1/send-portal-mail', 'partner_notify_url');
+select vault.create_secret('YOUR_SERVICE_ROLE_KEY', 'partner_notify_key');
+```
+
+4. Redeploy `send-portal-mail`.
+5. A failed email stays on **Partner Programme → Commissions & Payouts** with Retry. A sent email is not sent again.
 
 Access requests made before sign-in still go through Web3Forms.
 

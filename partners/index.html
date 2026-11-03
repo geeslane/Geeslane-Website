@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b6b45" />
-    <meta name="description" content="Join the Geeslane November Partner Programme. Share your invite link from 1 to 30 November 2026 and earn 20% of Geeslane fees." />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="Refer businesses to Geeslane from 1 to 30 November 2026 and earn 20% of the eligible service fee, up to NGN 100,000 per project." />
     <title>November Partner Programme | Geeslane</title>
     <link rel="icon" href="../favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,98 +25,298 @@
       </header>
 
       <main class="request-main partner-main">
-        <section class="request-intro" id="partner-intro">
-          <p class="eyebrow">1–30 November 2026</p>
-          <h1 id="partner-title">November Partner Programme</h1>
-          <p id="partner-lead">Share your invite link. When a new client accepts Geeslane’s quote and pays in November, you earn 20% of the Geeslane fee. The most you can earn on one project is ₦100,000.</p>
-        </section>
+        <div id="partner-story">
+          <nav class="partner-jump" aria-label="On this page">
+            <a href="#how-it-works">How it works</a>
+            <a href="#services">Services</a>
+            <a href="#commission">Commission</a>
+            <a href="#dashboard">Your page</a>
+            <a href="#partner-form">Register</a>
+            <a href="#faq">FAQ</a>
+            <a href="#partner-terms">Terms</a>
+          </nav>
 
-        <section class="card partner-card" id="partner-join">
-          <form id="partner-form" novalidate>
-            <h2>Register as a partner</h2>
-            <p class="partner-copy">This is for you as a person. The business you refer registers itself through your link.</p>
-            <div class="form-grid">
-              <div class="field"><label for="partner-name">Full name <span>*</span></label><input id="partner-name" name="fullName" autocomplete="name" required /><small>Use the same name as your bank account.</small></div>
-              <div class="field"><label for="partner-email">Email address <span>*</span></label><input id="partner-email" name="email" type="email" autocomplete="email" required /></div>
-              <div class="field field-full"><label for="partner-phone-local">Phone / WhatsApp <span>*</span></label><div class="phone-combo" data-phone-combo="phone"><select id="partner-phone-code" aria-label="Country code"></select><input id="partner-phone-local" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="801 234 5678" required /><input id="partner-phone" name="phone" type="hidden" /></div></div>
-              <div class="field"><label for="partner-bank">Bank name <span>*</span></label><input id="partner-bank" name="bankName" required /></div>
-              <div class="field"><label for="partner-account-number">Account number <span>*</span></label><input id="partner-account-number" name="accountNumber" inputmode="numeric" maxlength="10" required /></div>
-              <div class="field field-full"><label for="partner-account-name">Account name <span>*</span></label><input id="partner-account-name" name="accountName" required /><small>This must match your full name above. Geeslane pays this account.</small></div>
+          <section class="card partner-hero" id="partner-intro">
+            <p class="eyebrow">1–30 November 2026</p>
+            <h1 id="partner-title">Refer Businesses. Earn 20%.</h1>
+            <p>Know a business that needs a website, digital solution, or AI automation? Introduce them to Geeslane and earn 20% of the eligible service fee on each payment they make. You can earn up to NGN 100,000 per referred project.</p>
+            <p class="partner-highlight">1–30 November 2026 · Up to NGN 100,000 per project</p>
+            <p class="partner-note">Open to individuals worldwide. Commission is paid only to a Nigerian bank account in your own name.</p>
+            <div class="partner-actions">
+              <a class="button button-primary" href="#partner-form">Register as a partner</a>
+              <a class="button button-secondary" href="#how-it-works">How it works</a>
             </div>
-            <p class="partner-copy">Join the partner WhatsApp group before you send this form. That group is where updates, marketing kits, and tips are shared.</p>
-            <p><a class="button button-secondary" href="https://chat.whatsapp.com/FVDHHYw2IVBL2JayqlzUES?s=cl&amp;p=i&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener">Join the WhatsApp group</a></p>
-            <div class="confirm-stack">
-              <label class="confirm-check"><input name="joinedWhatsapp" type="checkbox" required /><span>I have joined the Geeslane Refer &amp; Earn WhatsApp group.</span></label>
-              <label class="confirm-check"><input name="agreeTerms" type="checkbox" required /><span>I have read and agree to the <a href="#partner-terms">November Partner Programme terms</a>.</span></label>
+          </section>
+
+          <section class="card partner-card" id="how-it-works">
+            <p class="eyebrow">How it works</p>
+            <h2>Four steps</h2>
+            <p class="partner-copy">You do not need technical knowledge or sales experience. You introduce the business. Geeslane does the rest.</p>
+            <ol class="partner-steps">
+              <li><b>1</b><div><strong>Register</strong><span>Join the programme and receive your personal referral link.</span></div></li>
+              <li><b>2</b><div><strong>Share</strong><span>Send your link to businesses or individuals who may need Geeslane’s services.</span></div></li>
+              <li><b>3</b><div><strong>We handle the rest</strong><span>Geeslane contacts the prospect, discusses their needs, prepares a quote, and manages the project.</span></div></li>
+              <li><b>4</b><div><strong>Earn</strong><span>Receive 20% of the eligible service fee as each qualifying payment clears.</span></div></li>
+            </ol>
+          </section>
+
+          <section class="card partner-card" id="services">
+            <p class="eyebrow">Services</p>
+            <h2>What can you refer?</h2>
+            <p class="partner-copy">Introduce businesses that need any of these services:</p>
+            <ul class="partner-services">
+              <li><span class="partner-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H4V5Zm2 2v8h12V7H6Zm-2 12h16v2H4v-2Z"/></svg></span><strong>Full Website Development</strong></li>
+              <li><span class="partner-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v2a5 5 0 1 1-4.3 7.5L6 13.2A7 7 0 1 0 12 5Zm-1 0H5v6h2V8.4l4.6 4.6L13 11.6 8.4 7H11V5Z"/></svg></span><strong>Website Revamp and AI Website Completion</strong></li>
+              <li><span class="partner-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18Zm0 2a7 7 0 0 0 0 14V5Z"/></svg></span><strong>Domain Purchase and Hosting</strong></li>
+              <li><span class="partner-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M11 3h2v8h8v2h-8v8h-2v-8H3v-2h8V3Z"/></svg></span><strong>Business Consultation</strong></li>
+              <li><span class="partner-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h6v2H4V7Zm10 0h6v2h-6V7ZM4 11h16v2H4v-2ZM4 15h9v2H4v-2Zm11 0h5v2h-5v-2Z"/></svg></span><strong>AI Automation</strong></li>
+            </ul>
+          </section>
+
+          <section class="card partner-card" id="commission">
+            <p class="eyebrow">Commission</p>
+            <h2>How much can you earn?</h2>
+            <p class="partner-copy">You earn 20% of Geeslane’s eligible service fee on each of the two project payments.</p>
+            <p class="partner-copy">Every project is paid in two instalments:</p>
+            <ul>
+              <li>Initial payment: 50% of the agreed project fee.</li>
+              <li>Final payment: the remaining 50%.</li>
+            </ul>
+            <p class="partner-copy">You earn commission as each payment clears.</p>
+            <div class="admin-table-wrap">
+              <table class="partner-calc">
+                <caption>Example: eligible Geeslane service fee of NGN 300,000</caption>
+                <thead><tr><th>Payment</th><th>Client pays</th><th>Your commission</th></tr></thead>
+                <tbody>
+                  <tr><td>Initial payment, 50%</td><td>NGN 150,000</td><td>NGN 30,000</td></tr>
+                  <tr><td>Final payment, 50%</td><td>NGN 150,000</td><td>NGN 30,000</td></tr>
+                  <tr><td>Total</td><td>NGN 300,000</td><td>NGN 60,000</td></tr>
+                </tbody>
+              </table>
             </div>
-            <p class="form-error" id="partner-error" hidden></p>
-            <button class="button button-primary" id="partner-submit" type="submit">Send and get my link</button>
-          </form>
-        </section>
+            <p class="partner-copy">Maximum commission per project: NGN 100,000.</p>
+            <p class="partner-copy">Third-party costs such as domains, hosting, business email, licences and other external services are excluded from the commission calculation.</p>
+            <p class="partner-copy">The first 50% payment must clear between 1 and 30 November 2026 for the referral to qualify.</p>
+            <p class="partner-copy">Once a project qualifies, commission on the final 50% payment remains payable even if the client pays after November.</p>
+            <p class="partner-copy">If the client cancels the project, the partner retains commission already paid but forfeits outstanding or future commission from that project.</p>
+          </section>
+
+          <section class="card partner-card" id="dashboard">
+            <p class="eyebrow">Your page</p>
+            <h2>Track your referrals and earnings.</h2>
+            <p class="partner-copy">Your personal partner page lets you follow what came through your link. It shows:</p>
+            <ul class="partner-feature-list">
+              <li><strong>Referrals submitted.</strong> Each business that used your link.</li>
+              <li><strong>Referral status.</strong> Request received, offer accepted, or does not count.</li>
+              <li><strong>Commission earned.</strong> 20% recorded on each qualifying payment.</li>
+              <li><strong>Awaiting transfer.</strong> Commission earned and not yet sent to your bank.</li>
+              <li><strong>Commission transferred.</strong> Amounts Geeslane has already paid, with the receipt note.</li>
+            </ul>
+            <p class="partner-copy">The page does not show the client’s phone number or email. The link to your page is in the welcome email.</p>
+          </section>
+
+          <section class="card partner-card" id="partner-join">
+            <form id="partner-form" novalidate>
+              <p class="eyebrow">Register</p>
+              <h2>Register as a partner.</h2>
+              <p class="partner-copy">This registration is for you as an individual. Businesses you refer will submit their own service requests through your personal invite link.</p>
+              <h3>Personal information</h3>
+              <div class="form-grid">
+                <div class="field"><label for="partner-name">Full name <span>*</span></label><input id="partner-name" name="fullName" autocomplete="name" required /><small>Use the same name as your Nigerian bank account.</small></div>
+                <div class="field"><label for="partner-email">Email address <span>*</span></label><input id="partner-email" name="email" type="email" autocomplete="email" required /></div>
+                <div class="field field-full"><label for="partner-phone-search">Country code</label><input id="partner-phone-search" type="search" placeholder="Search country or code" autocomplete="off" aria-controls="partner-phone-code" /></div>
+                <div class="field field-full"><label for="partner-phone-local">Phone / WhatsApp number <span>*</span></label><div class="phone-combo" data-phone-combo="phone"><select id="partner-phone-code" aria-label="Country code"></select><input id="partner-phone-local" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="801 234 5678" required /><input id="partner-phone" name="phone" type="hidden" /></div><small>Nigeria (+234) is selected to start. Search to choose another country code.</small></div>
+              </div>
+              <h3>Payment details</h3>
+              <p class="partner-copy">Commission payments are made exclusively to Nigerian bank accounts, even if you live outside Nigeria. We collect these details so we can pay your commission when you earn one.</p>
+              <div class="form-grid">
+                <div class="field"><label for="partner-bank">Bank name <span>*</span></label><input id="partner-bank" name="bankName" required /></div>
+                <div class="field"><label for="partner-account-number">Account number <span>*</span></label><input id="partner-account-number" name="accountNumber" inputmode="numeric" maxlength="10" required /><small>10-digit Nigerian account number.</small></div>
+                <div class="field field-full"><label for="partner-account-name">Account name <span>*</span></label><input id="partner-account-name" name="accountName" required /><small>This must match the full name you provide above. Geeslane uses this account to pay your commissions.</small></div>
+              </div>
+              <h3>Join the partner WhatsApp group.</h3>
+              <p class="partner-copy">Join the Geeslane Refer &amp; Earn WhatsApp group before submitting this form. This is where we share programme updates, marketing materials and referral tips.</p>
+              <p><a class="button button-secondary" href="https://chat.whatsapp.com/FVDHHYw2IVBL2JayqlzUES?s=cl&amp;p=i&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener">Join the WhatsApp group</a></p>
+              <div class="confirm-stack">
+                <label class="confirm-check"><input name="joinedWhatsapp" type="checkbox" required /><span>I have joined the Geeslane Refer &amp; Earn WhatsApp group.</span></label>
+                <label class="confirm-check"><input name="agreeTerms" type="checkbox" required /><span>I have read and agree to the <a href="#partner-terms">November Partner Programme Terms</a>.</span></label>
+              </div>
+              <p class="form-error" id="partner-error" hidden></p>
+              <button class="button button-primary" id="partner-submit" type="submit">Send registration and get my link</button>
+            </form>
+          </section>
+
+          <section class="card partner-card partner-faq" id="faq">
+            <p class="eyebrow">FAQ</p>
+            <h2>Questions partners ask</h2>
+            <details>
+              <summary>Who can join?</summary>
+              <p>Any individual, anywhere. Commission is paid only to a Nigerian bank account in your own name. You confirm that you have joined the WhatsApp group before you register.</p>
+            </details>
+            <details>
+              <summary>Do I need sales or technical experience?</summary>
+              <p>No. You introduce potential clients. Geeslane handles the conversation, the quote, and the project.</p>
+            </details>
+            <details>
+              <summary>How do I get my referral link?</summary>
+              <p>It is created when you register and sent to your email, together with the link to your private partner page.</p>
+            </details>
+            <details>
+              <summary>How does Geeslane contact referred clients?</summary>
+              <p>They submit a request through your link. Geeslane contacts them, discusses the work, and prepares the quote.</p>
+            </details>
+            <details>
+              <summary>When do I earn commission?</summary>
+              <p>When a new client’s initial 50% payment clears between 1 and 30 November 2026, and again when the final 50% clears. Geeslane transfers each amount within 1–3 working days.</p>
+            </details>
+            <details>
+              <summary>What happens if the client pays the balance after November?</summary>
+              <p>You still earn 20% of that eligible balance, if the initial 50% cleared in November.</p>
+            </details>
+            <details>
+              <summary>Are domain, hosting, and email fees included?</summary>
+              <p>No. Domain registration, hosting, business email, licences, and other third-party costs are excluded.</p>
+            </details>
+            <details>
+              <summary>Can existing Geeslane clients qualify?</summary>
+              <p>No. Existing clients, returning clients, and businesses Geeslane was already speaking with do not qualify, even for a different service. Following Geeslane on social media does not by itself make someone an existing client.</p>
+            </details>
+            <details>
+              <summary>Can I refer more than one business?</summary>
+              <p>Yes. Share your link with as many new businesses as you like. Each project is capped at NGN 100,000 in commission.</p>
+            </details>
+            <details>
+              <summary>How do I receive my commission?</summary>
+              <p>Geeslane transfers it to the Nigerian bank account on your registration, within 1–3 working days after the client payment clears.</p>
+            </details>
+            <details>
+              <summary>What happens if a client cancels?</summary>
+              <p>You keep commission already transferred. Outstanding or future commission on that project is not paid. Geeslane does not refund client fees, and commission is not reversed.</p>
+            </details>
+            <details>
+              <summary>Can I access my dashboard after November?</summary>
+              <p>Yes. Your partner page stays open so you can follow balance payments and transfers for projects that qualified in November.</p>
+            </details>
+          </section>
+
+          <section class="card partner-card partner-terms" id="partner-terms">
+            <p class="eyebrow">Terms</p>
+            <h2>November Partner Programme terms</h2>
+            <p>These terms are between you and Geeslane Technologies. They apply from the moment you send the registration form. Sending the form means you agree to them.</p>
+
+            <h3>Programme period</h3>
+            <p>Dates use West Africa Time (Africa/Lagos).</p>
+            <ul>
+              <li>The programme runs from 1 November 2026 to 30 November 2026.</li>
+              <li>You may register before November. Registration stays open through the end of 30 November 2026.</li>
+              <li>Your invite link attributes a new request only during that window.</li>
+              <li>The client’s initial 50% payment must clear during November for the referral to qualify.</li>
+              <li>The final 50% payment may clear after November and still qualify for commission.</li>
+            </ul>
+
+            <h3>Registration</h3>
+            <ul>
+              <li>The programme is open to individuals worldwide. A business does not register as a partner.</li>
+              <li>Commission is paid only to a Nigerian bank account in your own name. The account name must match the full name on this form.</li>
+              <li>Registration is automatic. No manual approval is required.</li>
+              <li>Your personal invite link is created and emailed when registration succeeds.</li>
+            </ul>
+
+            <h3>Referral eligibility</h3>
+            <ul>
+              <li>Only new clients qualify. Existing clients and returning clients do not qualify, even if they request a different service.</li>
+              <li>A person or business Geeslane was already speaking with before the referral does not qualify. Geeslane’s record of that conversation is final.</li>
+              <li>The first request Geeslane stores for an email address keeps the referral.</li>
+              <li>A referral code typed in by hand does not count. The request form fills the code from your invite link.</li>
+              <li>A referred business sends its own service request through that link.</li>
+            </ul>
+
+            <h3>Commission</h3>
+            <ul>
+              <li>You earn 20% of the eligible Geeslane amount in each instalment. Across both instalments, that is 20% of the eligible Geeslane service fee.</li>
+              <li>Domain, hosting, business email, licences, and other third-party amounts are excluded.</li>
+              <li>Each project is paid in two instalments: 50% initial and 50% final. Commission is earned as each qualifying payment clears.</li>
+              <li>The most you can earn on one project is NGN 100,000.</li>
+              <li>Geeslane transfers the commission within 1–3 working days after each qualifying client payment clears, to the Nigerian account on your form.</li>
+              <li>The first 50% must clear in November. The final 50% can clear after November and still earn commission.</li>
+              <li>If the client cancels the project, you keep commission already paid and forfeit outstanding or future commission from that project.</li>
+              <li>Extra work quoted after the accepted offer does not earn.</li>
+            </ul>
+
+            <h3>What you must not do</h3>
+            <ul>
+              <li>Claim to be a Geeslane employee or authorised representative.</li>
+              <li>Promise a discount, delivery date, or result Geeslane has not agreed.</li>
+              <li>Change a quotation or negotiate on Geeslane’s behalf.</li>
+              <li>Collect money from a client for Geeslane.</li>
+              <li>Misrepresent Geeslane’s services.</li>
+              <li>Share confidential client information.</li>
+            </ul>
+
+            <h3>Your link and materials</h3>
+            <p>You may share your invite link and the flyer kit Geeslane gives you. Do not change the logo or present the flyers as your own brand.</p>
+
+            <h3>WhatsApp group</h3>
+            <p>You confirm that you have joined the Geeslane Refer &amp; Earn WhatsApp group before you send the form. That group is for programme updates, marketing materials, and tips. Your welcome email repeats the group link.</p>
+
+            <h3>Records, privacy, and law</h3>
+            <p>Geeslane’s record of the invite link, the request, the quote, and the cleared payments decides what counts. Your partner page shows the project, the business name, the payment type, the date the client paid, your amount, and the receipt note. It does not show the client’s phone number or email. Keep what you see on that page private.</p>
+            <p>Geeslane uses the details on this form to run the programme and pay commission. Write first to <a href="mailto:contact@geeslane.com">contact@geeslane.com</a> if something looks wrong. Nigerian law applies. These terms cover this November programme only.</p>
+          </section>
+
+          <section class="card partner-card partner-close">
+            <h2>Ready to refer a business?</h2>
+            <p class="partner-copy">Register, get your invite link by email, and share it with businesses that need Geeslane.</p>
+            <a class="button button-primary" href="#partner-form">Register as a partner</a>
+          </section>
+        </div>
 
         <section class="card partner-card" id="partner-ready" hidden>
-          <p class="eyebrow">You are in</p>
-          <h2 id="partner-ready-title">Check your email</h2>
+          <p class="eyebrow">Registration complete</p>
+          <h2 id="partner-ready-title">You're officially a Geeslane Partner!</h2>
           <p class="partner-copy" id="partner-ready-copy"></p>
+          <ol class="partner-next" id="partner-ready-steps"></ol>
           <p class="partner-label">Your invite link</p>
           <p class="partner-link-row"><a id="partner-invite-link" href=""></a><button class="button button-secondary" id="partner-copy-invite" type="button">Copy</button></p>
-          <p class="partner-label">Your partner page</p>
-          <p class="partner-link-row"><a id="partner-space-link" href="">Open your page</a></p>
+          <section class="partner-dashboard" aria-labelledby="partner-dashboard-title">
+            <h3 id="partner-dashboard-title">📊 Your Partner Dashboard</h3>
+            <p>Your partner page is your personal tracking hub! Use it to monitor the businesses you've referred, track their project and payment progress, and keep an eye on the commissions you've earned.</p>
+            <ul class="partner-dashboard-points">
+              <li>
+                <span class="partner-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 11a3 3 0 1 0-2.83-4H13a3 3 0 1 0 0 6h.17A3 3 0 0 0 16 11Zm-8 0a3 3 0 1 0-2.83-4H5a3 3 0 1 0 0 6h.17A3 3 0 0 0 8 11Zm1 2c-2.2 0-4 1.34-4 3v1h8v-1c0-1.66-1.8-3-4-3Zm7 0c-.34 0-.67.03-1 .08 1.21.84 2 2.02 2 3.42V17h6v-1c0-1.66-1.8-3-4-3h-3Z"/></svg></span>
+                <span><strong>Referral Tracking:</strong> See the businesses you've referred and monitor their progress.</span>
+              </li>
+              <li>
+                <span class="partner-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11ZM7 8h4v2H7V8Zm0 4h10v2H7v-2Zm0 4h7v2H7v-2Z"/></svg></span>
+                <span><strong>Payment History:</strong> Track client payments and see which payments have cleared.</span>
+              </li>
+              <li>
+                <span class="partner-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5h2v10.2l4.2-4.2 3.3 3.3L19 8.8 20.4 10.2 13.5 17l-3.3-3.3L6 17.9V19H4Z"/></svg></span>
+                <span><strong>Commission Tracking:</strong> Keep track of your earned commissions and payment history.</span>
+              </li>
+            </ul>
+            <a class="button button-primary partner-dashboard-cta" id="partner-space-link" href="">Open My Partner Dashboard →</a>
+            <p class="partner-dashboard-note">Your dashboard is always available, so you can check your referrals and earnings whenever you need to.</p>
+          </section>
           <div class="partner-kit" id="partner-ready-kit"></div>
         </section>
 
         <section class="card partner-card" id="partner-space" hidden>
-          <p class="eyebrow">Your page</p>
+          <p class="eyebrow">November Partner Programme</p>
           <h2 id="partner-space-title">Partner page</h2>
           <p class="partner-copy" id="partner-space-lead"></p>
+          <div class="partner-metrics" id="partner-metrics"></div>
           <p class="partner-label">Invite link</p>
-          <p class="partner-link-row"><a id="partner-space-invite" href=""></a><button class="button button-secondary" id="partner-space-copy" type="button">Copy</button></p>
+          <p class="partner-link-row"><a id="partner-space-invite" href=""></a><button class="button button-secondary" id="partner-space-copy" type="button">Copy</button><button class="button button-secondary" id="partner-space-share" type="button" hidden>Share</button></p>
           <h3>Notifications</h3>
           <ul class="partner-notices" id="partner-notices"></ul>
-          <h3>People from your link</h3>
+          <h3>Referrals</h3>
           <div id="partner-referrals"></div>
-          <h3>Payments to you</h3>
-          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Project</th><th>Business</th><th>Payment</th><th>Date client paid</th><th>Your amount</th><th>Receipt</th></tr></thead><tbody id="partner-payments"></tbody></table></div>
+          <h3>Payments</h3>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Project</th><th>Business</th><th>Payment</th><th>Eligible fee</th><th>Client paid</th><th>Commission</th><th>Status</th></tr></thead><tbody id="partner-payments"></tbody></table></div>
           <h3>Flyer kit</h3>
           <div class="partner-kit" id="partner-space-kit"></div>
-          <p class="partner-copy"><a href="https://chat.whatsapp.com/FVDHHYw2IVBL2JayqlzUES?s=cl&amp;p=i&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener">WhatsApp group for updates, kits, and tips</a></p>
-        </section>
-
-        <section class="card partner-card partner-terms" id="partner-terms">
-          <p class="eyebrow">Terms</p>
-          <h2>November Partner Programme terms</h2>
-          <p>These terms are between you and Geeslane Technologies. They apply from the moment you send the registration form. Sending the form means you agree to them.</p>
-
-          <h3>What this is</h3>
-          <p>This is a 30-day referral arrangement for November 2026. You introduce new clients to Geeslane. You are not an employee, not an agent, and not a partner in the legal sense. You cannot set Geeslane’s prices, collect client money, sign for Geeslane, or say that you work for Geeslane.</p>
-          <p>You register as a person. A business does not register as a partner. A referred business sends its own service request through your invite link.</p>
-
-          <h3>When it runs</h3>
-          <p>The programme uses West Africa Time (Africa/Lagos). Your invite link attributes a request only from 1 November 2026 through 30 November 2026. After 30 November the link stops working for new requests. Your page stays open so you can see what you earned and which transfers Geeslane has made.</p>
-          <p>You may register before 1 November. The link still starts counting on 1 November. Registration itself closes at the end of 30 November 2026.</p>
-
-          <h3>Your link</h3>
-          <p>Geeslane issues one invite link to the email on your form as soon as you register. The request form fills your code from that link. A code typed in by hand does not count. If two partners send the same person, the first request Geeslane stores for that email address keeps the referral.</p>
-          <p>You may share the link and the flyer kit Geeslane gives you. Do not change the logo, invent a discount, or promise a result Geeslane has not agreed. Do not present the flyers as your own brand.</p>
-
-          <h3>What counts</h3>
-          <p>A referral counts only when all of these are true:</p>
-          <ul>
-            <li>The person is new. If Geeslane was already speaking with them, the referral does not count. Geeslane’s record of that conversation is final.</li>
-            <li>They send the service request through your invite link in November 2026.</li>
-            <li>They accept Geeslane’s quote and the first payment clears between 1 and 30 November 2026. Accepting the quote includes paying the initial 50%. A one-off fee that clears in that window is the project payment.</li>
-          </ul>
-          <p>You earn 20% of the Geeslane fee in each counted payment, after any discount Geeslane has agreed. Domain, hosting, email, licences, and any other third-party amount are not part of that fee. Extra work quoted after the accepted offer does not earn.</p>
-          <p>The first payment earns 20% when it clears. The second payment earns 20% when it clears, including a balance paid after 30 November. A one-off fee is one project payment. The most you can earn on one project is ₦100,000. After that cap, further payments on the same project earn nothing.</p>
-
-          <h3>How you are paid</h3>
-          <p>Geeslane transfers your amount after each counted client payment has cleared, to the bank account on your form. The account name must match the full name you register with. If the account details are wrong, Geeslane is not required to pay a second time. Your page shows the project name, the business name, the payment type, the date the client paid, your amount, and the receipt note for Geeslane’s transfer. It does not show the client’s phone number or email. Keep what you see on that page private.</p>
-
-          <h3>WhatsApp group</h3>
-          <p>You confirm that you have joined the Geeslane Refer &amp; Earn WhatsApp group before you send the form. That group is for programme updates, marketing kits, and tips. Your welcome email repeats the group link.</p>
-
-          <h3>Records and law</h3>
-          <p>Geeslane’s record of the invite link, the request, the quote, and the cleared payments decides what counts. Nigerian law applies. Write first to contact@geeslane.com if something looks wrong. These terms cover this November programme only.</p>
+          <p class="partner-copy"><a href="https://chat.whatsapp.com/FVDHHYw2IVBL2JayqlzUES?s=cl&amp;p=i&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener noreferrer">WhatsApp group for updates, kits, and tips</a></p>
         </section>
       </main>
 

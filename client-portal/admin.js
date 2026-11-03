@@ -3,7 +3,7 @@
 
   /* Admin shell: auth, lists, billing, agreement, files, milestones. Shared table UI lives in ui.js. */
 
-  const pageTitles = { overview: "Overview", registrations: "Access Requests", clients: "Clients", projects: "Projects", agreements: "Agreements", handover: "Handover", help: "Help Centre", invoices: "Payments", billing: "Payments", partners: "Partners", files: "Brand & Files", requests: "Requests & Approvals", milestones: "Milestones" };
+  const pageTitles = { overview: "Overview", registrations: "Access Requests", clients: "Clients", projects: "Projects", agreements: "Agreements", handover: "Handover", help: "Help Centre", invoices: "Payments", billing: "Payments", partners: "Partner Programme", files: "Brand & Files", requests: "Requests & Approvals", milestones: "Milestones" };
   const projectNestedPages = { agreements: true, handover: true, files: true, requests: true, billing: true, milestones: true };
   const requestStatuses = ["Received", "In review", "Approved", "Changes requested", "Completed", "Declined"];
   const milestoneStatuses = ["upcoming", "current", "review", "admin_review", "complete"];

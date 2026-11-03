@@ -175,6 +175,181 @@
       </div>`).join("")}</div>`;
   }
 
+  function flyerLinkLabel(url) {
+    const file = String(url || "").split("?")[0].split("/").pop() || "";
+    if (/services/i.test(file)) return "Services flyer";
+    if (/help/i.test(file)) return "Help flyer";
+    return "Open flyer";
+  }
+
+  function resourceLinkText(label, url, multiple) {
+    if (multiple) return flyerLinkLabel(url);
+    if (/invite/i.test(label)) return url;
+    if (/dashboard|partner page/i.test(label)) return "Open your partner page";
+    if (/whatsapp/i.test(label)) return "Join the WhatsApp group";
+    return "Open link";
+  }
+
+  function partnerResourcesHtml(rows) {
+    const filled = (rows || []).filter((row) => row && String(row[1] || "").trim());
+    if (!filled.length) return "";
+    return filled.map(([label, value]) => {
+      const urls = String(value).split(/\n/).map((item) => item.trim()).filter(Boolean);
+      const links = urls.map((url) => {
+        const href = escapeHtml(url);
+        const text = escapeHtml(resourceLinkText(label, url, urls.length > 1));
+        return `<a class="email-link" href="${href}" style="color:#0b6b45;text-decoration:underline;word-break:break-all;">${text}</a>`;
+      }).join("<br>");
+      return `<p style="margin:0 0 18px;">
+        <span class="email-accent" style="display:block;margin:0 0 4px;font-size:13px;line-height:1.4;font-weight:700;color:#0b6b45;">${escapeHtml(label)}</span>
+        <span style="font-size:15px;line-height:1.55;">${links}</span>
+      </p>`;
+    }).join("");
+  }
+
+  function partnerBullet(html) {
+    return `<tr>
+      <td valign="top" width="18" style="padding:0 0 12px;font-size:16px;line-height:1.6;color:#0b6b45;">•</td>
+      <td class="email-copy" valign="top" style="padding:0 0 12px;font-size:15px;line-height:1.65;color:#2a3931;">${html}</td>
+    </tr>`;
+  }
+
+  function buildPartnerWelcomeHtml({ greeting, heading, rows, ctaLabel, ctaUrl }) {
+    const name = String(greeting || "Hi there,").replace(/,\s*$/, "");
+    const hello = `<p class="email-hello" style="margin:0 0 12px;font-size:16px;line-height:1.5;color:#0b6b45;font-weight:600;">${escapeHtml(name)}, 👋</p>`;
+    const title = `<h1 class="email-title" style="margin:0 0 20px;font-size:26px;line-height:1.3;font-weight:700;letter-spacing:-.02em;color:#063b29;">${escapeHtml(heading || "🎉 Your November Partner Link Is Ready!")}</h1>`;
+    const copy = "margin:0 0 16px;font-size:16px;line-height:1.65;color:#2a3931;";
+    const whatsapp = ((rows || []).find((row) => /whatsapp/i.test(String(row?.[0] || ""))) || [])[1];
+    const whatsappUrl = String(whatsapp || "").split(/\n/)[0].trim();
+    const groupLink = whatsappUrl
+      ? `<a class="email-link" href="${escapeHtml(whatsappUrl)}" style="color:#0b6b45;font-weight:700;text-decoration:underline;">WhatsApp group</a>`
+      : "WhatsApp group";
+    const button = ctaLabel && ctaUrl ? `
+      <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:8px auto 0;">
+        <tr>
+          <td class="email-btn" align="center" bgcolor="#0b6b45" style="border-radius:999px;background:#0b6b45;">
+            <a href="${escapeHtml(ctaUrl)}" style="display:inline-block;padding:15px 32px;font-size:16px;line-height:1.2;font-weight:700;color:#ffffff;text-decoration:none;border-radius:999px;">${escapeHtml(ctaLabel)}</a>
+          </td>
+        </tr>
+      </table>` : "";
+    return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <style type="text/css">
+      ${darkModeCss()}
+      .email-link{color:#0b6b45;}
+      @media (prefers-color-scheme:dark){.email-link{color:#8ad4ad!important;}}
+      [data-ogsc] .email-link{color:#8ad4ad!important;}
+    </style>
+  </head>
+  <body class="email-bg" style="margin:0;padding:0;background:#eef6f1;font-family:Arial,Helvetica,sans-serif;color:#17211c;">
+    <table class="email-bg" role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#eef6f1;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table class="email-card" role="presentation" width="560" cellspacing="0" cellpadding="0" style="width:100%;max-width:560px;background:#ffffff;border-radius:20px;">
+            <tr>
+              <td class="email-header" align="center" style="padding:28px 32px;background:#063b29;">
+                ${logoHtml()}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:36px 32px 40px;">
+                ${hello}
+                ${title}
+                <p class="email-copy" style="${copy}">Welcome to the Geeslane November Partner Programme!</p>
+                <p class="email-copy" style="${copy}">Your personal invite link is ready. Share it with friends, family, and businesses looking to get online.</p>
+                <p class="email-copy" style="margin:0;font-size:16px;line-height:1.65;color:#2a3931;">Any new requests submitted through your link between <strong>1–30 November 2026</strong> will be attributed to you.</p>
+
+                <table class="email-block" role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:32px 0 0;background:#f4faf6;border-radius:16px;">
+                  <tr>
+                    <td style="padding:24px 22px 12px;">
+                      <p class="email-title" style="margin:0 0 8px;font-size:18px;line-height:1.35;font-weight:700;color:#063b29;">How You Earn 💰</p>
+                      <p class="email-copy" style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#2a3931;">Here's how your commission works:</p>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        ${partnerBullet("Earn <strong>20%</strong> when a referred client's initial 50% payment clears in November.")}
+                        ${partnerBullet("Earn another <strong>20%</strong> when their final 50% payment clears. The balance can be paid after November.")}
+                      </table>
+                      <p class="email-copy" style="margin:6px 0 12px;font-size:15px;line-height:1.65;color:#2a3931;">A few things to note:</p>
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                        ${partnerBullet("Only Geeslane service fees qualify. Domains, hosting, and other third-party costs are excluded.")}
+                        ${partnerBullet("Maximum commission per project: <strong>NGN 100,000</strong>.")}
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <p class="email-title" style="margin:32px 0 8px;font-size:18px;line-height:1.35;font-weight:700;color:#063b29;">When Do You Get Paid?</p>
+                <p class="email-copy" style="${copy}">No long waits! Your commission is transferred to your registered Nigerian bank account within <strong>1–3 working days</strong> after the client's payment clears.</p>
+                <p class="email-copy" style="margin:0;font-size:16px;line-height:1.65;color:#2a3931;">Your partner page will remain active after November, so you can keep track of your transfers.</p>
+
+                <p class="email-title" style="margin:32px 0 16px;font-size:18px;line-height:1.35;font-weight:700;color:#063b29;">Your Partner Resources 🔗</p>
+                ${partnerResourcesHtml(rows)}
+
+                ${button}
+
+                <p class="email-copy" style="margin:32px 0 16px;font-size:16px;line-height:1.65;color:#2a3931;">Need help or have questions? Join our ${groupLink} for updates, marketing materials, and tips.</p>
+                <p class="email-copy" style="margin:0 0 24px;font-size:16px;line-height:1.65;color:#2a3931;">We're excited to have you on board. Let's grow together! 💚</p>
+                <p class="email-copy" style="margin:0;font-size:16px;line-height:1.65;color:#2a3931;">Kind regards,<br><strong class="email-brand" style="color:#063b29;">Team Geeslane</strong></p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+  }
+
+  function partnerWelcomeText({ greeting, heading, rows, ctaLabel, ctaUrl }) {
+    const name = String(greeting || "Hi there,").replace(/,\s*$/, "");
+    const lines = [
+      `${name}, 👋`,
+      "",
+      heading || "🎉 Your November Partner Link Is Ready!",
+      "",
+      "Welcome to the Geeslane November Partner Programme!",
+      "",
+      "Your personal invite link is ready. Share it with friends, family, and businesses looking to get online.",
+      "",
+      "Any new requests submitted through your link between 1–30 November 2026 will be attributed to you.",
+      "",
+      "How You Earn 💰",
+      "",
+      "Here's how your commission works:",
+      "",
+      "- Earn 20% when a referred client's initial 50% payment clears in November.",
+      "- Earn another 20% when their final 50% payment clears. The balance can be paid after November.",
+      "",
+      "A few things to note:",
+      "- Only Geeslane service fees qualify. Domains, hosting, and other third-party costs are excluded.",
+      "- Maximum commission per project: NGN 100,000.",
+      "",
+      "When Do You Get Paid?",
+      "",
+      "No long waits! Your commission is transferred to your registered Nigerian bank account within 1–3 working days after the client's payment clears.",
+      "",
+      "Your partner page will remain active after November, so you can keep track of your transfers.",
+      "",
+      "Your Partner Resources 🔗"
+    ];
+    (rows || []).filter((row) => row && row[1]).forEach(([label, value]) => lines.push("", `${label}: ${String(value).replace(/\n/g, "\n")}`));
+    if (ctaUrl) lines.push("", ctaLabel || "Open Your Partner Page", ctaUrl);
+    lines.push(
+      "",
+      "Need help or have questions? Join our WhatsApp group for updates, marketing materials, and tips.",
+      "",
+      "We're excited to have you on board. Let's grow together! 💚",
+      "",
+      "Kind regards,",
+      "Team Geeslane"
+    );
+    return lines.join("\n").trim();
+  }
+
   function buildHtml({ greeting, heading, intro, rows, blocks, ctaLabel, ctaUrl, signoff, attachmentNote, rowStyle }) {
     const hello = greeting ? `<p class="email-hello" style="margin:0 0 8px;font-size:14px;color:#0b6b45;font-weight:600;text-align:left;">${escapeHtml(greeting)}</p>` : "";
     const note = attachmentNote ? `<p class="email-muted" style="margin:0 0 12px;font-size:14px;line-height:1.45;color:#697870;text-align:left;">${escapeHtml(attachmentNote)}</p>` : "";
@@ -247,7 +422,10 @@
       ? String(options.ctaLabel || "")
       : (audience === "team" ? "Open admin portal" : "Open your portal");
     const ctaUrl = ctaLabel ? (options.ctaUrl || portalLink(options.ctaPage || (audience === "team" ? "admin" : "client"))) : "";
-    const name = respectfulName(options.greetingName) || givenName(options.greetingName);
+    const partnerWelcome = options.kind === "partner-welcome";
+    const name = partnerWelcome
+      ? givenName(options.greetingName)
+      : (respectfulName(options.greetingName) || givenName(options.greetingName));
     const greeting = options.greeting !== undefined
       ? String(options.greeting || "")
       : (audience === "team" ? "Hi team," : name ? `Hi ${name},` : "Hi there,");
@@ -269,8 +447,8 @@
       subject,
       heading,
       intro: options.intro || "",
-      html: buildHtml(payload),
-      text: plainText(payload),
+      html: partnerWelcome ? buildPartnerWelcomeHtml(payload) : buildHtml(payload),
+      text: partnerWelcome ? partnerWelcomeText(payload) : plainText(payload),
       clientEmail: options.clientEmail || "",
       clientPhone: options.clientPhone || "",
       ctaUrl,

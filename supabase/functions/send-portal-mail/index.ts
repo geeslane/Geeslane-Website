@@ -17,6 +17,15 @@ function validEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+function communityManagerRecipients() {
+  const seen = new Map<string, string>();
+  for (const item of String(Deno.env.get("COMMUNITY_MANAGER_EMAIL") || "").split(/[,;]+/)) {
+    const email = item.trim();
+    if (validEmail(email)) seen.set(email.toLowerCase(), email);
+  }
+  return [...seen.values()];
+}
+
 function oneLine(value: unknown, max = 240) {
   const text = String(value || "").replace(/\s+/g, " ").trim();
   if (!text) return "";
@@ -228,6 +237,178 @@ async function sendSms(to: string, body: string): Promise<{ ok: boolean; error?:
   return { ok: false, error: smsErrorText(result.message || result.error) || `Twilio HTTP ${response.status}` };
 }
 
+function escapeHtmlMail(value: string) {
+  return String(value || "").replace(/[&<>"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char] || char));
+}
+
+async function sendFixedMail(apiKey: string, mailFrom: string, to: string | string[], subject: string, text: string) {
+  const seen = new Map<string, string>();
+  for (const item of Array.isArray(to) ? to : [to]) {
+    const email = String(item || "").trim();
+    if (validEmail(email)) seen.set(email.toLowerCase(), email);
+  }
+  const recipients = [...seen.values()];
+  if (!apiKey || !recipients.length) return false;
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: mailFrom,
+      to: recipients,
+      subject,
+      text,
+      html: `<div style="font-family:sans-serif;line-height:1.5">${escapeHtmlMail(text).replace(/\n/g, "<br>")}</div>`
+    })
+  });
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "");
+    console.error("resend-fail", JSON.stringify({ status: response.status, error: oneLine(errText, 400).replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]"), kind: "partner-fixed" }));
+    return false;
+  }
+  return true;
+}
+
+function lagosWhen(value: unknown, withTime: boolean) {
+  const date = new Date(String(value || ""));
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-GB", withTime
+    ? { timeZone: "Africa/Lagos", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }
+    : { timeZone: "Africa/Lagos", day: "numeric", month: "long", year: "numeric" }
+  ).format(date);
+}
+
+function nairaMail(value: unknown) {
+  return `₦${Number(value || 0).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+async function deliverPartnerNotification(serviceKey: string, apiKey: string, mailFrom: string, notificationId: string) {
+  if (!/^[0-9a-f-]{36}$/i.test(notificationId)) return json({ sent: false, skipped: true });
+  const adminClient = createClient(Deno.env.get("SUPABASE_URL") || "", serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+  const claimed = await adminClient.rpc("claim_partner_notification", { p_id: notificationId });
+  if (claimed.error) {
+    console.error("partner-notification-claim", JSON.stringify({ id: notificationId, error: oneLine(claimed.error.message, 180) }));
+    return json({ sent: false, recorded: true });
+  }
+  let mail = claimed.data as Record<string, unknown> | string | null;
+  if (typeof mail === "string") {
+    try { mail = JSON.parse(mail) as Record<string, unknown>; } catch { mail = null; }
+  }
+  if (!mail) return json({ sent: false, skipped: true });
+
+  const role = String(mail.role || "");
+  const eventType = String(mail.eventType || "");
+  const partnerName = String(mail.partnerName || "A Geeslane partner");
+  const lines = Array.isArray(mail.lines) ? mail.lines as Array<Record<string, unknown>> : [];
+  const projects = lines.map((item) => String(item.project || "")).filter(Boolean);
+  const projectLabel = projects.join(", ") || "Project";
+  const breakdown = lines.map((item) => `- ${String(item.project || "Project")}: ${nairaMail(item.commission)}`).join("\n");
+  let to: string | string[] = "";
+  let subject = "";
+  let text = "";
+
+  if (eventType === "referral_received" && role === "community_manager") {
+    to = communityManagerRecipients();
+    subject = `🎉 New Client Referral – ${partnerName}`;
+    text = [
+      "Hello,",
+      "",
+      "We have a new client referral!",
+      "",
+      "One of our Geeslane Partners has successfully referred a potential client to Geeslane.",
+      "",
+      "Partner Details",
+      `- Partner Name: ${partnerName}`,
+      `- Partner Phone Number: ${String(mail.partnerPhone || "")}`,
+      `- Referral Code: ${String(mail.code || "")}`,
+      "",
+      "Referral Details",
+      `- Business/Client Name: ${String(mail.business || "")}`,
+      `- Service Requested: ${String(mail.service || "")}`,
+      `- Date Registered: ${lagosWhen(mail.registeredAt, true)} (Africa/Lagos)`,
+      "",
+      "This is a great opportunity to recognise the partner's effort.",
+      "",
+      "Community Manager Action:",
+      `Please celebrate ${partnerName} in the existing Geeslane Partners WhatsApp group and encourage other partners to keep sharing their referral links.`,
+      "",
+      "This notification means a referral request has been registered. It does not mean the client has paid, the referral is qualified, or commission has been earned.",
+      "",
+      `Congratulations to ${partnerName}! 💚`
+    ].join("\n");
+  } else if (eventType === "payout_paid" && role === "partner") {
+    to = String(mail.partnerEmail || "").trim();
+    subject = "💚 Your Geeslane Partner Commission Has Been Paid!";
+    text = [
+      `Hello ${partnerName},`,
+      "",
+      "Good news! Your Geeslane Partner commission has been successfully transferred. 🎉",
+      "",
+      "Here are your payment details:",
+      "",
+      `- Project: ${projectLabel}`,
+      ...(breakdown ? [breakdown] : []),
+      `- Commission Amount: ${nairaMail(mail.amount)}`,
+      `- Payment Date: ${lagosWhen(mail.paidOn, false)}`,
+      `- Payment Reference: ${String(mail.reference || "")}`,
+      "",
+      "Thank you for connecting businesses to Geeslane and participating in our November Refer & Earn programme.",
+      "",
+      "We appreciate your contribution and look forward to more successful connections!",
+      "",
+      "Geeslane",
+      "Scale your business with technology & AI."
+    ].join("\n");
+  } else if (eventType === "payout_paid" && role === "community_manager") {
+    to = communityManagerRecipients();
+    subject = `🎉 Partner Commission Paid – ${partnerName}`;
+    text = [
+      "Hello,",
+      "",
+      "A Geeslane Partner has received a commission payment!",
+      "",
+      `Partner: ${partnerName}`,
+      `Phone: ${String(mail.partnerPhone || "")}`,
+      `Project: ${projectLabel}`,
+      ...(breakdown ? [breakdown] : []),
+      `Commission Paid: ${nairaMail(mail.amount)}`,
+      `Payment Date: ${lagosWhen(mail.paidOn, false)}`,
+      `Payment Reference: ${String(mail.reference || "")}`,
+      "",
+      "Community Manager Action:",
+      "",
+      `Please celebrate ${partnerName} in the existing Geeslane Partners WhatsApp group.`,
+      "",
+      "Only announce the payment publicly if the partner has given permission for their payment achievement to be shared. Otherwise, use a general appreciation message without revealing their payment amount or other private details.",
+      "",
+      `Congratulations to ${partnerName}! 💚`
+    ].join("\n");
+  } else {
+    await adminClient.rpc("fail_partner_notification", { p_id: notificationId, p_error: "This notification could not be prepared." });
+    console.error("partner-notification-skip", JSON.stringify({ id: notificationId, reason: "unprepared" }));
+    return json({ sent: false, recorded: true });
+  }
+
+  const ready = (Array.isArray(to) ? to : [to]).some((item) => validEmail(String(item || "").trim()));
+  if (!ready) {
+    const reason = role === "community_manager" ? "COMMUNITY_MANAGER_EMAIL is not configured." : "The partner email is missing.";
+    await adminClient.rpc("fail_partner_notification", { p_id: notificationId, p_error: reason });
+    console.error("partner-notification-skip", JSON.stringify({ id: notificationId, role, reason: role === "community_manager" ? "community-manager-email-missing" : "partner-email-missing" }));
+    return json({ sent: false, recorded: true });
+  }
+
+  const emailed = await sendFixedMail(apiKey, mailFrom, to, subject, text);
+  if (!emailed) {
+    await adminClient.rpc("fail_partner_notification", { p_id: notificationId, p_error: "The email service did not accept the message." });
+    console.error("partner-notification-fail", JSON.stringify({ id: notificationId, role, eventType }));
+    return json({ sent: false, recorded: true });
+  }
+  await adminClient.rpc("complete_partner_notification", { p_id: notificationId });
+  console.log("partner-notification-sent", JSON.stringify({ id: notificationId, role, eventType }));
+  return json({ sent: true, email: true });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -255,22 +436,70 @@ Deno.serve(async (req) => {
     const kind = String(payload.kind || "").trim();
     const isServiceRequest = kind === "service-request";
     const isPartnerWelcome = kind === "partner-welcome";
+    const isPartnerAdminAlert = kind === "partner-admin-alert";
+    const isPartnerReferralAlert = kind === "partner-referral-alert";
+    const isPartnerNotification = kind === "partner-notification";
     const isEnsureUser = kind === "ensure-user";
-    if (!isEnsureUser && (!subject || (!html && !text))) return json({ error: "Missing mail" }, 400);
+    if (!isEnsureUser && !isPartnerAdminAlert && !isPartnerReferralAlert && !isPartnerNotification && (!subject || (!html && !text))) return json({ error: "Missing mail" }, 400);
 
     const accessToken = authHeader.slice(7).trim();
+    if (isPartnerNotification) {
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+      if (!serviceKey || accessToken !== serviceKey) return json({ error: "Sign in required" }, 401);
+      return await deliverPartnerNotification(serviceKey, apiKey, mailFrom, String(payload.notificationId || ""));
+    }
     const supabase = createClient(Deno.env.get("SUPABASE_URL") || "", Deno.env.get("SUPABASE_ANON_KEY") || "", {
       global: { headers: { Authorization: authHeader } },
       auth: { persistSession: false, autoRefreshToken: false }
     });
     const { data: authData, error: authError } = await supabase.auth.getUser(accessToken);
     const signedIn = Boolean(authData?.user) && !authError;
-    if (!signedIn && !isServiceRequest && !isPartnerWelcome) return json({ error: "Sign in required" }, 401);
+    if (!signedIn && !isServiceRequest && !isPartnerWelcome && !isPartnerAdminAlert && !isPartnerReferralAlert) return json({ error: "Sign in required" }, 401);
 
     const { data: profile } = signedIn
       ? await supabase.from("profiles").select("role,status,email").eq("user_id", authData.user.id).maybeSingle()
       : { data: null };
     const isAdmin = profile?.role === "admin" && profile?.status === "active";
+
+    if (isPartnerAdminAlert || isPartnerReferralAlert) {
+      if (isPartnerReferralAlert && !isPartnerAdminAlert) return json({ sent: false, email: false, skipped: true });
+      const alertEmail = String(payload.clientEmail || payload.replyTo || "").trim().toLowerCase();
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+      if (!serviceKey) {
+        console.error("partner-alert-skip", "Mail is not configured");
+        return json({ error: "Mail is not configured" }, 503);
+      }
+      const adminClient = createClient(Deno.env.get("SUPABASE_URL") || "", serviceKey, {
+        auth: { persistSession: false, autoRefreshToken: false }
+      });
+      if (!validEmail(alertEmail)) return json({ error: "Missing email" }, 400);
+      if (isPartnerAdminAlert) {
+        let query = adminClient.from("partners").select("id, full_name, email, phone, code, created_at").ilike("email", alertEmail).limit(1);
+        if (!isAdmin) query = query.gte("created_at", new Date(Date.now() - 20 * 60 * 1000).toISOString());
+        const { data: partnerRows } = await query;
+        const partner = partnerRows?.[0];
+        if (!partner) return json({ error: "Partner not found" }, 403);
+        const when = new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Africa/Lagos", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+        }).format(new Date(partner.created_at));
+        const link = `https://geeslane.com/client-portal/admin.html#partners?partner=${partner.id}`;
+        const text = [
+          "A new Geeslane partner registered.",
+          "",
+          `Name: ${partner.full_name}`,
+          `Email: ${partner.email}`,
+          `Phone: ${partner.phone || ""}`,
+          `Referral code: ${partner.code}`,
+          `Registered: ${when} (Africa/Lagos)`,
+          "",
+          `Open the partner record: ${link}`
+        ].join("\n");
+        const emailed = await sendFixedMail(apiKey, mailFrom, teamTo, "New Geeslane partner registration", text);
+        if (!emailed) console.error("partner-admin-alert-fail", JSON.stringify({ partnerId: partner.id }));
+        return json(emailed ? { sent: true, email: true } : { error: "Send failed" }, emailed ? 200 : 502);
+      }
+      return json({ sent: false, email: false, skipped: true });
+    }
 
     const clientEmail = String(payload.clientEmail || payload.replyTo || "").trim().toLowerCase();
     if (isEnsureUser) {

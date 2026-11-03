@@ -170,7 +170,7 @@
   function phoneSelectOptions(selectedDial) {
     return PHONE_COUNTRIES.map(([iso, name, dial]) => {
       const chosen = dial === selectedDial ? " selected" : "";
-      return `<option value="${dial}" data-iso="${iso}"${chosen}>${iso} ${dial}</option>`;
+      return `<option value="${dial}" data-iso="${iso}"${chosen}>${name} ${dial}</option>`;
     }).join("");
   }
 
@@ -1757,6 +1757,10 @@
     resultOrThrow(await client().rpc("admin_exclude_referral", { p_referral_id: referralId }), "Could not update that referral");
   }
 
+  async function cancelPartnerReferral(referralId) {
+    resultOrThrow(await client().rpc("admin_cancel_referral", { p_referral_id: referralId }), "Could not cancel that referral");
+  }
+
   async function recordPartnerEarning(details) {
     return resultOrThrow(await client().rpc("partner_add_earning", {
       p_referral_id: details.referralId,
@@ -1773,6 +1777,101 @@
       p_payout_on: details.payoutOn,
       p_receipt: details.receipt
     }), "Could not record that transfer");
+  }
+
+  async function markPartnerAdminNotified(token) {
+    resultOrThrow(await client().rpc("partner_mark_admin_notified", { p_token: token }), "Could not record the admin notification");
+  }
+
+  async function markPartnerNotified(partnerId) {
+    resultOrThrow(await client().rpc("admin_mark_partner_notified", { p_partner_id: partnerId }), "Could not record the admin notification");
+  }
+
+  async function adminPartnerBank(partnerId) {
+    return resultOrThrow(await client().rpc("admin_partner_bank", { p_partner_id: partnerId }), "Could not load the bank details");
+  }
+
+  async function adminPartnerRecord(partnerId, referralId) {
+    return resultOrThrow(await client().rpc("admin_partner_record", {
+      p_partner_id: partnerId || null,
+      p_referral_id: referralId || null
+    }), "Could not load that record");
+  }
+
+  async function updatePartnerReferral(details) {
+    resultOrThrow(await client().rpc("admin_update_referral", {
+      p_referral_id: details.referralId,
+      p_pipeline: details.pipeline,
+      p_notes: details.notes || "",
+      p_quote_amount: details.quoteAmount === "" || details.quoteAmount == null ? null : Number(details.quoteAmount),
+      p_eligible_fee: details.eligibleFee === "" || details.eligibleFee == null ? null : Number(details.eligibleFee),
+      p_quote_sent_on: details.quoteSentOn || null
+    }), "Could not update that referral");
+  }
+
+  async function setPartnerEligibility(details) {
+    resultOrThrow(await client().rpc("admin_set_referral_eligibility", {
+      p_referral_id: details.referralId,
+      p_eligibility: details.eligibility,
+      p_reason: details.reason || ""
+    }), "Could not update eligibility");
+  }
+
+  async function recordPartnerPayment(details) {
+    return resultOrThrow(await client().rpc("admin_record_partner_payment", {
+      p_referral_id: details.referralId,
+      p_kind: details.kind,
+      p_project_name: details.projectName || "",
+      p_gross: Number(details.gross || 0),
+      p_eligible_fee: Number(details.eligibleFee),
+      p_third_party: Number(details.thirdParty || 0),
+      p_paid_on: details.paidOn,
+      p_reference: details.reference,
+      p_verified: details.verified === true
+    }), "Could not record that payment");
+  }
+
+  async function recordPartnerPayout(details) {
+    return resultOrThrow(await client().rpc("admin_record_partner_payout", {
+      p_partner_id: details.partnerId,
+      p_earning_ids: details.earningIds,
+      p_amount: Number(details.amount),
+      p_transferred_on: details.payoutOn,
+      p_reference: details.reference,
+      p_note: details.note || ""
+    }), "Could not record that transfer");
+  }
+
+  async function setPartnerStatus(partnerId, status) {
+    resultOrThrow(await client().rpc("admin_set_partner_status", { p_partner_id: partnerId, p_status: status }), "Could not update that partner");
+  }
+
+  async function revokePartnerAccess(partnerId) {
+    resultOrThrow(await client().rpc("admin_revoke_partner_access", { p_partner_id: partnerId }), "Could not revoke that link");
+  }
+
+  async function regeneratePartnerToken(partnerId) {
+    return resultOrThrow(await client().rpc("admin_regenerate_partner_token", { p_partner_id: partnerId }), "Could not create a new link");
+  }
+
+  async function announceToPartners(details) {
+    return resultOrThrow(await client().rpc("admin_partner_announce", {
+      p_all: Boolean(details.all),
+      p_partner_ids: details.partnerIds || [],
+      p_body: details.body
+    }), "Could not send that announcement");
+  }
+
+  async function addReferralUpdate(referralId, body) {
+    resultOrThrow(await client().rpc("admin_referral_update", { p_referral_id: referralId, p_body: body }), "Could not save that update");
+  }
+
+  async function adminPartnerNotifications() {
+    return resultOrThrow(await client().rpc("admin_partner_notifications"), "Could not load partner notifications");
+  }
+
+  async function retryPartnerNotification(notificationId) {
+    resultOrThrow(await client().rpc("admin_retry_partner_notification", { p_id: notificationId }), "Could not retry that email");
   }
 
   async function sendPortalMail(payload) {
@@ -1843,8 +1942,24 @@
     markPartnerNoticesRead,
     adminPartnerBoard,
     excludePartnerReferral,
+    cancelPartnerReferral,
     recordPartnerEarning,
     markPartnerPayout,
+    markPartnerAdminNotified,
+    markPartnerNotified,
+    adminPartnerBank,
+    adminPartnerRecord,
+    updatePartnerReferral,
+    setPartnerEligibility,
+    recordPartnerPayment,
+    recordPartnerPayout,
+    setPartnerStatus,
+    revokePartnerAccess,
+    regeneratePartnerToken,
+    announceToPartners,
+    addReferralUpdate,
+    adminPartnerNotifications,
+    retryPartnerNotification,
     readProject,
     readPortalSettings,
     submit,

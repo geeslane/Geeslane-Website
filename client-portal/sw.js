@@ -1,5 +1,5 @@
 /* Geeslane portal shell. Live data, OTP, and Paystack still need the network. */
-const CACHE = "geeslane-portal-v67";
+const CACHE = "geeslane-portal-v72";
 const SHELL = [
   "./",
   "./index.html",
@@ -73,7 +73,7 @@ self.addEventListener("fetch", (event) => {
       }
     }
 
-    const cached = await caches.match(request);
+    const scriptOrStyle = /\.(?:js|css)$/.test(url.pathname);
     const network = fetch(request).then((response) => {
       if (response.ok && (sameOrigin || url.pathname.endsWith(".png") || url.pathname.endsWith(".ico"))) {
         caches.open(CACHE).then((cache) => cache.put(request, response.clone()));
@@ -81,6 +81,12 @@ self.addEventListener("fetch", (event) => {
       return response;
     }).catch(() => undefined);
 
+    if (scriptOrStyle) {
+      const fresh = await network;
+      return fresh || (await caches.match(request)) || Response.error();
+    }
+
+    const cached = await caches.match(request);
     if (cached) {
       event.waitUntil(network);
       return cached;

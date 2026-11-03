@@ -12,22 +12,30 @@
 html{scroll-behavior:smooth;scroll-padding-top:24px}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.68 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
 a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}
-.topbar{background:var(--green-dark);color:#fff;padding:12px 24px;font-size:13px;letter-spacing:.08em;font-weight:750;line-height:1.4}
-.layout{max-width:1440px;margin:0 auto;display:grid;grid-template-columns:270px minmax(0,1fr);gap:32px;padding:28px 28px 70px}
-.sidebar{position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);overflow:auto;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px 18px;box-shadow:0 8px 30px #173c2810}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--green-dark);color:#fff;padding:12px 24px;font-size:13px;letter-spacing:.08em;font-weight:750;line-height:1.4}
+.topbar-title{min-width:0}
+.section-toggle{display:none;align-items:center;gap:8px;flex:0 0 auto;border:0;background:#fff;color:var(--green-dark);border-radius:999px;padding:7px 12px;font:inherit;font-size:13px;font-weight:750;letter-spacing:0;line-height:1;cursor:pointer}
+.section-toggle-icon{display:flex;flex-direction:column;justify-content:center;gap:3px;width:14px;height:14px}
+.section-toggle-icon span{display:block;height:2px;border-radius:2px;background:var(--green-dark);transition:transform .15s ease,opacity .15s ease}
+body.menu-docked:not(.menu-hidden) .section-toggle-icon span:nth-child(1){transform:translateY(5px) rotate(45deg)}
+body.menu-docked:not(.menu-hidden) .section-toggle-icon span:nth-child(2){opacity:0}
+body.menu-docked:not(.menu-hidden) .section-toggle-icon span:nth-child(3){transform:translateY(-5px) rotate(-45deg)}
+.layout{max-width:1440px;margin:0 auto;padding:28px 28px 70px}
+.content{display:grid;grid-template-columns:270px minmax(0,1fr);grid-template-areas:"menu hero" "menu article" "menu foot";column-gap:32px;row-gap:26px;align-items:start;min-width:0}
+.menu-slot{grid-area:menu;position:sticky;top:20px;align-self:start;min-width:0}
+.sidebar{max-height:calc(100vh - 40px);overflow:auto;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px 18px;box-shadow:0 8px 30px #173c2810}
 .brand{font-size:13px;letter-spacing:.16em;font-weight:850;color:var(--green-dark)}
 .sidebar h2{font-size:16px;margin:8px 0 14px}
 .search{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:13px;margin-bottom:14px;outline-color:var(--green)}
 nav{display:flex;flex-direction:column;gap:4px;min-width:0}
 nav a{padding:8px 10px;border-radius:8px;color:#44534b;font-size:13px;line-height:1.4}
 nav a:hover,nav a.active{background:var(--mint);color:var(--green-dark);text-decoration:none;font-weight:700}
-.content{min-width:0}
-.hero{background:linear-gradient(135deg,#0c563d,#16845b);color:#fff;padding:42px 44px;border-radius:22px;margin-bottom:26px;box-shadow:0 12px 35px #0c563d20}
+.hero{grid-area:hero;background:linear-gradient(135deg,#0c563d,#16845b);color:#fff;padding:42px 44px;border-radius:22px;margin:0;box-shadow:0 12px 35px #0c563d20}
 .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.8}
 .hero h1{font-size:clamp(30px,4vw,46px);line-height:1.12;margin:10px 0 12px;letter-spacing:-.035em}
 .hero p{margin:0;color:#e4f5eb}
 .hero .tagline{margin-top:22px;font-size:14px;font-weight:700}
-article{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:34px 42px;box-shadow:0 8px 30px #173c2808}
+article{grid-area:article;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:34px 42px;box-shadow:0 8px 30px #173c2808}
 article h2{font-size:25px;line-height:1.25;letter-spacing:-.02em;margin:42px 0 16px;padding-top:18px;border-top:1px solid var(--line);color:var(--green-dark);scroll-margin-top:20px}
 article h2:first-child{margin-top:0;border-top:0;padding-top:0}
 article h3{font-size:18px;margin:26px 0 10px;color:#254b39}
@@ -38,17 +46,29 @@ article li{margin:5px 0}
 article table{width:100%;border-collapse:collapse;margin:18px 0 24px;font-size:14px}
 article th,article td{padding:12px 14px;border:1px solid var(--line);text-align:left;vertical-align:top}
 article th{background:var(--mint);color:var(--green-dark);font-weight:750}
+.copy-message{display:inline-block;margin:0 0 18px;padding:8px 12px;border:1px solid var(--line);background:var(--mint);color:var(--green-dark);border-radius:8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
 article tr:nth-child(even) td{background:#fbfdfb}
 article blockquote{margin:18px 0;padding:14px 18px;background:var(--mint);border-left:4px solid var(--green);border-radius:0 10px 10px 0}
 article strong{color:#193f2e}
-footer{text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
+footer{grid-area:foot;text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
 .backtop{display:inline-block;margin-top:20px;font-size:13px;font-weight:700}
 @media(max-width:900px){
-  .layout{grid-template-columns:1fr;padding:16px;gap:16px}
-  .sidebar{position:relative;top:auto;max-height:none}
-  nav{flex-direction:row;gap:8px;overflow-x:auto;padding-bottom:4px}
-  nav a{flex:0 0 auto;white-space:nowrap;background:#f7faf8;border:1px solid var(--line)}
-  .hero{padding:30px 22px}
+  html{scroll-padding-top:var(--section-offset, 68px)}
+  .topbar{position:sticky;top:0;z-index:40}
+  .section-toggle{display:inline-flex}
+  .layout{padding:16px}
+  .content{display:flex;flex-direction:column;gap:16px}
+  .hero{order:1;padding:30px 22px}
+  .menu-slot{order:2;position:static}
+  .sidebar{order:0;position:relative;top:auto;max-height:none}
+  article{order:3}
+  footer{order:4}
+  article h2{scroll-margin-top:var(--section-offset, 76px)}
+  nav{gap:8px}
+  nav a{background:#f7faf8;border:1px solid #cfe3d8;color:var(--green-dark);font-weight:700;padding:10px 12px}
+  nav a.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark)}
+  body.menu-docked .sidebar{display:block;position:fixed;z-index:35;top:calc(var(--topbar-height, 48px) + 8px);left:12px;right:12px;max-height:min(42vh, 360px);overflow:auto;box-shadow:0 16px 40px #10201833}
+  body.menu-docked.menu-hidden .sidebar{display:none}
   article{padding:26px 22px}
   article table,article tbody,article tr,article td{display:block;width:100%;min-width:0}
   article tr{margin:0 0 12px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
@@ -67,13 +87,27 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
   article ul,article ol{padding-left:18px}
   article td{grid-template-columns:1fr;gap:4px}
 }
-@media print{body{background:#fff}.topbar,.sidebar{display:none}.layout{display:block;padding:0;max-width:none}.hero,article{box-shadow:none;border:0}.hero{border-radius:0}article{padding:10px 0}}
+@media print{body{background:#fff}.topbar,.sidebar,.section-toggle{display:none}.layout{display:block;padding:0;max-width:none}.content{display:block}.hero,article{box-shadow:none;border:0}.hero{border-radius:0}article{padding:10px 0}}
 </style>
 </head>
 <body>
-<div class="topbar">GEESLANE · PARTNER COMMUNITY MANAGER GUIDE</div>
+<div class="topbar">
+  <span class="topbar-title">GEESLANE · PARTNER COMMUNITY MANAGER GUIDE</span>
+  <button class="section-toggle" id="sectionToggle" type="button" aria-expanded="false" aria-controls="guideMenu">
+    <span class="section-toggle-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+    Sections
+  </button>
+</div>
 <div class="layout">
-<aside class="sidebar">
+<main class="content" id="top">
+  <header class="hero">
+    <div class="eyebrow">Refer & Earn · November 2026</div>
+    <h1>Partner Community<br>Manager Guide</h1>
+    <p>Your practical guide to managing the Geeslane Partner WhatsApp Group.</p>
+    <div class="tagline">Scale your business with technology & AI.</div>
+  </header>
+<div class="menu-slot" id="menuSlot">
+<aside class="sidebar" id="guideMenu">
   <div class="brand">GEESLANE 💚</div>
   <h2>Guide contents</h2>
   <input class="search" id="sectionSearch" type="search" placeholder="Find a section…" aria-label="Search guide sections">
@@ -82,6 +116,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
 <a href="#culture-values">Our Culture &amp; Values</a>
 <a href="#weekly-responsibilities">Your Weekly Responsibilities</a>
 <a href="#content-calendar">November Content Calendar</a>
+<a href="#following-up">Reminding Partners to Follow Up</a>
 <a href="#ready-to-use-messages">Ready-to-Use Messages</a>
 <a href="#partner-wins">Celebrating Partner Wins</a>
 <a href="#payment-confirmations">Sharing Payment Confirmations</a>
@@ -90,13 +125,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
 <a href="#november-goal">Our November Goal</a></nav>
   <a class="backtop" href="#top">↑ Back to top</a>
 </aside>
-<main class="content" id="top">
-  <header class="hero">
-    <div class="eyebrow">Refer & Earn · November 2026</div>
-    <h1>Partner Community<br>Manager Guide</h1>
-    <p>Your practical guide to managing the Geeslane Partner WhatsApp Group.</p>
-    <div class="tagline">Scale your business with technology & AI.</div>
-  </header>
+</div>
   <article><h1>GEESLANE</h1>
 <h1>PARTNER COMMUNITY MANAGER GUIDE</h1>
 <p><strong>Refer &amp; Earn | November 2026</strong></p>
@@ -163,20 +192,31 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
 <tr><td>Date</td><td>Activity</td><td>What to Do</td></tr>
 <tr><td>Tue, Nov 3</td><td>Welcome &amp; Onboarding</td><td>Welcome partners as they join. Tag them, share important previous messages using WhatsApp&#x27;s Share Message History feature and help them get started.</td></tr>
 <tr><td>Wed, Nov 4</td><td>Introduce Geeslane</td><td>Introduce Geeslane, explain what we do and highlight our services.</td></tr>
-<tr><td>Sat, Nov 7</td><td>Referral Tip</td><td>Share tips on businesses and individuals who may need Geeslane&#x27;s services.</td></tr>
+<tr><td>Sat, Nov 7</td><td>Referral Tip</td><td>Share tips on businesses and individuals who may need Geeslane&#x27;s services. Remind partners they can follow up with people they have already introduced to Geeslane.</td></tr>
 <tr><td>Mon, Nov 9</td><td>Monday Motivation</td><td>Share a motivational message and encourage partners to recognise opportunities within their networks.</td></tr>
 <tr><td>Wed, Nov 11</td><td>Service Highlight</td><td>Highlight a Geeslane service or share an approved project showcase.</td></tr>
-<tr><td>Sat, Nov 14</td><td>Referral Tip</td><td>Explain how to introduce Geeslane to potential clients and share personal referral links.</td></tr>
+<tr><td>Sat, Nov 14</td><td>Referral Tip</td><td>Post message I, Approaching the Deadline, in the existing WhatsApp group. Remind partners to reconnect with people they have already referred. The initial 50% must clear by November 30. The balance can be paid later. Partners follow up with their own prospects.</td></tr>
 <tr><td>Mon, Nov 16</td><td>Monday Motivation</td><td>Share motivation and a gentle campaign reminder.</td></tr>
-<tr><td>Wed, Nov 18</td><td>Geeslane Showcase</td><td>Share a service highlight, project showcase or client testimonial.</td></tr>
-<tr><td>Sat, Nov 21</td><td>Referral Reminder</td><td>Share a useful referral tip or reminder. No engagement questions.</td></tr>
-<tr><td>Mon, Nov 23</td><td>Monday Motivation</td><td>Encourage partners as we approach the final week.</td></tr>
-<tr><td>Wed, Nov 25</td><td>Progress Update</td><td>Share approved programme progress updates and celebrate confirmed conversions or payments where applicable.</td></tr>
-<tr><td>Sat, Nov 28</td><td>Final Referral Reminder</td><td>Remind partners that the November campaign is almost over.</td></tr>
-<tr><td>Mon, Nov 30</td><td>Campaign Closing</td><td>Share the final campaign reminder and appreciation message.</td></tr>
+<tr><td>Wed, Nov 18</td><td>Geeslane Showcase</td><td>Share a service highlight, project showcase or client testimonial. Encourage partners to share relevant approved Geeslane projects with interested prospects.</td></tr>
+<tr><td>Sat, Nov 21</td><td>Referral Reminder</td><td>Post message I, Approaching the Deadline, in the existing WhatsApp group. Do not include engagement questions. Partners follow up with their own prospects. The initial 50% must clear by November 30, and the balance can be paid later.</td></tr>
+<tr><td>Mon, Nov 23</td><td>Monday Motivation</td><td>Encourage partners as we approach the final week, and gently remind them to follow up with prospects who are considering a project.</td></tr>
+<tr><td>Wed, Nov 25</td><td>Progress Update</td><td>Share approved programme progress updates and celebrate confirmed conversions or payments where applicable. Remind partners that the initial-payment deadline is approaching. Only celebrate conversions and payments that Admin has confirmed. Never invent statistics.</td></tr>
+<tr><td>Sat, Nov 28</td><td>Final Referral Reminder</td><td>Post message J, Final Days Reminder, in the existing WhatsApp group. Ask partners to follow up with anyone they referred who is still considering a project or has received a quotation. The initial 50% must clear by November 30. The balance can be paid later.</td></tr>
+<tr><td>Mon, Nov 30</td><td>Campaign Closing</td><td>Post message K, November 30: Final Reminder, in the existing WhatsApp group, and share the appreciation message. Only an initial payment that clears today qualifies. An initial payment made after November 30 does not qualify.</td></tr>
 </tbody></table>
 <p><strong>New member onboarding:</strong> Whenever a new partner joins, welcome them briefly in the group, tag them and use WhatsApp&#x27;s Share Message History feature to share previous important messages.</p>
 <p>There is no need to send a separate private welcome message or ask anyone to introduce themselves.</p>
+<h2 id="following-up">Reminding Partners to Follow Up With Their Prospects</h2>
+<p>As November 30 approaches, remind partners in the existing WhatsApp group to reconnect with potential clients they have already referred. This matters most for people who have received a quotation or said they are interested in starting a project.</p>
+<p>The aim is to help partners avoid missing commission because a referred client did not complete the initial payment before the campaign deadline.</p>
+<ul>
+<li>The initial 50% payment must clear by November 30, 2026, for the referral to qualify.</li>
+<li>The remaining 50% balance can be paid after November.</li>
+<li>Partners should encourage interested prospects to contact Geeslane if they need clarification about a quotation or project.</li>
+<li>Partners are responsible for following up with their own prospects.</li>
+<li>You only share reminders and updates in the existing WhatsApp group.</li>
+</ul>
+<p>This group is a business referral channel. It is not a social or friendship group.</p>
 <h2 id="ready-to-use-messages">6. Ready-to-Use Messages 💬</h2>
 <p>You can copy these messages and make small adjustments where necessary.</p>
 <h3>A. Welcome Message for New Partners</h3>
@@ -249,6 +289,27 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
 <p>We appreciate your contribution and the opportunity to have you participate in this campaign.</p>
 <p>Here&#x27;s to more opportunities, more connections and more growth!</p>
 <p>Thank you for being part of Geeslane! 💚</p>
+<h3>I. Approaching the Deadline</h3>
+<p>Hello, partners! 💚</p>
+<p>November 30 is approaching!</p>
+<p>If you have introduced anyone to Geeslane who has received a quotation or expressed interest in a project, this is a good time to check in with them.</p>
+<p>A quick reminder: the initial 50% payment must clear by November 30 for you to qualify for commission on that referral.</p>
+<p>The remaining 50% can be paid later.</p>
+<p>Don&#x27;t forget to follow up with your prospects and help them reconnect with the Geeslane team if they need any clarification.</p>
+<p>We want you to get rewarded for the connections you&#x27;ve made! 🚀</p>
+<h3>J. Final Days Reminder</h3>
+<p>Hello, partners! 👋🏽</p>
+<p>We&#x27;re down to the final days of our November Refer &amp; Earn campaign!</p>
+<p>Please take a moment to follow up with anyone you&#x27;ve referred who is still considering a project or has received a quotation from Geeslane.</p>
+<p>Remember, their initial 50% payment must clear by November 30 for your referral to qualify for commission. The remaining balance can be paid later.</p>
+<p>If they have questions or are ready to proceed, direct them to the Geeslane team.</p>
+<p>Let&#x27;s make sure no eligible referral is missed simply because we forgot to follow up! 💚</p>
+<h3>K. November 30: Final Reminder</h3>
+<p>Hello, partners! 💚</p>
+<p>Today is the final day of our November Refer &amp; Earn campaign.</p>
+<p>If you have any prospects who are ready to proceed, please encourage them to complete their initial 50% payment today.</p>
+<p>Only initial payments that clear by today qualify under the November programme. Any initial payment made after November 30 will not qualify.</p>
+<p>Thank you for all the introductions and referrals you&#x27;ve made this month. We appreciate you! 🚀</p>
 <h2 id="partner-wins">7. Celebrating Partner Wins 🥳</h2>
 <p>Celebrating successful referrals and payments helps build confidence in the programme.</p>
 <p>However, <strong>you will only know about successful conversions when Geeslane Admin communicates them to you.</strong></p>
@@ -407,20 +468,76 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:26px 10px}
 <script>
 const search = document.getElementById('sectionSearch');
 const links = [...document.querySelectorAll('#sectionNav a')];
+const menuSlot = document.getElementById('menuSlot');
+const toggle = document.getElementById('sectionToggle');
+const narrow = window.matchMedia('(max-width: 900px)');
+let menuHeight = 0;
+let frame = 0;
+
+function syncOffset() {
+  const bar = document.querySelector('.topbar').offsetHeight;
+  const menu = document.getElementById('guideMenu');
+  const showing = narrow.matches && document.body.classList.contains('menu-docked') && !document.body.classList.contains('menu-hidden');
+  const covered = showing ? Math.min(menu.offsetHeight, window.innerHeight * 0.42, 360) + 8 : 0;
+  const offset = bar + covered + 16;
+  document.documentElement.style.setProperty('--topbar-height', bar + 'px');
+  document.documentElement.style.setProperty('--section-offset', offset + 'px');
+  const hidden = document.body.classList.contains('menu-hidden') || !document.body.classList.contains('menu-docked');
+  toggle.setAttribute('aria-expanded', hidden ? 'false' : 'true');
+}
+
+function placeMenu() {
+  if (!narrow.matches) {
+    document.body.classList.remove('menu-docked', 'menu-hidden');
+    syncOffset();
+    return;
+  }
+  const docked = document.body.classList.contains('menu-docked');
+  if (!docked) menuHeight = menuSlot.offsetHeight;
+  const topBar = document.querySelector('.topbar');
+  const passed = menuSlot.getBoundingClientRect().top + menuHeight < topBar.getBoundingClientRect().bottom + 4;
+  if (passed !== docked) {
+    document.body.classList.toggle('menu-docked', passed);
+    if (!passed) document.body.classList.remove('menu-hidden');
+  }
+  syncOffset();
+}
+
+function markSection() {
+  const barBottom = narrow.matches ? document.querySelector('.topbar').getBoundingClientRect().bottom : 24;
+  const line = barBottom + 100;
+  let current = links[0];
+  document.querySelectorAll('article h2[id]').forEach(section => {
+    if (section.getBoundingClientRect().top <= line) {
+      current = links.find(link => link.hash === '#' + section.id) || current;
+    }
+  });
+  links.forEach(link => link.classList.toggle('active', link === current));
+  const menu = document.getElementById('guideMenu');
+  if (current && narrow.matches && document.body.classList.contains('menu-docked') && !document.body.classList.contains('menu-hidden')) {
+    const menuRect = menu.getBoundingClientRect();
+    const linkRect = current.getBoundingClientRect();
+    if (linkRect.top < menuRect.top + 8 || linkRect.bottom > menuRect.bottom - 8) {
+      menu.scrollTop += linkRect.top - menuRect.top - 12;
+    }
+  }
+}
+
+function queueMenu() {
+  if (frame) return;
+  frame = requestAnimationFrame(() => {
+    frame = 0;
+    placeMenu();
+    markSection();
+  });
+}
+
 search.addEventListener('input', () => {
   const q = search.value.toLowerCase().trim();
   links.forEach(link => {
     link.style.display = link.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
 });
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      links.forEach(link => link.classList.toggle('active', link.hash === '#' + entry.target.id));
-    }
-  });
-}, {rootMargin:'-10% 0px -78% 0px'});
-document.querySelectorAll('article h2[id]').forEach(section => observer.observe(section));
 document.querySelectorAll('article table').forEach(table => {
   const headers = [...table.rows[0].cells].map(cell => cell.textContent.trim());
   [...table.rows].slice(1).forEach(row => {
@@ -429,6 +546,65 @@ document.querySelectorAll('article table').forEach(table => {
     });
   });
 });
+const messages = document.getElementById('ready-to-use-messages');
+if (messages) {
+  let node = messages.nextElementSibling;
+  let started = false;
+  let bucket = [];
+  const flush = () => {
+    if (!bucket.length) return;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy-message';
+    button.textContent = 'Copy message';
+    const text = bucket.map(el => el.innerText.trim()).filter(Boolean).join('\n\n');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = 'Copied';
+      } catch (_) {
+        button.textContent = 'Copy unavailable';
+      }
+      setTimeout(() => { button.textContent = 'Copy message'; }, 1600);
+    });
+    bucket[bucket.length - 1].after(button);
+    bucket = [];
+  };
+  while (node && node.tagName !== 'H2') {
+    if (node.tagName === 'H3') {
+      flush();
+      started = true;
+    } else if (started && (node.tagName === 'P' || node.tagName === 'UL' || node.tagName === 'OL')) {
+      bucket.push(node);
+    }
+    node = node.nextElementSibling;
+  }
+  flush();
+}
+toggle.addEventListener('click', () => {
+  if (!document.body.classList.contains('menu-docked')) {
+    menuSlot.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  document.body.classList.toggle('menu-hidden');
+  if (!document.body.classList.contains('menu-hidden')) search.focus();
+  syncOffset();
+});
+links.forEach(link => link.addEventListener('click', () => {
+  document.body.classList.add('menu-hidden');
+  syncOffset();
+}));
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    document.body.classList.add('menu-hidden');
+    syncOffset();
+  }
+});
+narrow.addEventListener('change', placeMenu);
+window.addEventListener('scroll', queueMenu, { passive: true });
+window.addEventListener('resize', queueMenu);
+placeMenu();
+markSection();
 </script>
 </body>
 </html>
